@@ -1,0 +1,5 @@
+# Turborepo cache (at root)
+.turbo/
+
+# Lock file — reformatting breaks pnpm's hash validation
+pnpm-lock.yaml
