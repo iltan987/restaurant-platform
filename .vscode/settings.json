@@ -1,7 +1,20 @@
 {
+  // ── Editor ──────────────────────────────────────────────
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // ── Tailwind CSS v4 ─────────────────────────────────────
+  "files.associations": { "*.css": "tailwindcss" },
+  "tailwindCSS.classFunctions": ["cn", "cva", "clsx"],
+  "tailwindCSS.emmetCompletions": true,
+
+  // ── Search exclusions ───────────────────────────────────
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.turbo": true,
+    "pnpm-lock.yaml": true
   }
 }
