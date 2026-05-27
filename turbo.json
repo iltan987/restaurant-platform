@@ -10,9 +10,7 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "format": {
-      "dependsOn": ["^format"]
-    },
+    "format": {},
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },
