@@ -4,5 +4,6 @@ node_modules/
 # Turborepo
 .turbo/
 
-# Local environment overrides
+# Environment variables
+.env
 .env*.local
