@@ -12,6 +12,7 @@ export const nestJsConfig = [
   {
     languageOptions: {
       globals: { ...globals.node },
+      parserOptions: { projectService: true },
     },
   },
 ]
