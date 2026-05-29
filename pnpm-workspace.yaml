@@ -9,7 +9,6 @@ peerDependencyRules:
 allowBuilds:
   "@nestjs/core": true
   "@prisma/engines": true
-  "@swc/core": true
   esbuild: true
   msw: true
   prisma: true
