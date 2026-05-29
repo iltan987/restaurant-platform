@@ -31,14 +31,14 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
-    "@turbo/gen": "^2.9.15",
+    "@turbo/gen": "^2.9.16",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "shadcn": "^4.8.1",
+    "shadcn": "^4.8.2",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

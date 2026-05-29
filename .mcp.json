@@ -3,6 +3,10 @@
     "better-auth": {
       "type": "http",
       "url": "https://mcp.better-auth.com/mcp"
+    },
+    "prisma": {
+      "type": "http",
+      "url": "https://mcp.prisma.io/mcp"
     }
   }
 }
