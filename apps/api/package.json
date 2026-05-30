@@ -19,7 +19,9 @@
     "@nestjs/core": "^11.1.24",
     "@nestjs/platform-express": "^11.1.24",
     "@repo/db": "workspace:*",
+    "@repo/schemas": "workspace:*",
     "dotenv": "catalog:",
+    "zod": "catalog:",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
