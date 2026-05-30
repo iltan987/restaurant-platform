@@ -3,9 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
-import { ErrorCode, type CreateRestaurantInput } from "@repo/schemas"
+import { ErrorCode, slugify, type CreateRestaurantInput } from "@repo/schemas"
 import { PrismaService } from "../prisma/prisma.service"
-import { slugify } from "./slugify"
 
 @Injectable()
 export class RestaurantsService {
@@ -23,7 +22,7 @@ export class RestaurantsService {
     const slug = await this.ensureUniqueSlug(base)
 
     try {
-      return await this.prisma.client.restaurant.create({
+      return await this.prisma.restaurant.create({
         data: { name: input.name, slug },
       })
     } catch (err: unknown) {
@@ -39,13 +38,13 @@ export class RestaurantsService {
   }
 
   async findAll() {
-    return this.prisma.client.restaurant.findMany({
+    return this.prisma.restaurant.findMany({
       orderBy: { createdAt: "desc" },
     })
   }
 
   async findBySlug(slug: string) {
-    const restaurant = await this.prisma.client.restaurant.findUnique({
+    const restaurant = await this.prisma.restaurant.findUnique({
       where: { slug },
     })
     if (!restaurant) {
@@ -62,7 +61,7 @@ export class RestaurantsService {
     let candidate = base
     let n = 1
     while (
-      await this.prisma.client.restaurant.findUnique({
+      await this.prisma.restaurant.findUnique({
         where: { slug: candidate },
       })
     ) {

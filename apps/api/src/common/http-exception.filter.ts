@@ -55,12 +55,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 }
 
+/**
+ * Maps HTTP status codes to generic error codes.
+ * Domain-specific codes (SLUG_TAKEN, RESTAURANT_NOT_FOUND, …) are only
+ * emitted when a service throws a structured exception body explicitly —
+ * this fallback must stay generic so a plain 404 from an unknown route is
+ * never mislabelled as a restaurant error.
+ */
 function statusToCode(status: number): ErrorCode {
   switch (status) {
     case HttpStatus.NOT_FOUND:
-      return ErrorCode.RESTAURANT_NOT_FOUND
+      return ErrorCode.NOT_FOUND
     case HttpStatus.CONFLICT:
-      return ErrorCode.SLUG_TAKEN
+      return ErrorCode.CONFLICT
     case HttpStatus.BAD_REQUEST:
       return ErrorCode.VALIDATION_ERROR
     default:
