@@ -1,3 +1,4 @@
+import "@/lib/zod"
 import { QueryProvider } from "@repo/query/provider"
 import { Toaster } from "@repo/ui/components/sonner"
 import { ThemeProvider } from "@repo/ui/components/theme-provider"

@@ -20,7 +20,12 @@ export default function RootLayout({
     <html
       lang="tr"
       suppressHydrationWarning
-      className={cn("antialiased", geist.variable, geistMono.variable, "font-sans")}
+      className={cn(
+        "antialiased",
+        geist.variable,
+        geistMono.variable,
+        "font-sans"
+      )}
     >
       <body>
         <Providers>{children}</Providers>

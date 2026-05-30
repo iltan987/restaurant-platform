@@ -18,6 +18,8 @@
     "sonner": "catalog:",
     "lucide-react": "catalog:",
     "zod": "catalog:",
+    "react-hook-form": "catalog:",
+    "@hookform/resolvers": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

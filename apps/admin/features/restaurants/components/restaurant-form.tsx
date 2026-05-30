@@ -1,52 +1,57 @@
 "use client"
 
-import { useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { createRestaurantSchema } from "@repo/schemas"
-
-z.config(z.locales.tr())
+import {
+  createRestaurantSchema,
+  SLUG_MAX,
+  SLUG_REGEX,
+  ErrorCode,
+} from "@repo/schemas"
 import { Button } from "@repo/ui/components/button"
 import { Input } from "@repo/ui/components/input"
-import { Label } from "@repo/ui/components/label"
 import { Spinner } from "@repo/ui/components/spinner"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@repo/ui/components/field"
+import { getErrorMessage } from "@/lib/messages"
+import { ApiError } from "../api"
 import { useCreateRestaurant } from "../use-create-restaurant"
 
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL
 
+const formSchema = createRestaurantSchema.extend({
+  slug: z
+    .string()
+    .transform((v) => (v.trim() === "" ? undefined : v))
+    .pipe(z.string().min(1).max(SLUG_MAX).regex(SLUG_REGEX).optional()),
+})
+
 export function RestaurantForm() {
-  const [name, setName] = useState("")
-  const [slug, setSlug] = useState("")
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<string, string>>
-  >({})
+  const form = useForm<
+    z.input<typeof formSchema>,
+    unknown,
+    z.infer<typeof formSchema>
+  >({
+    resolver: zodResolver(formSchema),
+    mode: "onTouched",
+    defaultValues: { name: "", slug: "" },
+  })
 
   const mutation = useCreateRestaurant()
 
-  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setFieldErrors({})
-
-    const result = createRestaurantSchema.safeParse({
-      name,
-      slug: slug.trim() || undefined,
-    })
-    if (!result.success) {
-      const flat = z.flattenError(result.error)
-      const errors: Partial<Record<string, string>> = {}
-      for (const [key, msgs] of Object.entries(flat.fieldErrors)) {
-        const list = msgs as string[] | undefined
-        if (list?.[0]) errors[key] = list[0]
-      }
-      setFieldErrors(errors)
-      return
-    }
-
-    // Per-call onSuccess handles UI reset; the hook's onSuccess handles toasts + cache.
-    mutation.mutate(result.data, {
-      onSuccess: () => {
-        setName("")
-        setSlug("")
-        setFieldErrors({})
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    mutation.mutate(data, {
+      onSuccess: () => form.reset(),
+      onError: (err) => {
+        if (err instanceof ApiError && err.code === ErrorCode.SLUG_TAKEN) {
+          form.setError("slug", { message: getErrorMessage(err.code) })
+        }
       },
     })
   }
@@ -54,53 +59,66 @@ export function RestaurantForm() {
   const rootDomain = DASHBOARD_URL?.replace(/^https?:\/\//, "")
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="name" className="text-xs font-medium">
-          Ad <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="name"
-          placeholder="Restoran adı"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          aria-invalid={!!fieldErrors["name"]}
-          autoComplete="off"
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex flex-col gap-4"
+    >
+      <FieldGroup>
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid || undefined}>
+              <FieldLabel htmlFor={field.name}>
+                Ad <span className="text-destructive">*</span>
+              </FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                placeholder="Restoran adı"
+                aria-invalid={fieldState.invalid || undefined}
+                autoComplete="off"
+              />
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
         />
-        {fieldErrors["name"] && (
-          <p className="text-xs text-destructive">{fieldErrors["name"]}</p>
-        )}
-      </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="slug" className="text-xs font-medium">
-          Kısa ad{" "}
-          <span className="font-normal text-muted-foreground">
-            (isteğe bağlı)
-          </span>
-        </Label>
-        <Input
-          id="slug"
-          placeholder="otomatik oluşturulur"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          aria-invalid={!!fieldErrors["slug"]}
-          autoComplete="off"
-          className="font-mono"
+        <Controller
+          name="slug"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid || undefined}>
+              <FieldLabel htmlFor={field.name}>
+                Kısa ad{" "}
+                <span className="font-normal text-muted-foreground">
+                  (isteğe bağlı)
+                </span>
+              </FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                placeholder="otomatik oluşturulur"
+                aria-invalid={fieldState.invalid || undefined}
+                autoComplete="off"
+                className="font-mono"
+              />
+              {fieldState.invalid ? (
+                <FieldError errors={[fieldState.error]} />
+              ) : (
+                <FieldDescription>
+                  {"URL: "}
+                  <code>
+                    {field.value?.trim()
+                      ? `${field.value.trim()}.${rootDomain}`
+                      : `<kısa-ad>.${rootDomain}`}
+                  </code>
+                </FieldDescription>
+              )}
+            </Field>
+          )}
         />
-        {fieldErrors["slug"] ? (
-          <p className="text-xs text-destructive">{fieldErrors["slug"]}</p>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            {"URL: "}
-            <code>
-              {slug.trim()
-                ? `${slug.trim()}.${rootDomain}`
-                : `<kısa-ad>.${rootDomain}`}
-            </code>
-          </p>
-        )}
-      </div>
+      </FieldGroup>
 
       <Button type="submit" disabled={mutation.isPending} className="mt-1">
         {mutation.isPending ? (

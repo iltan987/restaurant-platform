@@ -32,3 +32,5 @@ catalog:
   "@tanstack/react-query": ^5.100.14
   "@tanstack/react-query-devtools": ^5.100.14
   "@tanstack/eslint-plugin-query": ^5.100.14
+  react-hook-form: ^7.76.1
+  "@hookform/resolvers": ^5.4.0
