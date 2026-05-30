@@ -25,23 +25,25 @@ import { useCreateRestaurant } from "../use-create-restaurant"
 
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL
 
+// formSchema only adds structural changes on top of the shared schema.
+// All user-facing messages live in the zodResolver error map below — no constraint duplication.
 const formSchema = createRestaurantSchema.extend({
-  name: z
-    .string()
-    .min(1, "Ad alanı zorunludur")
-    .max(120, "Ad en fazla 120 karakter olabilir"),
   slug: z
     .string()
     .transform((v) => (v.trim() === "" ? undefined : v))
-    .pipe(
-      z
-        .string()
-        .min(1)
-        .max(SLUG_MAX, `En fazla ${SLUG_MAX} karakter olabilir`)
-        .regex(SLUG_REGEX, "Sadece küçük harf, rakam ve tire (-) kullanılabilir")
-        .optional()
-    ),
+    .pipe(z.string().min(1).max(SLUG_MAX).regex(SLUG_REGEX).optional()),
 })
+
+const formErrors: z.core.$ZodErrorMap = (issue) => {
+  if (issue.path?.[0] === "name") {
+    if (issue.code === "too_small") return { message: "Ad alanı zorunludur" }
+    if (issue.code === "too_big") return { message: "Ad en fazla 120 karakter olabilir" }
+  }
+  if (issue.path?.[0] === "slug") {
+    if (issue.code === "too_big") return { message: `En fazla ${SLUG_MAX} karakter olabilir` }
+    if (issue.code === "invalid_format") return { message: "Sadece küçük harf, rakam ve tire (-) kullanılabilir" }
+  }
+}
 
 export function RestaurantForm() {
   const form = useForm<
@@ -49,7 +51,7 @@ export function RestaurantForm() {
     unknown,
     z.infer<typeof formSchema>
   >({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema, { error: formErrors }),
     mode: "onTouched",
     defaultValues: { name: "", slug: "" },
   })
