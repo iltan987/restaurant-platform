@@ -2,7 +2,8 @@
   "name": "@repo/query",
   "type": "module",
   "scripts": {
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "exports": {
     "./provider": "./src/provider.tsx",
