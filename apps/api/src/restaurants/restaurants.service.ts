@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common"
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common"
 import { ErrorCode, type CreateRestaurantInput } from "@repo/schemas"
 import { PrismaService } from "../prisma/prisma.service"
 import { slugify } from "./slugify"
@@ -58,7 +62,9 @@ export class RestaurantsService {
     let candidate = base
     let n = 1
     while (
-      await this.prisma.client.restaurant.findUnique({ where: { slug: candidate } })
+      await this.prisma.client.restaurant.findUnique({
+        where: { slug: candidate },
+      })
     ) {
       n += 1
       candidate = `${base}-${n}`.slice(0, 63).replace(/-+$/g, "")

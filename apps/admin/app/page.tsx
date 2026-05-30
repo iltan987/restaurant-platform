@@ -24,7 +24,9 @@ export default function Page() {
   const [name, setName] = useState("")
   const [slug, setSlug] = useState("")
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<string, string>>>({})
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<string, string>>
+  >({})
   const [apiError, setApiError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -33,7 +35,10 @@ export default function Page() {
   useEffect(() => {
     let cancelled = false
     void fetch(`${API}/restaurants`)
-      .then((res): Promise<Restaurant[]> => (res.ok ? res.json() : Promise.resolve([])))
+      .then(
+        (res): Promise<Restaurant[]> =>
+          res.ok ? res.json() : Promise.resolve([])
+      )
       .then((data) => {
         if (!cancelled) setRestaurants(data)
       })
@@ -103,7 +108,7 @@ export default function Page() {
           </label>
           <input
             id="name"
-            className="rounded border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded border px-3 py-1.5 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
             placeholder="Restoran adı"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -117,11 +122,13 @@ export default function Page() {
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium" htmlFor="slug">
             Kısa ad{" "}
-            <span className="font-normal text-muted-foreground">(isteğe bağlı)</span>
+            <span className="font-normal text-muted-foreground">
+              (isteğe bağlı)
+            </span>
           </label>
           <input
             id="slug"
-            className="rounded border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="rounded border px-3 py-1.5 text-sm focus:ring-2 focus:ring-ring focus:outline-none"
             placeholder="restoran-adi  —  otomatik oluşturulur"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}

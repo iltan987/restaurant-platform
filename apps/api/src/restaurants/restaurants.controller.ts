@@ -1,5 +1,8 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common"
-import { createRestaurantSchema, type CreateRestaurantInput } from "@repo/schemas"
+import {
+  createRestaurantSchema,
+  type CreateRestaurantInput,
+} from "@repo/schemas"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { RestaurantsService } from "./restaurants.service"
 
@@ -10,7 +13,7 @@ export class RestaurantsController {
   @Post()
   create(
     @Body(new ZodValidationPipe(createRestaurantSchema))
-    input: CreateRestaurantInput,
+    input: CreateRestaurantInput
   ) {
     return this.restaurants.create(input)
   }

@@ -46,7 +46,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     const errorBody: ApiError = { statusCode, code, message }
-    console.error(`[${request.method}] ${request.url} → ${statusCode}`, errorBody)
+    console.error(
+      `[${request.method}] ${request.url} → ${statusCode}`,
+      errorBody
+    )
 
     response.status(statusCode).json(errorBody)
   }
