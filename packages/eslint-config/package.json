@@ -17,6 +17,7 @@
     "eslint-plugin-turbo": "^2.9.16",
     "globals": "^17.6.0",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.60.0"
+    "typescript-eslint": "^8.60.0",
+    "@tanstack/eslint-plugin-query": "catalog:"
   }
 }

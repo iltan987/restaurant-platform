@@ -11,8 +11,10 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@repo/query": "workspace:*",
     "@repo/schemas": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
     "lucide-react": "catalog:",
     "zod": "catalog:",
     "next": "catalog:",
