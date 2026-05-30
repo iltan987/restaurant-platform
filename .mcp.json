@@ -10,7 +10,18 @@
     },
     "inkeepMcp": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.inkeep.com/zod/mcp"]
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.inkeep.com/zod/mcp"
+      ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }
