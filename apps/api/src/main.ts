@@ -28,7 +28,9 @@ function buildCorsOrigins(): RegExp[] {
   const origins: RegExp[] = []
 
   if (adminUrl) {
-    origins.push(urlToExactOriginRegex(adminUrl))
+    const { host } = new URL(adminUrl)
+    const escapedHost = host.replace(/\./g, "\\.").replace(/:/g, "\\:")
+    origins.push(new RegExp(`^https?:\\/\\/${escapedHost}$`))
   }
 
   if (dashboardUrl) {
@@ -41,13 +43,6 @@ function buildCorsOrigins(): RegExp[] {
   }
 
   return origins
-}
-
-function urlToExactOriginRegex(rawUrl: string): RegExp {
-  const { protocol, host } = new URL(rawUrl)
-  const escapedProtocol = protocol.replace(/\./g, "\\.").replace(/:/g, "\\:")
-  const escapedHost = host.replace(/\./g, "\\.").replace(/:/g, "\\:")
-  return new RegExp(`^${escapedProtocol}\\/\\/${escapedHost}$`)
 }
 
 bootstrap()

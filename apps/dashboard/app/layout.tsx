@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "@repo/ui/globals.css"
+import { QueryProvider } from "@repo/query/provider"
 import { ThemeProvider } from "@repo/ui/components/theme-provider"
 import { cn } from "@repo/ui/lib/utils"
 
@@ -34,7 +35,9 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

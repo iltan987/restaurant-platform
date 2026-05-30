@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "@repo/ui/globals.css"
 import { ThemeProvider } from "@repo/ui/components/theme-provider"
 import { cn } from "@repo/ui/lib/utils"
+import { Providers } from "./providers"
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -11,30 +12,21 @@ export const metadata: Metadata = {
 }
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="tr"
       suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        fontMono.variable,
-        "font-sans",
-        geist.variable
-      )}
+      className={cn("antialiased", geist.variable, geistMono.variable, "font-sans")}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <Providers>{children}</Providers>
+        </ThemeProvider>
       </body>
     </html>
   )
