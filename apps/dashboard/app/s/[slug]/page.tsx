@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query"
 import { getQueryClient } from "@repo/query/get-query-client"
-import { restaurantQueries } from "@/features/restaurants/queries"
+import { restaurantsQueries } from "@/features/restaurants/queries"
 
 export default async function TenantPage({
   params,
@@ -12,7 +12,7 @@ export default async function TenantPage({
 
   const queryClient = getQueryClient()
   const restaurant = await queryClient.fetchQuery(
-    restaurantQueries.detail(slug)
+    restaurantsQueries.detail(slug)
   )
 
   // Null means 404 from the API; inactive tenants are also treated as not found.

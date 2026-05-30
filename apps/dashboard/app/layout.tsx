@@ -2,9 +2,8 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "@repo/ui/globals.css"
-import { QueryProvider } from "@repo/query/provider"
-import { ThemeProvider } from "@repo/ui/components/theme-provider"
 import { cn } from "@repo/ui/lib/utils"
+import { Providers } from "./providers"
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -35,9 +34,7 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
