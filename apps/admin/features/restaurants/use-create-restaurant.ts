@@ -51,8 +51,8 @@ export function useCreateRestaurant() {
           : "Sunucuya ulaşılamadı."
       )
     },
-    onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["restaurants"] })
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] })
     },
   })
 }

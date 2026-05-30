@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { z } from "zod"
 import { createRestaurantSchema } from "@repo/schemas"
+
+z.config(z.locales.tr())
 import { Button } from "@repo/ui/components/button"
 import { Input } from "@repo/ui/components/input"
 import { Label } from "@repo/ui/components/label"
