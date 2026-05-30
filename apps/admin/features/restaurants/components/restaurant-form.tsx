@@ -26,10 +26,21 @@ import { useCreateRestaurant } from "../use-create-restaurant"
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL
 
 const formSchema = createRestaurantSchema.extend({
+  name: z
+    .string()
+    .min(1, "Ad alanı zorunludur")
+    .max(120, "Ad en fazla 120 karakter olabilir"),
   slug: z
     .string()
     .transform((v) => (v.trim() === "" ? undefined : v))
-    .pipe(z.string().min(1).max(SLUG_MAX).regex(SLUG_REGEX).optional()),
+    .pipe(
+      z
+        .string()
+        .min(1)
+        .max(SLUG_MAX, `En fazla ${SLUG_MAX} karakter olabilir`)
+        .regex(SLUG_REGEX, "Sadece küçük harf, rakam ve tire (-) kullanılabilir")
+        .optional()
+    ),
 })
 
 export function RestaurantForm() {
