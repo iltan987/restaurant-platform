@@ -10,13 +10,16 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "eslint": "catalog:",
     "typescript": "catalog:"
   }
 }

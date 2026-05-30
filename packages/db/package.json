@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -23,8 +24,10 @@
     "pg": "^8.21.0"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/pg": "^8.20.0",
+    "eslint": "catalog:",
     "prisma": "^7.8.0",
     "typescript": "catalog:"
   }

@@ -24,4 +24,15 @@ export const config = [
       "turbo/no-undeclared-env-vars": "warn",
     },
   },
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-deprecated": "warn",
+    },
+  },
 ]

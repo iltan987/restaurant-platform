@@ -10,6 +10,7 @@ export const nestJsConfig = [
   ...baseConfig,
   { ignores: ["dist/**"] },
   {
+    files: ["**/*.ts"],
     languageOptions: {
       globals: { ...globals.node },
       parserOptions: { projectService: true },

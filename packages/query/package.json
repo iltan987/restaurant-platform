@@ -1,6 +1,9 @@
 {
   "name": "@repo/query",
   "type": "module",
+  "scripts": {
+    "lint": "eslint"
+  },
   "exports": {
     "./provider": "./src/provider.tsx",
     "./get-query-client": "./src/get-query-client.ts"
