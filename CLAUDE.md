@@ -77,6 +77,7 @@ Each Next app sets its Zod locale **once on the client** via a `ZodInit` compone
 
 ## Conventions & gotchas
 
+- **Compiled vs source packages:** `@repo/core`, `@repo/schemas`, `@repo/api-client`, `@repo/i18n`, `@repo/db` are *compiled* — they have a `build` script (`tsc`) and are consumed from `dist/`, so they must be built before consumers run. `@repo/ui` and `@repo/query` are *source* packages — their `exports` point at `./src/*` (no `build` script), transpiled by the consuming app. `turbo build` orders this via `^build`; `dev` also depends on `^build` so a cold `pnpm dev` builds the compiled packages first (note: they're built once, not watched — editing a compiled package mid-`dev` needs a rebuild). Reach for a source package when only frontend apps consume it (live HMR); compiled when the NestJS `api` also consumes it.
 - **Catalog versions:** shared dependency versions are pinned in `pnpm-workspace.yaml` under `catalog:`. Reference them as `"next": "catalog:"` in package.json rather than hardcoding versions.
 - **Prettier:** no semicolons, double quotes, `printWidth: 80`. Tailwind plugin sorts classes and is aware of `cn`/`cva`.
 - **TS:** strict, `NodeNext` modules, `noUncheckedIndexedAccess` on. Path alias `@/*` maps to app/src root.

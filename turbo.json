@@ -23,7 +23,7 @@
       "dependsOn": ["^typecheck"]
     },
     "dev": {
-      "dependsOn": ["db:generate"],
+      "dependsOn": ["^build", "db:generate"],
       "cache": false,
       "persistent": true
     }
