@@ -1,5 +1,5 @@
 {
-  "name": "@repo/schemas",
+  "name": "@repo/core",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,10 +13,6 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@repo/core": "workspace:*",
-    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

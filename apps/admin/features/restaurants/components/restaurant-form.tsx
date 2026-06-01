@@ -3,12 +3,8 @@
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import {
-  createRestaurantSchema,
-  SLUG_MAX,
-  SLUG_REGEX,
-  ErrorCode,
-} from "@repo/schemas"
+import { SLUG_MAX, SLUG_REGEX } from "@repo/core"
+import { createRestaurantSchema, ErrorCode } from "@repo/schemas"
 import { Button } from "@repo/ui/components/button"
 import { Input } from "@repo/ui/components/input"
 import { Spinner } from "@repo/ui/components/spinner"

@@ -3,7 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
-import { ErrorCode, slugify, type CreateRestaurantInput } from "@repo/schemas"
+import { slugify } from "@repo/core"
+import { ErrorCode, type CreateRestaurantInput } from "@repo/schemas"
 import { PrismaService } from "../prisma/prisma.service"
 
 @Injectable()

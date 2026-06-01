@@ -11,6 +11,7 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@repo/core": "workspace:*",
     "@repo/query": "workspace:*",
     "@repo/schemas": "workspace:*",
     "@repo/ui": "workspace:*",

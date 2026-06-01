@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { SLUG_MAX, SLUG_REGEX } from "./slug"
+import { SLUG_MAX, SLUG_REGEX } from "@repo/core"
 
 // ── Input schemas (locale-agnostic — each app sets its own z.config locale) ──
 

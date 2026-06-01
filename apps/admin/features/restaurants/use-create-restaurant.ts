@@ -2,20 +2,10 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { slugify } from "@repo/core"
 import { type Restaurant } from "@repo/schemas"
 import { getErrorMessage } from "@/lib/messages"
 import { ApiError, createRestaurant } from "./api"
-
-/** Best-effort client-side slug approximation — used only for the optimistic UI preview. */
-function approxSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 63)
-}
 
 export function useCreateRestaurant() {
   const queryClient = useQueryClient()
@@ -29,7 +19,7 @@ export function useCreateRestaurant() {
       const optimistic: Restaurant = {
         id: `__optimistic__${Date.now()}`,
         name: input.name,
-        slug: input.slug ?? approxSlug(input.name),
+        slug: input.slug ?? slugify(input.name),
         status: "ACTIVE",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
