@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Tests transpile per-file (ts-jest); type-checking runs separately via
+    // `tsc --noEmit`. isolatedModules silences the NodeNext/ts-jest TS151002
+    // warning. rootDir is set explicitly because the inherited `outDir` would
+    // otherwise trip TS6's TS5011 ("rootDir must be explicitly set"); ts-jest
+    // emits in-memory, so the value only needs to span src/ and test/.
+    "isolatedModules": true,
+    "rootDir": "."
+  }
+}
