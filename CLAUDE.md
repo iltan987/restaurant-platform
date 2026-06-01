@@ -49,6 +49,8 @@ Turborepo monorepo. **Four apps** consume **shared packages**; the dependency ru
 - `@repo/db` — Prisma 7 client (`prisma-client` generator → `src/generated/prisma/`), built via `tsc`. Exports a `prisma` singleton using the `@prisma/adapter-pg` driver adapter, plus generated model/enum types.
 - `@repo/ui` — shared component library (Base UI + shadcn, style `base-nova`), Tailwind v4, `next-themes`, `sonner`. Owns `globals.css`. Consumed via subpath exports like `@repo/ui/components/button`. `cn()` lives in `@repo/ui/lib/utils`.
 - `@repo/query` — TanStack Query setup: `getQueryClient()` (SSR-safe singleton) + `QueryProvider`.
+- `@repo/api-client` — framework-agnostic, dependency-free HTTP client. Exports the `ApiError` class (carries `statusCode`, `code`, `message`) and `apiFetch(url, schema, init?)`, which throws `ApiError` on non-OK responses and validates the body with any `{ parse }` (Zod) schema. Frontend feature `api.ts` files build their typed wrappers on top of this — they no longer hand-roll fetch/error handling.
+- `@repo/i18n` — localized user-facing strings. Currently `getErrorMessage(code)` mapping the shared `ErrorCode` enum → Turkish. Single home for messages shared across apps; EN locale slots in here later.
 - `@repo/eslint-config`, `@repo/typescript-config` — shared base configs (`base`, `next-js`, `nestjs`, `react-internal` / `base`, `nestjs`, `nextjs`, `react-library`).
 
 ### The client↔server contract (most important pattern)
@@ -56,10 +58,10 @@ Turborepo monorepo. **Four apps** consume **shared packages**; the dependency ru
 `@repo/schemas` is the single source of truth shared across the boundary:
 1. **Backend** validates request bodies with `ZodValidationPipe` wrapping a schema (e.g. `createRestaurantSchema`) in the controller.
 2. **Backend** throws structured exceptions carrying a stable `code` from `ErrorCode` (e.g. `{ code: ErrorCode.SLUG_TAKEN, message }`). The global `HttpExceptionFilter` (registered as `APP_FILTER`) normalizes *every* response into `{ statusCode, code, message }`. Domain codes are only emitted when a service throws them explicitly; the filter's `statusToCode` only ever produces *generic* codes so an unrelated 404 is never mislabeled.
-3. **Frontend** `fetch` wrappers parse responses through the schema (`restaurantSchema.parse(...)`) and throw a local `ApiError(code, message)` on failure.
-4. **Frontend** maps `code` → localized (Turkish) string via `lib/messages.ts` (`getErrorMessage`). The backend `message` is English, for logs/other consumers.
+3. **Frontend** calls `apiFetch(url, schema)` from `@repo/api-client`, which validates the response against the schema and throws `ApiError` (with `statusCode`/`code`/`message`) on failure. Callers branch on `statusCode` where needed (e.g. dashboard maps 404 → `null`).
+4. **Frontend** maps `code` → localized (Turkish) string via `getErrorMessage` from `@repo/i18n`. The backend `message` is English, for logs/other consumers.
 
-When adding an endpoint: add/extend the schema in `@repo/schemas`, add the `ErrorCode` if a new failure needs a distinct UI message, throw it structured in the service, and add the Turkish mapping in each consuming app's `lib/messages.ts`.
+When adding an endpoint: add/extend the schema in `@repo/schemas`, add the `ErrorCode` if a new failure needs a distinct UI message, throw it structured in the service, and add the Turkish mapping in `@repo/i18n`.
 
 ### Multi-tenant subdomain routing (dashboard)
 
@@ -67,7 +69,7 @@ When adding an endpoint: add/extend the schema in `@repo/schemas`, add the `Erro
 
 ### Data fetching convention (Next apps)
 
-Per-feature folders under `features/<name>/`: `api.ts` (typed fetch wrappers + `ApiError`), `queries.ts` (`queryOptions` factories with stable `queryKey`s), `use-*.ts` (mutation hooks). Mutations use optimistic updates with rollback (see `use-create-restaurant.ts`). Server components prefetch with `getQueryClient()` from `@repo/query/get-query-client` and dehydrate; never call `useState` to make the query client.
+Per-feature folders under `features/<name>/`: `api.ts` (thin typed wrappers over `apiFetch` from `@repo/api-client` — they read the `NEXT_PUBLIC_API_URL` base and call endpoints; the error/parse machinery lives in the package), `queries.ts` (`queryOptions` factories with stable `queryKey`s), `use-*.ts` (mutation hooks). Mutations use optimistic updates with rollback (see `use-create-restaurant.ts`). Server components prefetch with `getQueryClient()` from `@repo/query/get-query-client` and dehydrate; never call `useState` to make the query client.
 
 ### Forms & i18n (Zod locale)
 

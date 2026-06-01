@@ -1,17 +1,8 @@
 import { type Restaurant, restaurantSchema } from "@repo/schemas"
+import { ApiError, apiFetch } from "@repo/api-client"
 
 const API = process.env.NEXT_PUBLIC_API_URL
 if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set")
-
-export class ApiError extends Error {
-  constructor(
-    public readonly code: string,
-    message: string
-  ) {
-    super(message)
-    this.name = "ApiError"
-  }
-}
 
 /**
  * Fetches a restaurant by slug. Returns null on 404 so callers can
@@ -21,18 +12,12 @@ export class ApiError extends Error {
 export async function fetchRestaurantBySlug(
   slug: string
 ): Promise<Restaurant | null> {
-  const res = await fetch(`${API}/restaurants/${slug}`, { cache: "no-store" })
-  if (res.status === 404) return null
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as {
-      code?: string
-      message?: string
-    }
-    throw new ApiError(
-      body.code ?? "INTERNAL_ERROR",
-      body.message ?? `Failed to fetch restaurant "${slug}" (${res.status})`
-    )
+  try {
+    return await apiFetch(`${API}/restaurants/${slug}`, restaurantSchema, {
+      cache: "no-store",
+    })
+  } catch (err) {
+    if (err instanceof ApiError && err.statusCode === 404) return null
+    throw err
   }
-  const data = (await res.json()) as unknown
-  return restaurantSchema.parse(data)
 }

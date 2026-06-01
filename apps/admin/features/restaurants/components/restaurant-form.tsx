@@ -15,8 +15,8 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@repo/ui/components/field"
-import { getErrorMessage } from "@/lib/messages"
-import { ApiError } from "../api"
+import { ApiError } from "@repo/api-client"
+import { getErrorMessage } from "@repo/i18n"
 import { useCreateRestaurant } from "../use-create-restaurant"
 
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL
