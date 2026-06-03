@@ -5,16 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { SLUG_MAX, SLUG_REGEX } from "@repo/core"
 import { createRestaurantSchema, ErrorCode } from "@repo/schemas"
-import { Button } from "@repo/ui/components/button"
-import { Input } from "@repo/ui/components/input"
-import { Spinner } from "@repo/ui/components/spinner"
+import { Button } from "@repo/ui/components/ui/button"
+import { Input } from "@repo/ui/components/ui/input"
+import { Spinner } from "@repo/ui/components/ui/spinner"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@repo/ui/components/field"
+} from "@repo/ui/components/ui/field"
 import { ApiError } from "@repo/api-client"
 import { getErrorMessage } from "@repo/i18n"
 import { useCreateRestaurant } from "../use-create-restaurant"

@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@repo/ui/components/card"
-import { Skeleton } from "@repo/ui/components/skeleton"
+import { Card, CardContent } from "@repo/ui/components/ui/card"
+import { Skeleton } from "@repo/ui/components/ui/skeleton"
 
 export function RestaurantSkeleton() {
   return (

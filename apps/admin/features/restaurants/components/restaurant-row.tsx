@@ -1,8 +1,8 @@
 import { ExternalLinkIcon } from "lucide-react"
 import { type Restaurant } from "@repo/schemas"
-import { Badge } from "@repo/ui/components/badge"
-import { Card, CardContent } from "@repo/ui/components/card"
-import { Spinner } from "@repo/ui/components/spinner"
+import { Badge } from "@repo/ui/components/ui/badge"
+import { Card, CardContent } from "@repo/ui/components/ui/card"
+import { Spinner } from "@repo/ui/components/ui/spinner"
 
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL
 
