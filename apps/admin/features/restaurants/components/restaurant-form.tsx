@@ -33,11 +33,14 @@ const formSchema = createRestaurantSchema.extend({
 const formErrors: z.core.$ZodErrorMap = (issue) => {
   if (issue.path?.[0] === "name") {
     if (issue.code === "too_small") return { message: "Ad alanı zorunludur" }
-    if (issue.code === "too_big") return { message: "Ad en fazla 120 karakter olabilir" }
+    if (issue.code === "too_big")
+      return { message: "Ad en fazla 120 karakter olabilir" }
   }
   if (issue.path?.[0] === "slug") {
-    if (issue.code === "too_big") return { message: `En fazla ${SLUG_MAX} karakter olabilir` }
-    if (issue.code === "invalid_format") return { message: "Sadece küçük harf, rakam ve tire (-) kullanılabilir" }
+    if (issue.code === "too_big")
+      return { message: `En fazla ${SLUG_MAX} karakter olabilir` }
+    if (issue.code === "invalid_format")
+      return { message: "Sadece küçük harf, rakam ve tire (-) kullanılabilir" }
   }
 }
 

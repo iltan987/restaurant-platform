@@ -26,7 +26,10 @@ describe("ZodValidationPipe", () => {
 
     expect(err).toBeInstanceOf(BadRequestException)
 
-    const body = (err as BadRequestException).getResponse() as Record<string, unknown>
+    const body = (err as BadRequestException).getResponse() as Record<
+      string,
+      unknown
+    >
     expect(body.code).toBe(ErrorCode.VALIDATION_ERROR)
     expect(Array.isArray(body.issues)).toBe(true)
     expect((body.issues as unknown[]).length).toBeGreaterThan(0)

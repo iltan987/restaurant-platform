@@ -125,7 +125,9 @@ describe("Restaurants (e2e)", () => {
         .get("/api/restaurants/does-not-exist")
         .expect(404)
 
-      expect(response.body).toMatchObject({ code: ErrorCode.RESTAURANT_NOT_FOUND })
+      expect(response.body).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
     })
   })
 })

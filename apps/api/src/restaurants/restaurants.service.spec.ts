@@ -105,7 +105,9 @@ describe("RestaurantsService", () => {
       mockRestaurant.findUnique.mockResolvedValue(null)
       mockRestaurant.create.mockRejectedValue({ code: "P2002" })
 
-      const err = await service.create({ name: "Burger Joint" }).catch((e: unknown) => e)
+      const err = await service
+        .create({ name: "Burger Joint" })
+        .catch((e: unknown) => e)
 
       expect(err).toBeInstanceOf(ConflictException)
       expect((err as ConflictException).getResponse()).toMatchObject({
@@ -149,7 +151,9 @@ describe("RestaurantsService", () => {
     it("throws NotFoundException(RESTAURANT_NOT_FOUND) when no record matches", async () => {
       mockRestaurant.findUnique.mockResolvedValue(null)
 
-      const err = await service.findBySlug("nonexistent").catch((e: unknown) => e)
+      const err = await service
+        .findBySlug("nonexistent")
+        .catch((e: unknown) => e)
 
       expect(err).toBeInstanceOf(NotFoundException)
       expect((err as NotFoundException).getResponse()).toMatchObject({
