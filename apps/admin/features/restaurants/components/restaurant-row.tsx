@@ -1,4 +1,5 @@
 import { ExternalLinkIcon } from "lucide-react"
+
 import { type Restaurant } from "@repo/schemas"
 import { Badge } from "@repo/ui/components/ui/badge"
 import { Card, CardContent } from "@repo/ui/components/ui/card"

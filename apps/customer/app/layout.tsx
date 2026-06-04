@@ -1,7 +1,8 @@
+import "@repo/ui/globals.css"
+
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
-import "@repo/ui/globals.css"
 import { ThemeProvider } from "@repo/ui/components/theme-provider"
 import { cn } from "@repo/ui/lib/utils"
 

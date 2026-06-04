@@ -1,9 +1,9 @@
+import { apiFetch } from "@repo/api-client"
 import {
   type CreateRestaurantInput,
   type Restaurant,
   restaurantSchema,
 } from "@repo/schemas"
-import { apiFetch } from "@repo/api-client"
 
 const API = process.env.NEXT_PUBLIC_API_URL
 if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set")

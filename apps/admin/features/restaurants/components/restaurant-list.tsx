@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { UtensilsIcon } from "lucide-react"
+
 import { restaurantsQueries } from "../queries"
 import { RestaurantRow } from "./restaurant-row"
 import { RestaurantSkeleton } from "./restaurant-skeleton"

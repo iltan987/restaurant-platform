@@ -1,7 +1,9 @@
 import "dotenv/config"
 import "reflect-metadata"
-import { z } from "zod"
+
 import { NestFactory } from "@nestjs/core"
+import { z } from "zod"
+
 import { AppModule } from "./app.module"
 
 async function bootstrap() {

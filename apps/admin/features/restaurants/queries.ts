@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
+
 import { fetchRestaurants } from "./api"
 
 export const restaurantsQueries = {

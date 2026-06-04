@@ -1,5 +1,6 @@
-import { PrismaClient } from "./generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
+
+import { PrismaClient } from "./generated/prisma/client"
 
 function createPrismaClient() {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
@@ -15,5 +16,5 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export type { PrismaClient }
-export * from "./generated/prisma/models"
 export * from "./generated/prisma/enums"
+export * from "./generated/prisma/models"

@@ -1,2 +1,2 @@
-export * from "./restaurant"
 export * from "./errors"
+export * from "./restaurant"

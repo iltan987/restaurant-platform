@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common"
+
 import {
-  createRestaurantSchema,
   type CreateRestaurantInput,
+  createRestaurantSchema,
 } from "@repo/schemas"
+
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { RestaurantsService } from "./restaurants.service"
 

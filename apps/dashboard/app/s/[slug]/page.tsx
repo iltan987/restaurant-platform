@@ -1,6 +1,8 @@
-import { notFound } from "next/navigation"
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query"
+import { notFound } from "next/navigation"
+
 import { getQueryClient } from "@repo/query/get-query-client"
+
 import { restaurantsQueries } from "@/features/restaurants/queries"
 
 export default async function TenantPage({

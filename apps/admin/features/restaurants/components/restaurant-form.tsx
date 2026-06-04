@@ -1,13 +1,14 @@
 "use client"
 
-import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
+
+import { ApiError } from "@repo/api-client"
 import { SLUG_MAX, SLUG_REGEX } from "@repo/core"
+import { getErrorMessage } from "@repo/i18n"
 import { createRestaurantSchema, ErrorCode } from "@repo/schemas"
 import { Button } from "@repo/ui/components/ui/button"
-import { Input } from "@repo/ui/components/ui/input"
-import { Spinner } from "@repo/ui/components/ui/spinner"
 import {
   Field,
   FieldDescription,
@@ -15,8 +16,9 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@repo/ui/components/ui/field"
-import { ApiError } from "@repo/api-client"
-import { getErrorMessage } from "@repo/i18n"
+import { Input } from "@repo/ui/components/ui/input"
+import { Spinner } from "@repo/ui/components/ui/spinner"
+
 import { useCreateRestaurant } from "../use-create-restaurant"
 
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL

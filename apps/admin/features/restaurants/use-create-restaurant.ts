@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { slugify } from "@repo/core"
+
 import { ApiError } from "@repo/api-client"
+import { slugify } from "@repo/core"
 import { getErrorMessage } from "@repo/i18n"
 import { type Restaurant } from "@repo/schemas"
+
 import { createRestaurant } from "./api"
 
 export function useCreateRestaurant() {

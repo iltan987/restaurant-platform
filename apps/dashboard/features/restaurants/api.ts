@@ -1,5 +1,5 @@
-import { type Restaurant, restaurantSchema } from "@repo/schemas"
 import { ApiError, apiFetch } from "@repo/api-client"
+import { type Restaurant, restaurantSchema } from "@repo/schemas"
 
 const API = process.env.NEXT_PUBLIC_API_URL
 if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set")

@@ -32,8 +32,8 @@ not add application source.
 
 **Purpose**: Install the new dev dependencies (CLI-driven; do not hand-edit `package.json`).
 
-- [ ] T001 Install commit-runner deps at the workspace root: run `pnpm add -D -w husky lint-staged` (adds to root `package.json` devDependencies)
-- [ ] T002 Install lint-rule plugins into the shared config package: run `pnpm add -D --filter @repo/eslint-config eslint-plugin-simple-import-sort eslint-plugin-unused-imports` (adds to `packages/eslint-config/package.json` devDependencies)
+- [x] T001 Install commit-runner deps at the workspace root: run `pnpm add -D -w husky lint-staged` (adds to root `package.json` devDependencies)
+- [x] T002 Install lint-rule plugins into the shared config package: run `pnpm add -D --filter @repo/eslint-config eslint-plugin-simple-import-sort eslint-plugin-unused-imports` (adds to `packages/eslint-config/package.json` devDependencies)
 
 > Note: T001 and T002 are NOT parallel — both mutate `pnpm-lock.yaml`; run sequentially.
 
@@ -46,7 +46,7 @@ commit-time processing runs, so generated/build output is never touched (FR-009)
 
 **⚠️ CRITICAL**: Complete before the US1 normalization sweep and the US2 pipeline run.
 
-- [ ] T003 Extend `.prettierignore` (repo root) with `**/src/generated/**`, `**/dist/**`, and `**/.next/**` (keep existing `.turbo/` and `pnpm-lock.yaml` entries)
+- [x] T003 Extend `.prettierignore` (repo root) with `**/src/generated/**`, `**/dist/**`, and `**/.next/**` (keep existing `.turbo/` and `pnpm-lock.yaml` entries)
 
 **Checkpoint**: Generated/build paths are protected — story work can begin.
 
@@ -63,10 +63,10 @@ canonical order and the unused import is gone; re-running is a no-op (quickstart
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Add `eslint-plugin-simple-import-sort` to `packages/eslint-config/base.js`: import the plugin, register it under `plugins`, and add `"simple-import-sort/imports": ["error", { groups: [...] }]` + `"simple-import-sort/exports": "error"`, using the exact 6-tier `groups` array from `contracts/import-ordering-policy.md`
-- [ ] T005 [US1] Add `eslint-plugin-unused-imports` to `packages/eslint-config/base.js` (same file, after T004): register the plugin, set `"@typescript-eslint/no-unused-vars": "off"`, `"unused-imports/no-unused-imports": "error"`, and `"unused-imports/no-unused-vars": ["warn", { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }]` (recipe from `research.md` Decision 1)
-- [ ] T006 [US1] Run the one-time repo-wide normalization sweep: `pnpm exec eslint . --fix --flag v10_config_lookup_from_file` (this applies the new rules across all 11 workspaces; expect a large mechanical, behavior-preserving diff)
-- [ ] T007 [US1] Verify US1: `pnpm lint` passes clean repo-wide; re-running `pnpm exec eslint . --fix --flag v10_config_lookup_from_file` produces zero changes (SC-001); confirm no unused imports remain (SC-002); confirm side-effect imports were not reordered (FR-012)
+- [x] T004 [US1] Add `eslint-plugin-simple-import-sort` to `packages/eslint-config/base.js`: import the plugin, register it under `plugins`, and add `"simple-import-sort/imports": ["error", { groups: [...] }]` + `"simple-import-sort/exports": "error"`, using the exact 6-tier `groups` array from `contracts/import-ordering-policy.md`
+- [x] T005 [US1] Add `eslint-plugin-unused-imports` to `packages/eslint-config/base.js` (same file, after T004): register the plugin, set `"@typescript-eslint/no-unused-vars": "off"`, `"unused-imports/no-unused-imports": "error"`, and `"unused-imports/no-unused-vars": ["warn", { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }]` (recipe from `research.md` Decision 1)
+- [x] T006 [US1] Run the one-time repo-wide normalization sweep: `pnpm exec eslint . --fix --flag v10_config_lookup_from_file` (this applies the new rules across all 11 workspaces; expect a large mechanical, behavior-preserving diff)
+- [x] T007 [US1] Verify US1: `pnpm lint` passes clean repo-wide; re-running `pnpm exec eslint . --fix --flag v10_config_lookup_from_file` produces zero changes (SC-001); confirm no unused imports remain (SC-002); confirm side-effect imports were not reordered (FR-012)
 
 **Checkpoint**: Rules live in the shared config, the repo is normalized, and `turbo lint`
 is green — US1 is independently shippable (the rules also auto-apply in CI from here).
@@ -84,10 +84,10 @@ is formatted, only staged files were touched, and overhead is ≲ ~2s for a smal
 
 ### Implementation for User Story 2
 
-- [ ] T008 [P] [US2] Create root `.lintstagedrc.mjs` with the glob→command map from `contracts/commit-pipeline.md`: `*.{ts,tsx,mts,cts}` → `["eslint --fix --no-warn-ignored --flag v10_config_lookup_from_file", "prettier --write"]`; `*.{js,jsx,mjs,cjs,json,md,css,yaml,yml}` → `"prettier --write"`
-- [ ] T009 [US2] Initialize husky: run `pnpm exec husky init` (adds `"prepare": "husky"` to root `package.json` and creates the `.husky/` directory + a sample `pre-commit`)
-- [ ] T010 [US2] Replace the contents of `.husky/pre-commit` (created by T009) with `pnpm exec lint-staged`
-- [ ] T011 [US2] Verify US2: stage a file with a format/lint-fixable deviation and commit → committed file conforms to Prettier config, unstaged files untouched, overhead ≲ ~2s (SC-003); introduce a non-fixable error and confirm the commit is blocked with file+rule reported (FR-006); confirm a generated file commits without reformatting or an "ignored" warning (Scenario D / FR-009)
+- [x] T008 [P] [US2] Create root `.lintstagedrc.mjs` with the glob→command map from `contracts/commit-pipeline.md`: `*.{ts,tsx,mts,cts}` → `["eslint --fix --no-warn-ignored --flag v10_config_lookup_from_file", "prettier --write"]`; `*.{js,jsx,mjs,cjs,json,md,css,yaml,yml}` → `"prettier --write"`
+- [x] T009 [US2] Initialize husky: run `pnpm exec husky init` (adds `"prepare": "husky"` to root `package.json` and creates the `.husky/` directory + a sample `pre-commit`)
+- [x] T010 [US2] Replace the contents of `.husky/pre-commit` (created by T009) with `pnpm exec lint-staged`
+- [x] T011 [US2] Verify US2: stage a file with a format/lint-fixable deviation and commit → committed file conforms to Prettier config, unstaged files untouched, overhead ≲ ~2s (SC-003); introduce a non-fixable error and confirm the commit is blocked with file+rule reported (FR-006); confirm a generated file commits without reformatting or an "ignored" warning (Scenario D / FR-009)
 
 **Checkpoint**: Commit-time auto-fix + format works on staged files only — US2 functional
 independently of US1's specific rules (the pipeline runs regardless of which ESLint rules
@@ -108,9 +108,9 @@ extra steps (Scenario F); `git commit --no-verify` bypasses (Scenario E); `pnpm 
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Document the feature in `CLAUDE.md` under "Conventions & gotchas": the canonical import-group order, that ESLint auto-sorts + removes unused imports on commit via husky + lint-staged, and the `git commit --no-verify` bypass (FR-008 / FR-013)
-- [ ] T013 [US3] Validate zero-setup activation: in a fresh clone (or after removing `.husky` and re-running `pnpm install`), confirm `.husky/pre-commit` is present and a messy-import commit is auto-fixed without any step beyond `pnpm install` (SC-004 / FR-007)
-- [ ] T014 [US3] Validate enforcement parity + bypass: confirm `git commit --no-verify` skips the checks (FR-008), and that `pnpm lint` + `pnpm format` pass clean and would catch a bypassed unformatted change (FR-010 / SC-006)
+- [x] T012 [US3] Document the feature in `CLAUDE.md` under "Conventions & gotchas": the canonical import-group order, that ESLint auto-sorts + removes unused imports on commit via husky + lint-staged, and the `git commit --no-verify` bypass (FR-008 / FR-013)
+- [x] T013 [US3] Validate zero-setup activation: in a fresh clone (or after removing `.husky` and re-running `pnpm install`), confirm `.husky/pre-commit` is present and a messy-import commit is auto-fixed without any step beyond `pnpm install` (SC-004 / FR-007)
+- [x] T014 [US3] Validate enforcement parity + bypass: confirm `git commit --no-verify` skips the checks (FR-008), and that `pnpm lint` + `pnpm format` pass clean and would catch a bypassed unformatted change (FR-010 / SC-006)
 
 **Checkpoint**: All three stories functional; rules enforced locally and in CI with a
 documented escape hatch.
@@ -121,8 +121,8 @@ documented escape hatch.
 
 **Purpose**: Final end-to-end validation and gate confirmation.
 
-- [ ] T015 Run the full `quickstart.md` validation (Scenarios A–G) end-to-end and confirm each expected outcome
-- [ ] T016 Confirm the workflow quality gates pass: `pnpm lint`, `pnpm typecheck`, and `pnpm format` all clean (constitution Development Workflow gate)
+- [x] T015 Run the full `quickstart.md` validation (Scenarios A–G) end-to-end and confirm each expected outcome
+- [x] T016 Confirm the workflow quality gates pass: `pnpm lint`, `pnpm typecheck`, and `pnpm format` all clean (constitution Development Workflow gate)
 
 ---
 
