@@ -88,3 +88,10 @@ Each Next app sets its Zod locale **once on the client** via a `ZodInit` compone
 - **PrismaService** (`apps/api/src/prisma/prisma.service.ts`) wraps the `@repo/db` singleton and re-exposes model delegates directly (`this.prisma.restaurant`). Add a delegate field per new model.
 - **Env files:** each app has its own `.env` / `.env.local` (see `.env.example` in each). Frontend needs `NEXT_PUBLIC_API_URL`; dashboard needs `NEXT_PUBLIC_ROOT_DOMAIN`; admin needs `NEXT_PUBLIC_DASHBOARD_URL`; api needs `DATABASE_URL`, `ADMIN_URL`, `DASHBOARD_URL` (the latter two derive CORS origins, including tenant subdomains).
 - **SpecKit:** this repo uses SpecKit (`.specify/`, speckit-* skills). Spec/plan/task artifacts drive feature work; the block at the top of this file is SpecKit-managed — leave it intact.
+
+## Project memory
+
+Persistent memories live **in the repo** under `.claude/memory/` (never user/global scope). The harness auto-memory feature points there via `autoMemoryDirectory` in the gitignored `.claude/settings.local.json`, so `.claude/memory/MEMORY.md` (the index) loads automatically each session. Save new facts there — one file per fact, with frontmatter — and add a pointer line to `MEMORY.md`. Current memories:
+
+- `.claude/memory/no-coauthor-trailer.md` — omit the `Co-Authored-By` trailer from commit messages.
+- `.claude/memory/qr-menu-longterm-plan.md` — long-term roadmap + confirmed product/architecture decisions (customer identity, payments, real-time, phasing).
