@@ -3,3 +3,13 @@
 
 # Lock file — reformatting breaks pnpm's hash validation
 pnpm-lock.yaml
+
+# Generated & build output — never reformat
+**/src/generated/**
+**/dist/**
+**/.next/**
+
+# Agent-managed / vendored trees — kept intact (not auto-formatted)
+.specify/
+.claude/
+.agents/
