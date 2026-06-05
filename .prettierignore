@@ -13,3 +13,9 @@ pnpm-lock.yaml
 .specify/
 .claude/
 .agents/
+
+# SpecKit feature artifacts (spec/plan/tasks/research/etc.) — authored, not auto-formatted
+specs/
+
+# Agent guidance doc — authored, not auto-formatted
+CLAUDE.md
