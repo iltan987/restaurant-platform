@@ -61,15 +61,15 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T012 [P] [US1] Unit spec `apps/api/src/restaurants/restaurants.service.spec.ts`: `create()` yields `status: INACTIVE` + `onboardingStatus: IN_PROGRESS` **and provisions a default floor + area in one transaction**; slug derivation; `SLUG_TAKEN` on P2002.
-- [ ] T013 [P] [US1] e2e `apps/api/test/restaurants.e2e-spec.ts`: `POST /restaurants` → 201 inactive (+ default floor/area queryable); duplicate slug → `SLUG_TAKEN`; `GET /restaurants` returns a `paginated(restaurantSchema)` envelope.
+- [X] T012 [P] [US1] Unit spec `apps/api/src/restaurants/restaurants.service.spec.ts`: `create()` yields `status: INACTIVE` + `onboardingStatus: IN_PROGRESS` **and provisions a default floor + area in one transaction**; slug derivation; `SLUG_TAKEN` on P2002.
+- [X] T013 [P] [US1] e2e `apps/api/test/restaurants.e2e-spec.ts`: `POST /restaurants` → 201 inactive (+ default floor/area queryable); duplicate slug → `SLUG_TAKEN`; `GET /restaurants` returns a `paginated(restaurantSchema)` envelope.
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Update `RestaurantsService.create` in `apps/api/src/restaurants/restaurants.service.ts` to create the restaurant + default floor ("Zemin Kat") + default area ("Genel") in a `$transaction`; relies on the DB default for `INACTIVE`; returns `onboardingStatus`.
-- [ ] T015 [US1] Paginate `RestaurantsService.findAll` + controller `GET /restaurants` in `apps/api/src/restaurants/` to accept `paginationQuerySchema` (pageSize 20) and return the `paginated()` envelope.
+- [X] T014 [US1] Update `RestaurantsService.create` in `apps/api/src/restaurants/restaurants.service.ts` to create the restaurant + default floor ("Zemin Kat") + default area ("Genel") in a `$transaction`; relies on the DB default for `INACTIVE`; returns `onboardingStatus`.
+- [X] T015 [US1] Paginate `RestaurantsService.findAll` + controller `GET /restaurants` in `apps/api/src/restaurants/` to accept `paginationQuerySchema` (pageSize 20) and return the `paginated()` envelope.
 - [X] T016 [P] [US1] Update the optimistic create in `apps/admin/features/restaurants/use-create-restaurant.ts` to seed `status: "INACTIVE"` + `onboardingStatus: "IN_PROGRESS"`.
-- [ ] T017 [US1] Update `apps/admin/features/restaurants/{api.ts,queries.ts}` for the paginated list (page param + envelope) and render a status badge + a `Pager` (shown only when `total > pageSize`) in `apps/admin/features/restaurants/components/`.
+- [X] T017 [US1] Update `apps/admin/features/restaurants/{api.ts,queries.ts}` for the paginated list (page param + envelope) and render a status badge + a `Pager` (shown only when `total > pageSize`) in `apps/admin/features/restaurants/components/`.
 
 **Checkpoint**: Admin registers restaurants (inactive, with defaults) in a paginated list — independently demoable.
 

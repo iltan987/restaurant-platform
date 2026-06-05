@@ -25,8 +25,19 @@ export class RestaurantsService {
     const slug = await this.ensureUniqueSlug(base)
 
     try {
-      return await this.prisma.restaurant.create({
-        data: { name: input.name, slug },
+      // Create the restaurant (INACTIVE / IN_PROGRESS via DB defaults) together
+      // with its default floor + area so onboarding always starts non-empty.
+      return await this.prisma.$transaction(async (tx) => {
+        const restaurant = await tx.restaurant.create({
+          data: { name: input.name, slug },
+        })
+        const floor = await tx.floor.create({
+          data: { restaurantId: restaurant.id, name: "Zemin Kat" },
+        })
+        await tx.area.create({
+          data: { floorId: floor.id, name: "Genel" },
+        })
+        return restaurant
       })
     } catch (err: unknown) {
       // P2002 — unique constraint violation (race between check and insert)
@@ -40,10 +51,16 @@ export class RestaurantsService {
     }
   }
 
-  async findAll() {
-    return this.prisma.restaurant.findMany({
-      orderBy: { createdAt: "desc" },
-    })
+  async findAll(page = 1, pageSize = 20) {
+    const [items, total] = await Promise.all([
+      this.prisma.restaurant.findMany({
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.restaurant.count(),
+    ])
+    return { items, total, page, pageSize }
   }
 
   async findBySlug(slug: string) {

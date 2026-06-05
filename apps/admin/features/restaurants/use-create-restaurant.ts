@@ -8,7 +8,9 @@ import { slugify } from "@repo/core"
 import { getErrorMessage } from "@repo/i18n"
 import { type Restaurant } from "@repo/schemas"
 
-import { createRestaurant } from "./api"
+import { createRestaurant, type RestaurantPage } from "./api"
+
+const FIRST_PAGE_KEY = ["restaurants", 1] as const
 
 export function useCreateRestaurant() {
   const queryClient = useQueryClient()
@@ -17,7 +19,7 @@ export function useCreateRestaurant() {
     mutationFn: createRestaurant,
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: ["restaurants"] })
-      const previous = queryClient.getQueryData<Restaurant[]>(["restaurants"])
+      const previous = queryClient.getQueryData<RestaurantPage>(FIRST_PAGE_KEY)
 
       const optimistic: Restaurant = {
         id: `__optimistic__${Date.now()}`,
@@ -28,17 +30,18 @@ export function useCreateRestaurant() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
-      queryClient.setQueryData<Restaurant[]>(["restaurants"], (old) => [
-        optimistic,
-        ...(old ?? []),
-      ])
+      queryClient.setQueryData<RestaurantPage>(FIRST_PAGE_KEY, (old) =>
+        old
+          ? { ...old, items: [optimistic, ...old.items], total: old.total + 1 }
+          : { items: [optimistic], total: 1, page: 1, pageSize: 20 }
+      )
       return { previous }
     },
     onSuccess: () => {
       toast.success("Restoran eklendi.")
     },
     onError: (err, _input, context) => {
-      queryClient.setQueryData(["restaurants"], context?.previous)
+      queryClient.setQueryData(FIRST_PAGE_KEY, context?.previous)
       toast.error(
         err instanceof ApiError
           ? getErrorMessage(err.code)

@@ -1,6 +1,7 @@
 import { apiFetch } from "@repo/api-client"
 import {
   type CreateRestaurantInput,
+  paginated,
   type Restaurant,
   restaurantSchema,
 } from "@repo/schemas"
@@ -8,8 +9,17 @@ import {
 const API = process.env.NEXT_PUBLIC_API_URL
 if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set")
 
-export function fetchRestaurants(): Promise<Restaurant[]> {
-  return apiFetch(`${API}/restaurants`, restaurantSchema.array(), {
+const restaurantPageSchema = paginated(restaurantSchema)
+
+export type RestaurantPage = {
+  items: Restaurant[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export function fetchRestaurants(page = 1): Promise<RestaurantPage> {
+  return apiFetch(`${API}/restaurants?page=${page}`, restaurantPageSchema, {
     cache: "no-store",
   })
 }

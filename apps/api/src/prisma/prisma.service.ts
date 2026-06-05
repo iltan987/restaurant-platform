@@ -16,6 +16,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly area = prisma.area
   readonly table = prisma.table
 
+  /** Interactive transaction — bound so services can group writes atomically. */
+  readonly $transaction = prisma.$transaction.bind(prisma)
+
   async onModuleInit() {
     await prisma.$connect()
   }
