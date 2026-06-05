@@ -28,8 +28,8 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 **Purpose**: Add the dependencies the feature needs (CLI-first; pin shared versions in the workspace catalog).
 
-- [ ] T001 [P] Add QR + canvas deps to the dashboard via `pnpm --filter dashboard add qrcode.react @dnd-kit/core @dnd-kit/utilities`, then move the versions to `pnpm-workspace.yaml` `catalog:` and reference them as `"catalog:"` in `apps/dashboard/package.json`. Also add `NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN` to `apps/dashboard/.env.example` (+ local `.env`) — the QR target origin. (`qrcode.react@4.2.0` is self-typed — no `@types/*`; `@dnd-kit/accessibility` is a transitive dep of core — do not install it. Free-xy uses `useDraggable`, not `@dnd-kit/sortable`.)
-- [ ] T002 [P] Add the shared contract deps to the customer app via `pnpm --filter customer add @repo/api-client @repo/query @repo/schemas zod` (catalog refs); confirm `apps/customer/package.json` mirrors the other Next apps' data-fetching stack.
+- [X] T001 [P] Add QR + canvas deps to the dashboard via `pnpm --filter dashboard add qrcode.react @dnd-kit/core @dnd-kit/utilities`, then move the versions to `pnpm-workspace.yaml` `catalog:` and reference them as `"catalog:"` in `apps/dashboard/package.json`. Also add `NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN` to `apps/dashboard/.env.example` (+ local `.env`) — the QR target origin. (`qrcode.react@4.2.0` is self-typed — no `@types/*`; `@dnd-kit/accessibility` is a transitive dep of core — do not install it. Free-xy uses `useDraggable`, not `@dnd-kit/sortable`.)
+- [X] T002 [P] Add the shared contract deps to the customer app via `pnpm --filter customer add @repo/api-client @repo/query @repo/schemas zod` (catalog refs); confirm `apps/customer/package.json` mirrors the other Next apps' data-fetching stack.
 
 ---
 
