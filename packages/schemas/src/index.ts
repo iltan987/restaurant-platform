@@ -1,2 +1,6 @@
+export * from "./area"
 export * from "./errors"
+export * from "./floor"
+export * from "./pagination"
 export * from "./restaurant"
+export * from "./table"

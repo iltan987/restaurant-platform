@@ -39,15 +39,15 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 **⚠️ CRITICAL**: No user-story work can begin until this phase is complete.
 
-- [ ] T003 Update the Prisma schema in `packages/db/prisma/schema.prisma`: add `enum OnboardingStatus { IN_PROGRESS COMPLETED SKIPPED }`; add `Restaurant.onboardingStatus @default(IN_PROGRESS)`; **flip `Restaurant.status` default `ACTIVE`→`INACTIVE`**; add `Floor` (`restaurantId` FK Cascade, `name`, `position`, `@@unique([restaurantId, name])`, `@@index([restaurantId])`), `Area` (`floorId` FK Cascade, `name`, `position`, `@@unique([floorId, name])`, `@@index([floorId])`), and `Table` (`areaId` FK Cascade, `label`, `capacity Int?`, `positionX Float?`, `positionY Float?`, `@@index([areaId])`) with the `Restaurant→Floor→Area→Table` relations. (No `@@unique` on table label — enforced per-restaurant in the service.)
-- [ ] T004 Create the migration and regenerate the client: `pnpm --filter @repo/db db:migrate` then `pnpm --filter @repo/db db:generate`. Depends on T003.
-- [ ] T005 Add `readonly floor = prisma.floor`, `readonly area = prisma.area`, `readonly table = prisma.table` to `apps/api/src/prisma/prisma.service.ts`. Depends on T004.
-- [ ] T006 [P] Add the new `ErrorCode`s in `packages/schemas/src/errors.ts`: `TABLE_LABEL_TAKEN`, `TABLE_NOT_FOUND`, `GO_LIVE_REQUIRES_TABLE`, `FLOOR_NAME_TAKEN`, `AREA_NAME_TAKEN`, `FLOOR_NOT_FOUND`, `AREA_NOT_FOUND`, `FLOOR_NOT_EMPTY`, `AREA_NOT_EMPTY`.
-- [ ] T007 [P] Add the Turkish messages for all nine new codes in `packages/i18n/src/error-messages.ts` (strings per [contracts/api.md](./contracts/api.md) i18n section).
-- [ ] T008 [P] Create `packages/schemas/src/pagination.ts`: `paginationQuerySchema` (`page`≥1 default 1, `pageSize` 1..500) and a `paginated(itemSchema)` envelope helper (`{ items, total, page, pageSize }`); export from `index.ts`.
-- [ ] T009 [P] Extend `packages/schemas/src/restaurant.ts`: add `onboardingStatus` to `restaurantSchema`; add `updateRestaurantSchema`, `restaurantStatusSchema`, `onboardingStatusSchema`.
-- [ ] T010 [P] Create `packages/schemas/src/floor.ts` (`floorSchema`, `createFloorSchema`, `updateFloorSchema`) and `packages/schemas/src/area.ts` (`areaSchema`, `createAreaSchema`, `updateAreaSchema`); export from `index.ts`.
-- [ ] T011 [P] Create `packages/schemas/src/table.ts` (`tableSchema` with `areaId`/`positionX`/`positionY`, `createTableSchema`, `updateTableSchema` incl. `areaId`/position, `createTablesBulkSchema`, `floorLayoutSchema`); export from `index.ts`.
+- [X] T003 Update the Prisma schema in `packages/db/prisma/schema.prisma`: add `enum OnboardingStatus { IN_PROGRESS COMPLETED SKIPPED }`; add `Restaurant.onboardingStatus @default(IN_PROGRESS)`; **flip `Restaurant.status` default `ACTIVE`→`INACTIVE`**; add `Floor` (`restaurantId` FK Cascade, `name`, `position`, `@@unique([restaurantId, name])`, `@@index([restaurantId])`), `Area` (`floorId` FK Cascade, `name`, `position`, `@@unique([floorId, name])`, `@@index([floorId])`), and `Table` (`areaId` FK Cascade, `label`, `capacity Int?`, `positionX Float?`, `positionY Float?`, `@@index([areaId])`) with the `Restaurant→Floor→Area→Table` relations. (No `@@unique` on table label — enforced per-restaurant in the service.)
+- [X] T004 Create the migration and regenerate the client: `pnpm --filter @repo/db db:migrate` then `pnpm --filter @repo/db db:generate`. Depends on T003.
+- [X] T005 Add `readonly floor = prisma.floor`, `readonly area = prisma.area`, `readonly table = prisma.table` to `apps/api/src/prisma/prisma.service.ts`. Depends on T004.
+- [X] T006 [P] Add the new `ErrorCode`s in `packages/schemas/src/errors.ts`: `TABLE_LABEL_TAKEN`, `TABLE_NOT_FOUND`, `GO_LIVE_REQUIRES_TABLE`, `FLOOR_NAME_TAKEN`, `AREA_NAME_TAKEN`, `FLOOR_NOT_FOUND`, `AREA_NOT_FOUND`, `FLOOR_NOT_EMPTY`, `AREA_NOT_EMPTY`.
+- [X] T007 [P] Add the Turkish messages for all nine new codes in `packages/i18n/src/error-messages.ts` (strings per [contracts/api.md](./contracts/api.md) i18n section).
+- [X] T008 [P] Create `packages/schemas/src/pagination.ts`: `paginationQuerySchema` (`page`≥1 default 1, `pageSize` 1..500) and a `paginated(itemSchema)` envelope helper (`{ items, total, page, pageSize }`); export from `index.ts`.
+- [X] T009 [P] Extend `packages/schemas/src/restaurant.ts`: add `onboardingStatus` to `restaurantSchema`; add `updateRestaurantSchema`, `restaurantStatusSchema`, `onboardingStatusSchema`.
+- [X] T010 [P] Create `packages/schemas/src/floor.ts` (`floorSchema`, `createFloorSchema`, `updateFloorSchema`) and `packages/schemas/src/area.ts` (`areaSchema`, `createAreaSchema`, `updateAreaSchema`); export from `index.ts`.
+- [X] T011 [P] Create `packages/schemas/src/table.ts` (`tableSchema` with `areaId`/`positionX`/`positionY`, `createTableSchema`, `updateTableSchema` incl. `areaId`/position, `createTablesBulkSchema`, `floorLayoutSchema`); export from `index.ts`.
 
 **Checkpoint**: Schema migrated, shared contract + pagination envelope in place — user stories can begin.
 
@@ -68,7 +68,7 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 - [ ] T014 [US1] Update `RestaurantsService.create` in `apps/api/src/restaurants/restaurants.service.ts` to create the restaurant + default floor ("Zemin Kat") + default area ("Genel") in a `$transaction`; relies on the DB default for `INACTIVE`; returns `onboardingStatus`.
 - [ ] T015 [US1] Paginate `RestaurantsService.findAll` + controller `GET /restaurants` in `apps/api/src/restaurants/` to accept `paginationQuerySchema` (pageSize 20) and return the `paginated()` envelope.
-- [ ] T016 [P] [US1] Update the optimistic create in `apps/admin/features/restaurants/use-create-restaurant.ts` to seed `status: "INACTIVE"` + `onboardingStatus: "IN_PROGRESS"`.
+- [X] T016 [P] [US1] Update the optimistic create in `apps/admin/features/restaurants/use-create-restaurant.ts` to seed `status: "INACTIVE"` + `onboardingStatus: "IN_PROGRESS"`.
 - [ ] T017 [US1] Update `apps/admin/features/restaurants/{api.ts,queries.ts}` for the paginated list (page param + envelope) and render a status badge + a `Pager` (shown only when `total > pageSize`) in `apps/admin/features/restaurants/components/`.
 
 **Checkpoint**: Admin registers restaurants (inactive, with defaults) in a paginated list — independently demoable.

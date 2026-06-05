@@ -19,6 +19,15 @@ export const ErrorCode = {
   // ── Domain-specific (thrown explicitly by services) ────────────────────
   SLUG_TAKEN: "SLUG_TAKEN",
   RESTAURANT_NOT_FOUND: "RESTAURANT_NOT_FOUND",
+  GO_LIVE_REQUIRES_TABLE: "GO_LIVE_REQUIRES_TABLE",
+  FLOOR_NAME_TAKEN: "FLOOR_NAME_TAKEN",
+  FLOOR_NOT_FOUND: "FLOOR_NOT_FOUND",
+  FLOOR_NOT_EMPTY: "FLOOR_NOT_EMPTY",
+  AREA_NAME_TAKEN: "AREA_NAME_TAKEN",
+  AREA_NOT_FOUND: "AREA_NOT_FOUND",
+  AREA_NOT_EMPTY: "AREA_NOT_EMPTY",
+  TABLE_LABEL_TAKEN: "TABLE_LABEL_TAKEN",
+  TABLE_NOT_FOUND: "TABLE_NOT_FOUND",
 } as const
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]

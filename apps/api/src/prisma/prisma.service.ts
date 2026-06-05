@@ -12,6 +12,9 @@ import { prisma } from "@repo/db"
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly restaurant = prisma.restaurant
+  readonly floor = prisma.floor
+  readonly area = prisma.area
+  readonly table = prisma.table
 
   async onModuleInit() {
     await prisma.$connect()

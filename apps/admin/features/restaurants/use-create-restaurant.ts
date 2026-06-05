@@ -23,7 +23,8 @@ export function useCreateRestaurant() {
         id: `__optimistic__${Date.now()}`,
         name: input.name,
         slug: input.slug ?? slugify(input.name),
-        status: "ACTIVE",
+        status: "INACTIVE",
+        onboardingStatus: "IN_PROGRESS",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
