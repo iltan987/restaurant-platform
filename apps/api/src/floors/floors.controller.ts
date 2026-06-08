@@ -7,12 +7,15 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from "@nestjs/common"
 
 import {
   type CreateFloorInput,
   createFloorSchema,
+  type FloorLayoutInput,
+  floorLayoutSchema,
   type PaginationQuery,
   paginationQuerySchema,
   type UpdateFloorInput,
@@ -54,6 +57,14 @@ export class FloorsController {
     @Body(new ZodValidationPipe(updateFloorSchema)) input: UpdateFloorInput
   ) {
     return this.floors.update(id, input)
+  }
+
+  @Put("floors/:id/layout")
+  saveLayout(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(floorLayoutSchema)) input: FloorLayoutInput
+  ) {
+    return this.floors.saveLayout(id, input)
   }
 
   @Delete("floors/:id")

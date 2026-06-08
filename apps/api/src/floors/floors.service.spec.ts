@@ -22,6 +22,8 @@ describe("FloorsService", () => {
       delete: jest.Mock
     }
     area: { count: jest.Mock }
+    table: { findMany: jest.Mock; update: jest.Mock }
+    $transaction: jest.Mock
   }
 
   beforeEach(async () => {
@@ -36,6 +38,15 @@ describe("FloorsService", () => {
         delete: jest.fn().mockResolvedValue({ id: "f1" }),
       },
       area: { count: jest.fn().mockResolvedValue(0) },
+      table: {
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest
+          .fn()
+          .mockImplementation(({ where, data }) =>
+            Promise.resolve({ id: where.id, ...data })
+          ),
+      },
+      $transaction: jest.fn().mockImplementation((cb) => cb(prismaMock)),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -105,6 +116,49 @@ describe("FloorsService", () => {
       expect(prismaMock.floor.delete).toHaveBeenCalledWith({
         where: { id: "f1" },
       })
+    })
+  })
+
+  describe("saveLayout", () => {
+    const layout = {
+      positions: [
+        { tableId: "t1", x: 0.25, y: 0.5 },
+        { tableId: "t2", x: 0.75, y: 0.1 },
+      ],
+    }
+
+    it("batch-saves normalized positions for the floor's tables", async () => {
+      prismaMock.table.findMany.mockResolvedValue([{ id: "t1" }, { id: "t2" }])
+      const result = await service.saveLayout("f1", layout)
+      expect(prismaMock.table.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ["t1", "t2"] }, area: { floorId: "f1" } },
+        select: { id: true },
+      })
+      expect(prismaMock.$transaction).toHaveBeenCalled()
+      expect(prismaMock.table.update).toHaveBeenCalledWith({
+        where: { id: "t1" },
+        data: { positionX: 0.25, positionY: 0.5 },
+      })
+      expect(result).toEqual([
+        { id: "t1", positionX: 0.25, positionY: 0.5 },
+        { id: "t2", positionX: 0.75, positionY: 0.1 },
+      ])
+    })
+
+    it("throws FLOOR_NOT_FOUND when the floor is missing", async () => {
+      prismaMock.floor.findUnique.mockResolvedValue(null)
+      const err = await service.saveLayout("nope", layout).catch((e) => e)
+      expect(err).toBeInstanceOf(NotFoundException)
+      expect(responseOf(err)).toMatchObject({ code: ErrorCode.FLOOR_NOT_FOUND })
+      expect(prismaMock.$transaction).not.toHaveBeenCalled()
+    })
+
+    it("throws TABLE_NOT_FOUND when a position targets a table off this floor", async () => {
+      prismaMock.table.findMany.mockResolvedValue([{ id: "t1" }])
+      const err = await service.saveLayout("f1", layout).catch((e) => e)
+      expect(err).toBeInstanceOf(NotFoundException)
+      expect(responseOf(err)).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
+      expect(prismaMock.$transaction).not.toHaveBeenCalled()
     })
   })
 

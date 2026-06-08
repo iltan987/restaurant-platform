@@ -85,6 +85,54 @@ describe("Floors (e2e)", () => {
     await request(http()).delete(`/api/floors/${created.body.id}`).expect(204)
   })
 
+  it("saves a floor's canvas layout and persists normalized positions", async () => {
+    await createRestaurant("Kose")
+    const floorId = fakePrisma.__stores.floors[0]!.id
+    const areaId = fakePrisma.__stores.areas[0]!.id
+    const t1 = (
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "1" })
+    ).body
+    const t2 = (
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "2" })
+    ).body
+
+    const res = await request(http())
+      .put(`/api/floors/${floorId}/layout`)
+      .send({
+        positions: [
+          { tableId: t1.id, x: 0.2, y: 0.4 },
+          { tableId: t2.id, x: 0.8, y: 0.6 },
+        ],
+      })
+      .expect(200)
+
+    expect(res.body).toHaveLength(2)
+    const saved = fakePrisma.__stores.tables.find((t) => t.id === t1.id)!
+    expect(saved).toMatchObject({ positionX: 0.2, positionY: 0.4 })
+  })
+
+  it("returns FLOOR_NOT_FOUND saving layout for an unknown floor", async () => {
+    const res = await request(http())
+      .put("/api/floors/nope/layout")
+      .send({ positions: [] })
+      .expect(404)
+    expect(res.body).toMatchObject({ code: ErrorCode.FLOOR_NOT_FOUND })
+  })
+
+  it("returns TABLE_NOT_FOUND when a position targets a table off the floor", async () => {
+    await createRestaurant("Kose")
+    const floorId = fakePrisma.__stores.floors[0]!.id
+    const res = await request(http())
+      .put(`/api/floors/${floorId}/layout`)
+      .send({ positions: [{ tableId: "ghost1", x: 0.5, y: 0.5 }] })
+      .expect(404)
+    expect(res.body).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
+  })
+
   it("cascade-deletes a non-empty floor with ?cascade=true (areas + tables go)", async () => {
     const r = await createRestaurant("Kose")
     const defaultFloorId = fakePrisma.__stores.floors[0]!.id

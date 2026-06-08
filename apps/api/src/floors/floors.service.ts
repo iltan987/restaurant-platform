@@ -7,6 +7,7 @@ import {
 import {
   type CreateFloorInput,
   ErrorCode,
+  type FloorLayoutInput,
   type UpdateFloorInput,
 } from "@repo/schemas"
 
@@ -88,6 +89,43 @@ export class FloorsService {
       }
     }
     await this.prisma.floor.delete({ where: { id } })
+  }
+
+  /**
+   * Batch-saves the canvas layout for a floor's tables (FR-042) in one
+   * transaction. Positions are normalized `0..1`; every `tableId` must belong
+   * to this floor (a stray id is rejected as `TABLE_NOT_FOUND` rather than
+   * silently moving another floor's table). Returns the updated tables.
+   */
+  async saveLayout(floorId: string, input: FloorLayoutInput) {
+    await this.getFloorOrThrow(floorId)
+
+    const ids = input.positions.map((p) => p.tableId)
+    if (ids.length === 0) return []
+
+    const onFloor = await this.prisma.table.findMany({
+      where: { id: { in: ids }, area: { floorId } },
+      select: { id: true },
+    })
+    const known = new Set(onFloor.map((t) => t.id))
+    const stray = ids.find((id) => !known.has(id))
+    if (stray) {
+      throw new NotFoundException({
+        code: ErrorCode.TABLE_NOT_FOUND,
+        message: `Table with id "${stray}" is not on floor "${floorId}"`,
+      })
+    }
+
+    return this.prisma.$transaction((tx) =>
+      Promise.all(
+        input.positions.map((p) =>
+          tx.table.update({
+            where: { id: p.tableId },
+            data: { positionX: p.x, positionY: p.y },
+          })
+        )
+      )
+    )
   }
 
   private async getFloorOrThrow(id: string) {

@@ -379,13 +379,25 @@ const table = {
     skip,
     take,
   }: {
-    where: { area?: { floor?: { restaurantId?: string } } }
+    where: {
+      id?: { in?: string[] }
+      area?: { floorId?: string; floor?: { restaurantId?: string } }
+    }
     skip?: number
     take?: number
   }) {
     const rid = where.area?.floor?.restaurantId
+    const floorId = where.area?.floorId
+    const idIn = where.id?.in
+    const floorIdOf = (t: Table) =>
+      areas.find((a) => a.id === t.areaId)?.floorId
     const rows = tables
-      .filter((t) => rid === undefined || restaurantIdOfTable(t) === rid)
+      .filter(
+        (t) =>
+          (rid === undefined || restaurantIdOfTable(t) === rid) &&
+          (floorId === undefined || floorIdOf(t) === floorId) &&
+          (idIn === undefined || idIn.includes(t.id))
+      )
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     return Promise.resolve(paginate(rows, skip, take))
   },

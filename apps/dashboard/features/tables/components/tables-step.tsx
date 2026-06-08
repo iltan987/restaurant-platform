@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import {
   LayersIcon,
+  LayoutGridIcon,
   MinusIcon,
   PlusIcon,
   PrinterIcon,
@@ -353,6 +354,20 @@ export function TablesStep({
     </div>
   )
 
+  const planLink = tables.length > 0 && (
+    <Button
+      variant="outline"
+      size="sm"
+      nativeButton={false}
+      render={
+        <Link href="/plan">
+          <LayoutGridIcon className="size-4" />
+          Yerleşim planı
+        </Link>
+      }
+    />
+  )
+
   const printAll = tables.length > 0 && (
     <Button
       variant="outline"
@@ -372,7 +387,10 @@ export function TablesStep({
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold">Masalar</h2>
-          {printAll}
+          <div className="flex items-center gap-2">
+            {planLink}
+            {printAll}
+          </div>
         </div>
         {blocks}
       </section>
@@ -404,7 +422,12 @@ export function TablesStep({
           </div>
         ))}
       </div>
-      {printAll && <div className="flex justify-center">{printAll}</div>}
+      {(planLink || printAll) && (
+        <div className="flex justify-center gap-2">
+          {planLink}
+          {printAll}
+        </div>
+      )}
     </div>
   )
 }

@@ -153,14 +153,14 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ### Tests for User Story 7 ⚠️
 
-- [ ] T043 [P] [US7] Extend `apps/api/src/tables/tables.service.spec.ts` + e2e: `PUT /floors/:id/layout` saves normalized positions for the floor's tables (`floorLayoutSchema`), rejects unknown `tableId` (`TABLE_NOT_FOUND`) and unknown floor (`FLOOR_NOT_FOUND`).
+- [X] T043 [P] [US7] Extend `apps/api/src/tables/tables.service.spec.ts` + e2e: `PUT /floors/:id/layout` saves normalized positions for the floor's tables (`floorLayoutSchema`), rejects unknown `tableId` (`TABLE_NOT_FOUND`) and unknown floor (`FLOOR_NOT_FOUND`).
 
 ### Implementation for User Story 7
 
-- [ ] T044 [US7] Add `saveLayout` to `apps/api/src/floors/floors.service.ts` (batch-update `positionX/Y` for the floor's tables in a `$transaction`) and `PUT /floors/:id/layout` to `apps/api/src/floors/floors.controller.ts` (`ZodValidationPipe(floorLayoutSchema)`); also allow single-table `positionX/Y` in `PATCH /tables/:id`.
-- [ ] T045 [P] [US7] Dashboard `apps/dashboard/features/floors/api.ts` `saveFloorLayout(floorId, positions)` + `use-save-floor-layout.ts` (optimistic).
-- [ ] T046 [US7] Build `FloorPlanCanvas` in `apps/dashboard/features/floors/components/floor-plan-canvas.tsx` using `@dnd-kit`: absolutely-positioned, focusable table nodes grouped by area; pointer + keyboard drag with ARIA announcements; default grid layout for `null` positions; save normalized coords on drop. Add the canvas route/tab under `apps/dashboard/app/s/[slug]/`.
-- [ ] T047 [US7] Provide a non-canvas list fallback for all table actions and ensure the canvas surface meets the ≥44px / focus-visible / keyboard requirements (FR-035/FR-043/FR-044/FR-045).
+- [X] T044 [US7] Add `saveLayout` to `apps/api/src/floors/floors.service.ts` (batch-update `positionX/Y` for the floor's tables in a `$transaction`) and `PUT /floors/:id/layout` to `apps/api/src/floors/floors.controller.ts` (`ZodValidationPipe(floorLayoutSchema)`); also allow single-table `positionX/Y` in `PATCH /tables/:id`.
+- [X] T045 [P] [US7] Dashboard `apps/dashboard/features/floors/api.ts` `saveFloorLayout(floorId, positions)` + `use-save-floor-layout.ts` (optimistic).
+- [X] T046 [US7] Build `FloorPlanCanvas` in `apps/dashboard/features/floors/components/floor-plan-canvas.tsx` using `@dnd-kit`: absolutely-positioned, focusable table nodes grouped by area; pointer + keyboard drag with ARIA announcements; default grid layout for `null` positions; save normalized coords on drop. Add the canvas route/tab under `apps/dashboard/app/s/[slug]/`.
+- [X] T047 [US7] Provide a non-canvas list fallback for all table actions and ensure the canvas surface meets the ≥44px / focus-visible / keyboard requirements (FR-035/FR-043/FR-044/FR-045).
 
 **Checkpoint**: Staff can arrange floors visually and accessibly; positions persist; QR unaffected.
 

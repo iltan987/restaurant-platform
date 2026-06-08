@@ -2,8 +2,11 @@ import { apiFetch, apiSend } from "@repo/api-client"
 import {
   type CreateFloorInput,
   type Floor,
+  type FloorLayoutInput,
   floorSchema,
   paginated,
+  type Table,
+  tableSchema,
   type UpdateFloorInput,
 } from "@repo/schemas"
 
@@ -47,4 +50,18 @@ export function updateFloor(
 export function deleteFloor(id: string, cascade = false): Promise<void> {
   const qs = cascade ? "?cascade=true" : ""
   return apiSend(`${API}/floors/${id}${qs}`, { method: "DELETE" })
+}
+
+const tableListSchema = tableSchema.array()
+
+/** Batch-saves canvas positions (normalized 0..1) for a floor's tables. */
+export function saveFloorLayout(
+  floorId: string,
+  positions: FloorLayoutInput["positions"]
+): Promise<Table[]> {
+  return apiFetch(`${API}/floors/${floorId}/layout`, tableListSchema, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ positions }),
+  })
 }
