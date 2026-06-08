@@ -8,3 +8,4 @@ Memories for this project are checked into the repo here (`.claude/memory/`), no
 - [Verify with doc-search tools](verify-with-doc-search-tools.md) — check shadcn/better-auth/zod(inkeep)/context7 docs before using a library
 - [Work in phases + commit approval](work-in-phases-commit-approval.md) — stop after each phase, suggest commit message, get approval, then auto-commit
 - [Minimal diffs, no unrelated churn](minimal-diffs-no-unrelated-churn.md) — scope diffs to the task; never reformat unrelated files
+- [Single floor hides floor UI](single-floor-hides-floor-ui.md) — dashboard hides the floor concept entirely until a 2nd floor exists

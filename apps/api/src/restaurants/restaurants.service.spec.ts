@@ -34,13 +34,16 @@ describe("RestaurantsService", () => {
     findMany: jest.Mock
     findUnique: jest.Mock
     count: jest.Mock
+    update: jest.Mock
   }
   let mockFloor: { create: jest.Mock }
   let mockArea: { create: jest.Mock }
+  let mockTable: { count: jest.Mock }
   let prismaMock: {
     restaurant: typeof mockRestaurant
     floor: typeof mockFloor
     area: typeof mockArea
+    table: typeof mockTable
     $transaction: jest.Mock
   }
 
@@ -50,13 +53,18 @@ describe("RestaurantsService", () => {
       findMany: jest.fn().mockResolvedValue([]),
       findUnique: jest.fn().mockResolvedValue(null),
       count: jest.fn().mockResolvedValue(0),
+      update: jest
+        .fn()
+        .mockImplementation(({ data }) => Promise.resolve(makeRow(data))),
     }
     mockFloor = { create: jest.fn().mockResolvedValue({ id: "floor-1" }) }
     mockArea = { create: jest.fn().mockResolvedValue({ id: "area-1" }) }
+    mockTable = { count: jest.fn().mockResolvedValue(0) }
     prismaMock = {
       restaurant: mockRestaurant,
       floor: mockFloor,
       area: mockArea,
+      table: mockTable,
       // Interactive transaction — invoke the callback with the same delegates.
       $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
         cb({ restaurant: mockRestaurant, floor: mockFloor, area: mockArea })
@@ -193,6 +201,105 @@ describe("RestaurantsService", () => {
         .catch((e: unknown) => e)
 
       expect(err).toBeInstanceOf(NotFoundException)
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+    })
+  })
+
+  describe("setStatus", () => {
+    it("rejects going live with zero tables (GO_LIVE_REQUIRES_TABLE)", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+      mockTable.count.mockResolvedValue(0)
+
+      const err = await service
+        .setStatus("cuid-1", { status: "ACTIVE" })
+        .catch((e: unknown) => e)
+
+      expect(err).toBeInstanceOf(ConflictException)
+      expect((err as ConflictException).getResponse()).toMatchObject({
+        code: ErrorCode.GO_LIVE_REQUIRES_TABLE,
+      })
+      expect(mockRestaurant.update).not.toHaveBeenCalled()
+    })
+
+    it("activates a restaurant that has at least one table", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+      mockTable.count.mockResolvedValue(1)
+
+      const result = await service.setStatus("cuid-1", { status: "ACTIVE" })
+
+      expect(mockTable.count).toHaveBeenCalledWith({
+        where: { area: { floor: { restaurantId: "cuid-1" } } },
+      })
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { status: "ACTIVE" },
+      })
+      expect(result.status).toBe("ACTIVE")
+    })
+
+    it("deactivates without checking tables", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow({ status: "ACTIVE" }))
+
+      await service.setStatus("cuid-1", { status: "INACTIVE" })
+
+      expect(mockTable.count).not.toHaveBeenCalled()
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { status: "INACTIVE" },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .setStatus("nope", { status: "INACTIVE" })
+        .catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+    })
+  })
+
+  describe("setOnboarding", () => {
+    it("sets onboarding terminal state without activating", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.setOnboarding("cuid-1", { onboardingStatus: "COMPLETED" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { onboardingStatus: "COMPLETED" },
+      })
+      // status is never touched here
+      expect(mockRestaurant.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: expect.anything() }),
+        })
+      )
+    })
+
+    it("supports skipping", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.setOnboarding("cuid-1", { onboardingStatus: "SKIPPED" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { onboardingStatus: "SKIPPED" },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .setOnboarding("nope", { onboardingStatus: "COMPLETED" })
+        .catch((e: unknown) => e)
+
       expect((err as NotFoundException).getResponse()).toMatchObject({
         code: ErrorCode.RESTAURANT_NOT_FOUND,
       })

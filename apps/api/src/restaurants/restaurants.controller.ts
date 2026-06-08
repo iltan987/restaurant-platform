@@ -1,10 +1,22 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common"
 
 import {
   type CreateRestaurantInput,
   createRestaurantSchema,
+  type OnboardingStatusInput,
+  onboardingStatusSchema,
   type PaginationQuery,
   paginationQuerySchema,
+  type RestaurantStatusInput,
+  restaurantStatusSchema,
 } from "@repo/schemas"
 
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
@@ -38,5 +50,25 @@ export class RestaurantsController {
   @Get(":slug")
   findBySlug(@Param("slug") slug: string) {
     return this.restaurants.findBySlug(slug)
+  }
+
+  /** Go live / deactivate */
+  @Patch(":id/status")
+  setStatus(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(restaurantStatusSchema))
+    input: RestaurantStatusInput
+  ) {
+    return this.restaurants.setStatus(id, input)
+  }
+
+  /** Finish / skip onboarding */
+  @Patch(":id/onboarding")
+  setOnboarding(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(onboardingStatusSchema))
+    input: OnboardingStatusInput
+  ) {
+    return this.restaurants.setOnboarding(id, input)
   }
 }

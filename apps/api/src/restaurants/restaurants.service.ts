@@ -5,8 +5,14 @@ import {
 } from "@nestjs/common"
 
 import { slugify } from "@repo/core"
-import { type CreateRestaurantInput, ErrorCode } from "@repo/schemas"
+import {
+  type CreateRestaurantInput,
+  ErrorCode,
+  type OnboardingStatusInput,
+  type RestaurantStatusInput,
+} from "@repo/schemas"
 
+import { isP2002 } from "../common/prisma-error"
 import { PrismaService } from "../prisma/prisma.service"
 
 @Injectable()
@@ -76,6 +82,50 @@ export class RestaurantsService {
     return restaurant
   }
 
+  /** Go live / deactivate. Activating requires ≥1 table (FR-016/FR-017). */
+  async setStatus(id: string, input: RestaurantStatusInput) {
+    await this.getByIdOrThrow(id)
+
+    if (input.status === "ACTIVE") {
+      const tableCount = await this.prisma.table.count({
+        where: { area: { floor: { restaurantId: id } } },
+      })
+      if (tableCount === 0) {
+        throw new ConflictException({
+          code: ErrorCode.GO_LIVE_REQUIRES_TABLE,
+          message: "A restaurant needs at least one table before going live",
+        })
+      }
+    }
+
+    return this.prisma.restaurant.update({
+      where: { id },
+      data: { status: input.status },
+    })
+  }
+
+  /** Finish / skip onboarding — never auto-activates (FR-019). */
+  async setOnboarding(id: string, input: OnboardingStatusInput) {
+    await this.getByIdOrThrow(id)
+    return this.prisma.restaurant.update({
+      where: { id },
+      data: { onboardingStatus: input.onboardingStatus },
+    })
+  }
+
+  private async getByIdOrThrow(id: string) {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id },
+    })
+    if (!restaurant) {
+      throw new NotFoundException({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+        message: `Restaurant with id "${id}" was not found`,
+      })
+    }
+    return restaurant
+  }
+
   /** Appends -2, -3, … until a free slug is found. The @unique + P2002 guard is authoritative. */
   private async ensureUniqueSlug(base: string): Promise<string> {
     let candidate = base
@@ -90,13 +140,4 @@ export class RestaurantsService {
     }
     return candidate
   }
-}
-
-function isP2002(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as { code: unknown }).code === "P2002"
-  )
 }
