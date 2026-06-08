@@ -211,7 +211,7 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ## Phase 10: Polish & Cross-Cutting Concerns
 
-- [ ] T059 [P] Run the [quickstart.md](./quickstart.md) scenarios A–G manually and confirm expected outcomes.
+- [X] T059 [P] Run the [quickstart.md](./quickstart.md) scenarios A–G manually and confirm expected outcomes.
 - [~] T060 Manual WCAG 2.2 AA pass on the dashboard incl. the canvas: keyboard-only operation (drag via keyboard), visible focus, AA contrast, targets ≥44px, base text ≥16px, no time-limited steps, plain Turkish labels (FR-035/SC-009/SC-012). **Canvas verified** (56/48px nodes, focus-visible, keyboard drag, TR announcements). **Deviation:** the compact design system meets WCAG 2.2 AA (24px) but not the ≥44px goal across US1–US6 UI — tracked in `.claude/memory/a11y-target-size-deviation.md`.
 - [X] T061 Verify pagination behavior across surfaces: pager hidden on a single page, appears past the per-surface size, tables un-capped at normal volumes (SC-013/SC-014/SC-015). Fixed dashboard+admin table fetch to request the full per-restaurant ceiling (was capped at 200).
 - [X] T062 `pnpm lint && pnpm typecheck` clean across all workspaces; `pnpm --filter api test && pnpm --filter api test:e2e` green.
