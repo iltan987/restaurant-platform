@@ -1,5 +1,8 @@
 import { z } from "zod"
 
+/** Hard ceiling on tables per restaurant — anti-spam guard, enforced server-side. */
+export const TABLE_LIMIT_PER_RESTAURANT = 500
+
 // ── Input schemas (locale-agnostic) ──
 
 /** Create under an area (areaId comes from the path). */

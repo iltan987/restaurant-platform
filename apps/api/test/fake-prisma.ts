@@ -26,6 +26,7 @@ type Area = {
   id: string
   floorId: string
   name: string
+  code: string | null
   position: number
   createdAt: Date
   updatedAt: Date
@@ -165,6 +166,17 @@ const floor = {
   delete({ where }: { where: { id: string } }) {
     const i = floors.findIndex((f) => f.id === where.id)
     const [row] = floors.splice(i, 1)
+    // DB-level cascade: floor → areas → tables.
+    const childAreas = areas.filter((a) => a.floorId === where.id)
+    for (const a of childAreas) {
+      const ti = tables.length
+      for (let j = ti - 1; j >= 0; j--) {
+        if (tables[j]!.areaId === a.id) tables.splice(j, 1)
+      }
+    }
+    for (let k = areas.length - 1; k >= 0; k--) {
+      if (areas[k]!.floorId === where.id) areas.splice(k, 1)
+    }
     return Promise.resolve(row)
   },
 }
@@ -173,7 +185,12 @@ const area = {
   create({
     data,
   }: {
-    data: { floorId: string; name: string; position?: number }
+    data: {
+      floorId: string
+      name: string
+      code?: string | null
+      position?: number
+    }
   }) {
     if (areas.some((a) => a.floorId === data.floorId && a.name === data.name)) {
       return Promise.reject({ code: "P2002" })
@@ -182,6 +199,7 @@ const area = {
       id: id("area"),
       floorId: data.floorId,
       name: data.name,
+      code: data.code ?? null,
       position: data.position ?? 0,
       createdAt: now(),
       updatedAt: now(),
@@ -247,6 +265,10 @@ const area = {
   delete({ where }: { where: { id: string } }) {
     const i = areas.findIndex((a) => a.id === where.id)
     const [row] = areas.splice(i, 1)
+    // DB-level cascade: area → tables.
+    for (let j = tables.length - 1; j >= 0; j--) {
+      if (tables[j]!.areaId === where.id) tables.splice(j, 1)
+    }
     return Promise.resolve(row)
   },
 }
@@ -270,21 +292,53 @@ const table = {
     tables.push(row)
     return Promise.resolve(row)
   },
+  findUnique({
+    where,
+    include,
+  }: {
+    where: { id: string }
+    include?: { area?: unknown }
+  }) {
+    const row = tables.find((t) => t.id === where.id)
+    if (!row) return Promise.resolve(null)
+    if (include?.area) {
+      return Promise.resolve({
+        ...row,
+        area: { floorId: areas.find((a) => a.id === row.areaId)?.floorId },
+      })
+    }
+    return Promise.resolve(row)
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<Table> }) {
+    const row = tables.find((t) => t.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = tables.findIndex((t) => t.id === where.id)
+    const [row] = tables.splice(i, 1)
+    return Promise.resolve(row)
+  },
   findFirst({
     where,
   }: {
     where: {
       label?: { in?: string[] }
-      area?: { floor?: { restaurantId?: string } }
+      area?: { floorId?: string }
+      id?: { not?: string }
     }
   }) {
     const labels = where.label?.in ?? []
-    const rid = where.area?.floor?.restaurantId
+    const floorId = where.area?.floorId
+    const notId = where.id?.not
+    const floorIdOfTable = (t: Table) =>
+      areas.find((a) => a.id === t.areaId)?.floorId
     return Promise.resolve(
       tables.find(
         (t) =>
           labels.includes(t.label) &&
-          (rid === undefined || restaurantIdOfTable(t) === rid)
+          (floorId === undefined || floorIdOfTable(t) === floorId) &&
+          (notId === undefined || t.id !== notId)
       ) ?? null
     )
   },

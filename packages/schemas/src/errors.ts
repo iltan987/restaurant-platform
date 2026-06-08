@@ -28,6 +28,7 @@ export const ErrorCode = {
   AREA_NOT_EMPTY: "AREA_NOT_EMPTY",
   TABLE_LABEL_TAKEN: "TABLE_LABEL_TAKEN",
   TABLE_NOT_FOUND: "TABLE_NOT_FOUND",
+  TABLE_LIMIT_REACHED: "TABLE_LIMIT_REACHED",
 } as const
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]

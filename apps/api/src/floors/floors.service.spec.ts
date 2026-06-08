@@ -97,6 +97,15 @@ describe("FloorsService", () => {
         where: { id: "f1" },
       })
     })
+
+    it("cascade-deletes a non-empty floor when cascade is set (skips the guard)", async () => {
+      prismaMock.area.count.mockResolvedValue(3)
+      await service.remove("f1", true)
+      expect(prismaMock.area.count).not.toHaveBeenCalled()
+      expect(prismaMock.floor.delete).toHaveBeenCalledWith({
+        where: { id: "f1" },
+      })
+    })
   })
 
   describe("findAllBySlug", () => {

@@ -71,14 +71,21 @@ export class FloorsService {
     }
   }
 
-  async remove(id: string) {
+  /**
+   * Deletes a floor. Non-empty floors are blocked (FLOOR_NOT_EMPTY) unless
+   * `cascade` is explicitly set — then the DB cascades areas → tables. Cascade
+   * is destructive (it invalidates those tables' QR codes), so callers must opt in.
+   */
+  async remove(id: string, cascade = false) {
     await this.getFloorOrThrow(id)
-    const areaCount = await this.prisma.area.count({ where: { floorId: id } })
-    if (areaCount > 0) {
-      throw new ConflictException({
-        code: ErrorCode.FLOOR_NOT_EMPTY,
-        message: "Remove the floor's areas before deleting it",
-      })
+    if (!cascade) {
+      const areaCount = await this.prisma.area.count({ where: { floorId: id } })
+      if (areaCount > 0) {
+        throw new ConflictException({
+          code: ErrorCode.FLOOR_NOT_EMPTY,
+          message: "Remove the floor's areas before deleting it",
+        })
+      }
     }
     await this.prisma.floor.delete({ where: { id } })
   }

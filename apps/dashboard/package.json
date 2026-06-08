@@ -13,7 +13,9 @@
   "dependencies": {
     "@dnd-kit/core": "catalog:",
     "@dnd-kit/utilities": "catalog:",
+    "@hookform/resolvers": "catalog:",
     "@repo/api-client": "workspace:*",
+    "@repo/i18n": "workspace:*",
     "@repo/query": "workspace:*",
     "@repo/schemas": "workspace:*",
     "@repo/ui": "workspace:*",
@@ -23,6 +25,8 @@
     "qrcode.react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-hook-form": "catalog:",
+    "sonner": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

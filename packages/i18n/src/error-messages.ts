@@ -22,6 +22,8 @@ const tr: Record<string, string> = {
     "Bu bölgeyi silmeden önce içindeki masaları kaldırmalısınız.",
   [ErrorCode.TABLE_LABEL_TAKEN]: "Bu masa adı zaten kullanımda.",
   [ErrorCode.TABLE_NOT_FOUND]: "Masa bulunamadı.",
+  [ErrorCode.TABLE_LIMIT_REACHED]:
+    "Masa sınırına ulaşıldı. Daha fazla masa eklemek için mevcut masaları kaldırın.",
 }
 
 /**

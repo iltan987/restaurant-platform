@@ -25,9 +25,9 @@ export const restaurantStatusSchema = z.object({
 
 export type RestaurantStatusInput = z.infer<typeof restaurantStatusSchema>
 
-/** Finish / skip onboarding (never auto-activates). */
+/** Finish / skip / re-open onboarding (never auto-activates). */
 export const onboardingStatusSchema = z.object({
-  onboardingStatus: z.enum(["COMPLETED", "SKIPPED"]),
+  onboardingStatus: z.enum(["IN_PROGRESS", "COMPLETED", "SKIPPED"]),
 })
 
 export type OnboardingStatusInput = z.infer<typeof onboardingStatusSchema>

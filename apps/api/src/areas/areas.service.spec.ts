@@ -54,7 +54,14 @@ describe("AreasService", () => {
     it("creates an area under an existing floor", async () => {
       await service.create("f1", { name: "Teras" })
       expect(prismaMock.area.create).toHaveBeenCalledWith({
-        data: { floorId: "f1", name: "Teras", position: 0 },
+        data: { floorId: "f1", name: "Teras", code: null, position: 0 },
+      })
+    })
+
+    it("stores an optional area code (table-label prefix)", async () => {
+      await service.create("f1", { name: "Bahçe", code: "B" })
+      expect(prismaMock.area.create).toHaveBeenCalledWith({
+        data: { floorId: "f1", name: "Bahçe", code: "B", position: 0 },
       })
     })
 

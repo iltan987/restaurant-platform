@@ -47,6 +47,32 @@ describe("Tables (e2e)", () => {
     expect(dup.body).toMatchObject({ code: ErrorCode.TABLE_LABEL_TAKEN })
   })
 
+  it("allows the same label on a different floor (uniqueness is per floor)", async () => {
+    const { restaurant, areaId } = await seed()
+    await request(http())
+      .post(`/api/areas/${areaId}/tables`)
+      .send({ label: "1" })
+      .expect(201)
+
+    // a second floor with its own area
+    const floor = (
+      await request(http())
+        .post(`/api/restaurants/${restaurant.id}/floors`)
+        .send({ name: "Üst Kat" })
+    ).body
+    const area2 = (
+      await request(http())
+        .post(`/api/floors/${floor.id}/areas`)
+        .send({ name: "Teras" })
+    ).body
+
+    // same label "1" on the other floor is allowed
+    await request(http())
+      .post(`/api/areas/${area2.id}/tables`)
+      .send({ label: "1" })
+      .expect(201)
+  })
+
   it("returns AREA_NOT_FOUND creating under an unknown area", async () => {
     const res = await request(http())
       .post("/api/areas/nope/tables")
@@ -82,6 +108,19 @@ describe("Tables (e2e)", () => {
     expect(res.body).toMatchObject({ code: ErrorCode.TABLE_LABEL_TAKEN })
     // only the single pre-existing table remains — batch did not partially apply
     expect(fakePrisma.__stores.tables).toHaveLength(1)
+  })
+
+  it("deletes a table (204); unknown table → TABLE_NOT_FOUND", async () => {
+    const { areaId } = await seed()
+    const t = (
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "1" })
+    ).body
+    await request(http()).delete(`/api/tables/${t.id}`).expect(204)
+    expect(fakePrisma.__stores.tables).toHaveLength(0)
+    const res = await request(http()).delete("/api/tables/nope").expect(404)
+    expect(res.body).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
   })
 
   it("lists tables as a paginated envelope", async () => {

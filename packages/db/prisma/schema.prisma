@@ -52,6 +52,7 @@ model Area {
   floorId   String
   floor     Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
   name      String
+  code      String?
   position  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

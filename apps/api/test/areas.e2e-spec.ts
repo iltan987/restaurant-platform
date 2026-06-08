@@ -78,6 +78,18 @@ describe("Areas (e2e)", () => {
     expect(res.body).toMatchObject({ code: ErrorCode.AREA_NOT_EMPTY })
   })
 
+  it("cascade-deletes a non-empty area with ?cascade=true (tables go)", async () => {
+    const { areaId } = await seed()
+    await request(http())
+      .post(`/api/areas/${areaId}/tables`)
+      .send({ label: "1" })
+      .expect(201)
+    await request(http())
+      .delete(`/api/areas/${areaId}?cascade=true`)
+      .expect(204)
+    expect(fakePrisma.__stores.tables).toHaveLength(0)
+  })
+
   it("deletes an empty area (204)", async () => {
     const { floorId } = await seed()
     const created = await request(http())

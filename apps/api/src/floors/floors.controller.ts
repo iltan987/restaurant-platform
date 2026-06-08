@@ -58,7 +58,7 @@ export class FloorsController {
 
   @Delete("floors/:id")
   @HttpCode(204)
-  remove(@Param("id") id: string) {
-    return this.floors.remove(id)
+  remove(@Param("id") id: string, @Query("cascade") cascade?: string) {
+    return this.floors.remove(id, cascade === "true")
   }
 }

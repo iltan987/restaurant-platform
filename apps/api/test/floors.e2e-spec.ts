@@ -84,4 +84,27 @@ describe("Floors (e2e)", () => {
       .send({ name: "Boş Kat" })
     await request(http()).delete(`/api/floors/${created.body.id}`).expect(204)
   })
+
+  it("cascade-deletes a non-empty floor with ?cascade=true (areas + tables go)", async () => {
+    const r = await createRestaurant("Kose")
+    const defaultFloorId = fakePrisma.__stores.floors[0]!.id
+    const areaId = fakePrisma.__stores.areas[0]!.id
+    await request(http())
+      .post(`/api/areas/${areaId}/tables`)
+      .send({ label: "1" })
+      .expect(201)
+
+    await request(http())
+      .delete(`/api/floors/${defaultFloorId}?cascade=true`)
+      .expect(204)
+
+    // the floor, its area and table are all gone
+    expect(fakePrisma.__stores.floors).toHaveLength(0)
+    expect(fakePrisma.__stores.areas).toHaveLength(0)
+    expect(fakePrisma.__stores.tables).toHaveLength(0)
+    const list = await request(http())
+      .get(`/api/restaurants/${r.slug}/tables`)
+      .expect(200)
+    expect(list.body.total).toBe(0)
+  })
 })

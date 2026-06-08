@@ -60,7 +60,12 @@ export class AreasService {
 
     try {
       return await this.prisma.area.create({
-        data: { floorId, name: input.name, position: input.position ?? 0 },
+        data: {
+          floorId,
+          name: input.name,
+          code: input.code ?? null,
+          position: input.position ?? 0,
+        },
       })
     } catch (err: unknown) {
       if (isP2002(err)) throw areaNameTaken(input.name)
@@ -78,14 +83,23 @@ export class AreasService {
     }
   }
 
-  async remove(id: string) {
+  /**
+   * Deletes an area. Non-empty areas are blocked (AREA_NOT_EMPTY) unless
+   * `cascade` is explicitly set — then the DB cascades its tables. Cascade is
+   * destructive (it invalidates those tables' QR codes), so callers must opt in.
+   */
+  async remove(id: string, cascade = false) {
     await this.getAreaOrThrow(id)
-    const tableCount = await this.prisma.table.count({ where: { areaId: id } })
-    if (tableCount > 0) {
-      throw new ConflictException({
-        code: ErrorCode.AREA_NOT_EMPTY,
-        message: "Remove the area's tables before deleting it",
+    if (!cascade) {
+      const tableCount = await this.prisma.table.count({
+        where: { areaId: id },
       })
+      if (tableCount > 0) {
+        throw new ConflictException({
+          code: ErrorCode.AREA_NOT_EMPTY,
+          message: "Remove the area's tables before deleting it",
+        })
+      }
     }
     await this.prisma.area.delete({ where: { id } })
   }

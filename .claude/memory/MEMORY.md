@@ -9,3 +9,4 @@ Memories for this project are checked into the repo here (`.claude/memory/`), no
 - [Work in phases + commit approval](work-in-phases-commit-approval.md) — stop after each phase, suggest commit message, get approval, then auto-commit
 - [Minimal diffs, no unrelated churn](minimal-diffs-no-unrelated-churn.md) — scope diffs to the task; never reformat unrelated files
 - [Single floor hides floor UI](single-floor-hides-floor-ui.md) — dashboard hides the floor concept entirely until a 2nd floor exists
+- [Dashboard design direction](dashboard-design-direction.md) — indigo accent, light+dark, onboarding wizard shape; project name still TBD

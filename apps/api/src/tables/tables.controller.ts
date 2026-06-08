@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common"
 
 import {
   type CreateTableInput,
@@ -7,6 +17,8 @@ import {
   createTableSchema,
   type PaginationQuery,
   paginationQuerySchema,
+  type UpdateTableInput,
+  updateTableSchema,
 } from "@repo/schemas"
 
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
@@ -45,5 +57,19 @@ export class TablesController {
     input: CreateTablesBulkInput
   ) {
     return this.tables.bulkCreate(areaId, input)
+  }
+
+  @Patch("tables/:id")
+  update(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateTableSchema)) input: UpdateTableInput
+  ) {
+    return this.tables.update(id, input)
+  }
+
+  @Delete("tables/:id")
+  @HttpCode(204)
+  remove(@Param("id") id: string) {
+    return this.tables.remove(id)
   }
 }

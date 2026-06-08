@@ -60,7 +60,7 @@ export class AreasController {
 
   @Delete("areas/:id")
   @HttpCode(204)
-  remove(@Param("id") id: string) {
-    return this.areas.remove(id)
+  remove(@Param("id") id: string, @Query("cascade") cascade?: string) {
+    return this.areas.remove(id, cascade === "true")
   }
 }
