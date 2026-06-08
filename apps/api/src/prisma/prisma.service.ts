@@ -12,6 +12,12 @@ import { prisma } from "@repo/db"
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly restaurant = prisma.restaurant
+  readonly floor = prisma.floor
+  readonly area = prisma.area
+  readonly table = prisma.table
+
+  /** Interactive transaction — bound so services can group writes atomically. */
+  readonly $transaction = prisma.$transaction.bind(prisma)
 
   async onModuleInit() {
     await prisma.$connect()

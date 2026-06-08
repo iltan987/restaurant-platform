@@ -16,5 +16,8 @@
     "**/node_modules": true,
     "**/.turbo": true,
     "pnpm-lock.yaml": true
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }

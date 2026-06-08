@@ -3,12 +3,13 @@ import "@repo/ui/globals.css"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 
-import { ThemeProvider } from "@repo/ui/components/theme-provider"
 import { cn } from "@repo/ui/lib/utils"
 
+import { Providers } from "./providers"
+
 export const metadata: Metadata = {
-  title: "Customer",
-  description: "Restaurant ordering experience",
+  title: "Menü",
+  description: "Masanızdaki QR kodu okutarak menüye ulaşın",
 }
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
@@ -25,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="tr"
       suppressHydrationWarning
       className={cn(
         "antialiased",
@@ -35,7 +36,7 @@ export default function RootLayout({
       )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

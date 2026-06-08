@@ -12,6 +12,7 @@ const makeRow = (
     name: string
     slug: string
     status: "ACTIVE" | "INACTIVE"
+    onboardingStatus: "IN_PROGRESS" | "COMPLETED" | "SKIPPED"
     createdAt: Date
     updatedAt: Date
   }> = {}
@@ -19,7 +20,8 @@ const makeRow = (
   id: "cuid-1",
   name: "Burger Joint",
   slug: "burger-joint",
-  status: "ACTIVE" as const,
+  status: "INACTIVE" as const,
+  onboardingStatus: "IN_PROGRESS" as const,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -31,22 +33,50 @@ describe("RestaurantsService", () => {
     create: jest.Mock
     findMany: jest.Mock
     findUnique: jest.Mock
+    count: jest.Mock
+    update: jest.Mock
+    delete: jest.Mock
+  }
+  let mockFloor: { create: jest.Mock }
+  let mockArea: { create: jest.Mock }
+  let mockTable: { count: jest.Mock }
+  let prismaMock: {
+    restaurant: typeof mockRestaurant
+    floor: typeof mockFloor
+    area: typeof mockArea
+    table: typeof mockTable
+    $transaction: jest.Mock
   }
 
   beforeEach(async () => {
     mockRestaurant = {
-      create: jest.fn(),
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
+      create: jest.fn().mockResolvedValue(makeRow()),
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue(null),
+      count: jest.fn().mockResolvedValue(0),
+      update: jest
+        .fn()
+        .mockImplementation(({ data }) => Promise.resolve(makeRow(data))),
+      delete: jest.fn().mockResolvedValue(makeRow()),
+    }
+    mockFloor = { create: jest.fn().mockResolvedValue({ id: "floor-1" }) }
+    mockArea = { create: jest.fn().mockResolvedValue({ id: "area-1" }) }
+    mockTable = { count: jest.fn().mockResolvedValue(0) }
+    prismaMock = {
+      restaurant: mockRestaurant,
+      floor: mockFloor,
+      area: mockArea,
+      table: mockTable,
+      // Interactive transaction — invoke the callback with the same delegates.
+      $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
+        cb({ restaurant: mockRestaurant, floor: mockFloor, area: mockArea })
+      ),
     }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RestaurantsService,
-        {
-          provide: PrismaService,
-          useValue: { restaurant: mockRestaurant },
-        },
+        { provide: PrismaService, useValue: prismaMock },
       ],
     }).compile()
 
@@ -54,24 +84,28 @@ describe("RestaurantsService", () => {
   })
 
   describe("create", () => {
-    it("derives the slug from name when no slug is provided", async () => {
+    it("creates the restaurant with a default floor + area in one transaction (INACTIVE / IN_PROGRESS)", async () => {
       const row = makeRow({ name: "Burger Joint", slug: "burger-joint" })
-      mockRestaurant.findUnique.mockResolvedValue(null)
       mockRestaurant.create.mockResolvedValue(row)
 
       const result = await service.create({ name: "Burger Joint" })
 
+      expect(prismaMock.$transaction).toHaveBeenCalledTimes(1)
       expect(mockRestaurant.create).toHaveBeenCalledWith({
         data: { name: "Burger Joint", slug: "burger-joint" },
       })
+      expect(mockFloor.create).toHaveBeenCalledWith({
+        data: { restaurantId: row.id, name: "Zemin Kat" },
+      })
+      expect(mockArea.create).toHaveBeenCalledWith({
+        data: { floorId: "floor-1", name: "Genel" },
+      })
       expect(result).toBe(row)
+      expect(result.status).toBe("INACTIVE")
+      expect(result.onboardingStatus).toBe("IN_PROGRESS")
     })
 
     it("uses the provided slug instead of deriving one from the name", async () => {
-      const row = makeRow({ slug: "bj" })
-      mockRestaurant.findUnique.mockResolvedValue(null)
-      mockRestaurant.create.mockResolvedValue(row)
-
       await service.create({ name: "Burger Joint", slug: "bj" })
 
       expect(mockRestaurant.create).toHaveBeenCalledWith({
@@ -80,11 +114,9 @@ describe("RestaurantsService", () => {
     })
 
     it("appends -2 when the base slug is already taken", async () => {
-      const newRow = makeRow({ slug: "burger-joint-2" })
       mockRestaurant.findUnique
         .mockResolvedValueOnce(makeRow()) // "burger-joint" is taken
         .mockResolvedValueOnce(null) //      "burger-joint-2" is free
-      mockRestaurant.create.mockResolvedValue(newRow)
 
       await service.create({ name: "Burger Joint" })
 
@@ -101,10 +133,10 @@ describe("RestaurantsService", () => {
       expect((err as ConflictException).getResponse()).toMatchObject({
         code: ErrorCode.VALIDATION_ERROR,
       })
+      expect(prismaMock.$transaction).not.toHaveBeenCalled()
     })
 
     it("throws ConflictException(SLUG_TAKEN) on a P2002 unique-constraint race", async () => {
-      mockRestaurant.findUnique.mockResolvedValue(null)
       mockRestaurant.create.mockRejectedValue({ code: "P2002" })
 
       const err = await service
@@ -118,7 +150,6 @@ describe("RestaurantsService", () => {
     })
 
     it("rethrows unexpected errors from the database", async () => {
-      mockRestaurant.findUnique.mockResolvedValue(null)
       const boom = new Error("unexpected DB failure")
       mockRestaurant.create.mockRejectedValue(boom)
 
@@ -127,16 +158,30 @@ describe("RestaurantsService", () => {
   })
 
   describe("findAll", () => {
-    it("delegates to Prisma ordered by createdAt descending", async () => {
+    it("returns a paginated envelope ordered by createdAt descending", async () => {
       const rows = [makeRow({ id: "a" }), makeRow({ id: "b" })]
       mockRestaurant.findMany.mockResolvedValue(rows)
+      mockRestaurant.count.mockResolvedValue(2)
 
-      const result = await service.findAll()
+      const result = await service.findAll(1, 20)
 
       expect(mockRestaurant.findMany).toHaveBeenCalledWith({
         orderBy: { createdAt: "desc" },
+        skip: 0,
+        take: 20,
       })
-      expect(result).toBe(rows)
+      expect(mockRestaurant.count).toHaveBeenCalled()
+      expect(result).toEqual({ items: rows, total: 2, page: 1, pageSize: 20 })
+    })
+
+    it("computes skip from page and pageSize", async () => {
+      await service.findAll(3, 10)
+
+      expect(mockRestaurant.findMany).toHaveBeenCalledWith({
+        orderBy: { createdAt: "desc" },
+        skip: 20,
+        take: 10,
+      })
     })
   })
 
@@ -158,6 +203,168 @@ describe("RestaurantsService", () => {
         .catch((e: unknown) => e)
 
       expect(err).toBeInstanceOf(NotFoundException)
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+    })
+  })
+
+  describe("setStatus", () => {
+    it("rejects going live with zero tables (GO_LIVE_REQUIRES_TABLE)", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+      mockTable.count.mockResolvedValue(0)
+
+      const err = await service
+        .setStatus("cuid-1", { status: "ACTIVE" })
+        .catch((e: unknown) => e)
+
+      expect(err).toBeInstanceOf(ConflictException)
+      expect((err as ConflictException).getResponse()).toMatchObject({
+        code: ErrorCode.GO_LIVE_REQUIRES_TABLE,
+      })
+      expect(mockRestaurant.update).not.toHaveBeenCalled()
+    })
+
+    it("activates a restaurant that has at least one table", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+      mockTable.count.mockResolvedValue(1)
+
+      const result = await service.setStatus("cuid-1", { status: "ACTIVE" })
+
+      expect(mockTable.count).toHaveBeenCalledWith({
+        where: { area: { floor: { restaurantId: "cuid-1" } } },
+      })
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { status: "ACTIVE" },
+      })
+      expect(result.status).toBe("ACTIVE")
+    })
+
+    it("deactivates without checking tables", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow({ status: "ACTIVE" }))
+
+      await service.setStatus("cuid-1", { status: "INACTIVE" })
+
+      expect(mockTable.count).not.toHaveBeenCalled()
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { status: "INACTIVE" },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .setStatus("nope", { status: "INACTIVE" })
+        .catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+    })
+  })
+
+  describe("update", () => {
+    it("updates the name and re-slugs the slug", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.update("cuid-1", { name: "New Name", slug: "Yeni Slug" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { name: "New Name", slug: "yeni-slug" },
+      })
+    })
+
+    it("throws SLUG_TAKEN on a P2002 unique-constraint violation", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+      mockRestaurant.update.mockRejectedValue({ code: "P2002" })
+
+      const err = await service
+        .update("cuid-1", { slug: "taken" })
+        .catch((e: unknown) => e)
+
+      expect(err).toBeInstanceOf(ConflictException)
+      expect((err as ConflictException).getResponse()).toMatchObject({
+        code: ErrorCode.SLUG_TAKEN,
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .update("nope", { name: "x" })
+        .catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+      expect(mockRestaurant.update).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("remove", () => {
+    it("deletes an existing restaurant (cascade handled by the DB)", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.remove("cuid-1")
+
+      expect(mockRestaurant.delete).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service.remove("nope").catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+      expect(mockRestaurant.delete).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("setOnboarding", () => {
+    it("sets onboarding terminal state without activating", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.setOnboarding("cuid-1", { onboardingStatus: "COMPLETED" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { onboardingStatus: "COMPLETED" },
+      })
+      // status is never touched here
+      expect(mockRestaurant.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: expect.anything() }),
+        })
+      )
+    })
+
+    it("supports skipping", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.setOnboarding("cuid-1", { onboardingStatus: "SKIPPED" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { onboardingStatus: "SKIPPED" },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .setOnboarding("nope", { onboardingStatus: "COMPLETED" })
+        .catch((e: unknown) => e)
+
       expect((err as NotFoundException).getResponse()).toMatchObject({
         code: ErrorCode.RESTAURANT_NOT_FOUND,
       })

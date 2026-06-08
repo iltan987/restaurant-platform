@@ -5,6 +5,19 @@ export interface Parser<T> {
   parse: (data: unknown) => T
 }
 
+/** Build an {@link ApiError} from a non-OK response, reading its `{ code, message }` body. */
+async function errorFrom(res: Response): Promise<ApiError> {
+  const body = (await res.json().catch(() => ({}))) as {
+    code?: string
+    message?: string
+  }
+  return new ApiError(
+    res.status,
+    body.code ?? "INTERNAL_ERROR",
+    body.message ?? `Request failed (${res.status})`
+  )
+}
+
 /**
  * Fetches JSON from the API and validates it with `schema`.
  *
@@ -19,19 +32,18 @@ export async function apiFetch<T>(
   init?: RequestInit
 ): Promise<T> {
   const res = await fetch(url, init)
-
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as {
-      code?: string
-      message?: string
-    }
-    throw new ApiError(
-      res.status,
-      body.code ?? "INTERNAL_ERROR",
-      body.message ?? `Request failed (${res.status})`
-    )
-  }
+  if (!res.ok) throw await errorFrom(res)
 
   const data = (await res.json()) as unknown
   return schema.parse(data)
+}
+
+/**
+ * Sends a request whose response body is irrelevant — DELETEs and other
+ * `204 No Content` endpoints. Throws {@link ApiError} on a non-OK response;
+ * resolves to void otherwise (the body, if any, is not read).
+ */
+export async function apiSend(url: string, init?: RequestInit): Promise<void> {
+  const res = await fetch(url, init)
+  if (!res.ok) throw await errorFrom(res)
 }

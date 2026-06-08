@@ -5,8 +5,15 @@ import {
 } from "@nestjs/common"
 
 import { slugify } from "@repo/core"
-import { type CreateRestaurantInput, ErrorCode } from "@repo/schemas"
+import {
+  type CreateRestaurantInput,
+  ErrorCode,
+  type OnboardingStatusInput,
+  type RestaurantStatusInput,
+  type UpdateRestaurantInput,
+} from "@repo/schemas"
 
+import { isP2002 } from "../common/prisma-error"
 import { PrismaService } from "../prisma/prisma.service"
 
 @Injectable()
@@ -25,8 +32,19 @@ export class RestaurantsService {
     const slug = await this.ensureUniqueSlug(base)
 
     try {
-      return await this.prisma.restaurant.create({
-        data: { name: input.name, slug },
+      // Create the restaurant (INACTIVE / IN_PROGRESS via DB defaults) together
+      // with its default floor + area so onboarding always starts non-empty.
+      return await this.prisma.$transaction(async (tx) => {
+        const restaurant = await tx.restaurant.create({
+          data: { name: input.name, slug },
+        })
+        const floor = await tx.floor.create({
+          data: { restaurantId: restaurant.id, name: "Zemin Kat" },
+        })
+        await tx.area.create({
+          data: { floorId: floor.id, name: "Genel" },
+        })
+        return restaurant
       })
     } catch (err: unknown) {
       // P2002 — unique constraint violation (race between check and insert)
@@ -40,10 +58,16 @@ export class RestaurantsService {
     }
   }
 
-  async findAll() {
-    return this.prisma.restaurant.findMany({
-      orderBy: { createdAt: "desc" },
-    })
+  async findAll(page = 1, pageSize = 20) {
+    const [items, total] = await Promise.all([
+      this.prisma.restaurant.findMany({
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.restaurant.count(),
+    ])
+    return { items, total, page, pageSize }
   }
 
   async findBySlug(slug: string) {
@@ -54,6 +78,81 @@ export class RestaurantsService {
       throw new NotFoundException({
         code: ErrorCode.RESTAURANT_NOT_FOUND,
         message: `Restaurant with slug "${slug}" was not found`,
+      })
+    }
+    return restaurant
+  }
+
+  /** Go live / deactivate. Activating requires ≥1 table (FR-016/FR-017). */
+  async setStatus(id: string, input: RestaurantStatusInput) {
+    await this.getByIdOrThrow(id)
+
+    if (input.status === "ACTIVE") {
+      const tableCount = await this.prisma.table.count({
+        where: { area: { floor: { restaurantId: id } } },
+      })
+      if (tableCount === 0) {
+        throw new ConflictException({
+          code: ErrorCode.GO_LIVE_REQUIRES_TABLE,
+          message: "A restaurant needs at least one table before going live",
+        })
+      }
+    }
+
+    return this.prisma.restaurant.update({
+      where: { id },
+      data: { status: input.status },
+    })
+  }
+
+  /**
+   * Admin edit of name/slug. A slug change is re-uniqued and P2002-guarded
+   * (SLUG_TAKEN); the caller is responsible for warning about broken links on a
+   * live restaurant (FR-008).
+   */
+  async update(id: string, input: UpdateRestaurantInput) {
+    await this.getByIdOrThrow(id)
+
+    const data: { name?: string; slug?: string } = {}
+    if (input.name !== undefined) data.name = input.name
+    if (input.slug !== undefined) data.slug = slugify(input.slug)
+
+    try {
+      return await this.prisma.restaurant.update({ where: { id }, data })
+    } catch (err: unknown) {
+      if (isP2002(err)) {
+        throw new ConflictException({
+          code: ErrorCode.SLUG_TAKEN,
+          message: `Slug "${data.slug}" is already taken`,
+        })
+      }
+      throw err
+    }
+  }
+
+  /** Admin delete. Floors → areas → tables cascade via the DB FKs (FR-007). */
+  async remove(id: string) {
+    await this.getByIdOrThrow(id)
+    await this.prisma.restaurant.delete({ where: { id } })
+  }
+
+  /** Finish / skip onboarding — never auto-activates (FR-019). */
+  async setOnboarding(id: string, input: OnboardingStatusInput) {
+    await this.getByIdOrThrow(id)
+    return this.prisma.restaurant.update({
+      where: { id },
+      data: { onboardingStatus: input.onboardingStatus },
+    })
+  }
+
+  private async getByIdOrThrow(id: string) {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id },
+    })
+    if (!restaurant) {
+      throw new NotFoundException({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+        message: `Restaurant with id "${id}" was not found`,
       })
     }
     return restaurant
@@ -73,13 +172,4 @@ export class RestaurantsService {
     }
     return candidate
   }
-}
-
-function isP2002(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    (err as { code: unknown }).code === "P2002"
-  )
 }

@@ -10,6 +10,20 @@ const tr: Record<string, string> = {
   // Domain-specific
   [ErrorCode.SLUG_TAKEN]: "Bu kısa ad zaten kullanımda.",
   [ErrorCode.RESTAURANT_NOT_FOUND]: "Restoran bulunamadı.",
+  [ErrorCode.GO_LIVE_REQUIRES_TABLE]:
+    "Yayına almak için en az bir masa eklemelisiniz.",
+  [ErrorCode.FLOOR_NAME_TAKEN]: "Bu kat adı zaten kullanımda.",
+  [ErrorCode.FLOOR_NOT_FOUND]: "Kat bulunamadı.",
+  [ErrorCode.FLOOR_NOT_EMPTY]:
+    "Bu katı silmeden önce içindeki bölgeleri kaldırmalısınız.",
+  [ErrorCode.AREA_NAME_TAKEN]: "Bu bölge adı zaten kullanımda.",
+  [ErrorCode.AREA_NOT_FOUND]: "Bölge bulunamadı.",
+  [ErrorCode.AREA_NOT_EMPTY]:
+    "Bu bölgeyi silmeden önce içindeki masaları kaldırmalısınız.",
+  [ErrorCode.TABLE_LABEL_TAKEN]: "Bu masa adı zaten kullanımda.",
+  [ErrorCode.TABLE_NOT_FOUND]: "Masa bulunamadı.",
+  [ErrorCode.TABLE_LIMIT_REACHED]:
+    "Masa sınırına ulaşıldı. Daha fazla masa eklemek için mevcut masaları kaldırın.",
 }
 
 /**

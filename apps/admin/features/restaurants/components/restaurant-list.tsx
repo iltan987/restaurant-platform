@@ -2,24 +2,27 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { UtensilsIcon } from "lucide-react"
+import { useState } from "react"
 
 import { restaurantsQueries } from "../queries"
+import { Pager } from "./pager"
 import { RestaurantRow } from "./restaurant-row"
 import { RestaurantSkeleton } from "./restaurant-skeleton"
 
 export function RestaurantList() {
-  const { data: restaurants, isPending: isLoading } = useQuery(
-    restaurantsQueries.list()
-  )
+  const [page, setPage] = useState(1)
+  const { data, isPending: isLoading } = useQuery(restaurantsQueries.list(page))
+
+  const restaurants = data?.items
+  const total = data?.total ?? 0
+  const pageSize = data?.pageSize ?? 20
 
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-medium">Restoranlar</h2>
-        {!isLoading && restaurants !== undefined && (
-          <span className="text-xs text-muted-foreground">
-            {restaurants.length} kayıt
-          </span>
+        {!isLoading && data !== undefined && (
+          <span className="text-xs text-muted-foreground">{total} kayıt</span>
         )}
       </div>
 
@@ -48,6 +51,13 @@ export function RestaurantList() {
           ))}
         </div>
       )}
+
+      <Pager
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+      />
     </>
   )
 }
