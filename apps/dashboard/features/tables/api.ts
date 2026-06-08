@@ -4,6 +4,7 @@ import {
   type CreateTablesBulkInput,
   paginated,
   type Table,
+  TABLE_LIMIT_PER_RESTAURANT,
   tableSchema,
   type UpdateTableInput,
 } from "@repo/schemas"
@@ -14,10 +15,15 @@ if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set")
 const tablePageSchema = paginated(tableSchema)
 const tableListSchema = tableSchema.array()
 
-/** All tables for a restaurant — unwraps the envelope. */
+/**
+ * All tables for a restaurant — unwraps the envelope. The management/canvas
+ * views show every table at once (no pager), so we request the full
+ * per-restaurant ceiling in one page rather than the API's default 200; a
+ * restaurant can never exceed that, so a single page always holds them all.
+ */
 export async function fetchTables(slug: string): Promise<Table[]> {
   const page = await apiFetch(
-    `${API}/restaurants/${slug}/tables`,
+    `${API}/restaurants/${slug}/tables?pageSize=${TABLE_LIMIT_PER_RESTAURANT}`,
     tablePageSchema,
     { cache: "no-store" }
   )
