@@ -129,17 +129,17 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T035 [P] [US4] Extend `apps/api/test/tables.e2e-spec.ts`: `GET /restaurants/:slug/tables/:tableId` → 200 `tableSchema`; unknown table → `TABLE_NOT_FOUND`; unknown slug → `RESTAURANT_NOT_FOUND`.
+- [X] T035 [P] [US4] Extend `apps/api/test/tables.e2e-spec.ts`: `GET /restaurants/:slug/tables/:tableId` → 200 `tableSchema`; unknown table → `TABLE_NOT_FOUND`; unknown slug → `RESTAURANT_NOT_FOUND`.
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Add `GET /restaurants/:slug/tables/:tableId` to `apps/api/src/tables/tables.controller.ts` + `findOneBySlug` in `tables.service.ts` (`TABLE_NOT_FOUND`) — backs the customer validity gate.
-- [ ] T037 [P] [US4] Create `apps/customer/proxy.ts` by copying the dashboard subdomain pattern (extract subdomain → rewrite `/` to `/s/<slug>`, block apex `/s/` access).
-- [ ] T038 [P] [US4] Add `apps/customer/app/providers.tsx` with `QueryProvider` (from `@repo/query`) and a `ZodInit` setting `z.config(z.locales.tr())`; render it in the customer layout.
-- [ ] T039 [US4] `apps/customer/features/restaurants/`: `api.ts` `fetchRestaurantBySlug` (404 → `null`) + `queries.ts`.
-- [ ] T040 [US4] `apps/customer/features/tables/`: `api.ts` `fetchTable(slug, tableId)` (404 → `null`) + `queries.ts`.
-- [ ] T041 [US4] `apps/customer/app/s/[slug]/page.tsx`: branded "scan the QR on your table" landing when `ACTIVE`, "not available yet" when inactive/unknown (FR-030).
-- [ ] T042 [US4] `apps/customer/app/s/[slug]/t/[tableId]/page.tsx`: placeholder menu **only if** `status === "ACTIVE"` **and** the table resolves; else "not available yet" (FR-028/FR-029/SC-007), mobile-first.
+- [X] T036 [US4] Add `GET /restaurants/:slug/tables/:tableId` to `apps/api/src/tables/tables.controller.ts` + `findOneBySlug` in `tables.service.ts` (`TABLE_NOT_FOUND`) — backs the customer validity gate.
+- [X] T037 [P] [US4] Create `apps/customer/proxy.ts` by copying the dashboard subdomain pattern (extract subdomain → rewrite `/` to `/s/<slug>`, block apex `/s/` access).
+- [X] T038 [P] [US4] Add `apps/customer/app/providers.tsx` with `QueryProvider` (from `@repo/query`) and a `ZodInit` setting `z.config(z.locales.tr())`; render it in the customer layout.
+- [X] T039 [US4] `apps/customer/features/restaurants/`: `api.ts` `fetchRestaurantBySlug` (404 → `null`) + `queries.ts`.
+- [X] T040 [US4] `apps/customer/features/tables/`: `api.ts` `fetchTable(slug, tableId)` (404 → `null`) + `queries.ts`.
+- [X] T041 [US4] `apps/customer/app/s/[slug]/page.tsx`: branded "scan the QR on your table" landing when `ACTIVE`, "not available yet" when inactive/unknown (FR-030).
+- [X] T042 [US4] `apps/customer/app/s/[slug]/t/[tableId]/page.tsx`: placeholder menu **only if** `status === "ACTIVE"` **and** the table resolves; else "not available yet" (FR-028/FR-029/SC-007), mobile-first.
 
 **Checkpoint**: A scanned code does something sensible end-to-end; non-live restaurants never leak a menu.
 

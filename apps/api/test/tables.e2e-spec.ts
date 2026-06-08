@@ -123,6 +123,34 @@ describe("Tables (e2e)", () => {
     expect(res.body).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
   })
 
+  it("resolves a single table by slug + id (200)", async () => {
+    const { restaurant, areaId } = await seed()
+    const t = (
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "7" })
+    ).body
+    const res = await request(http())
+      .get(`/api/restaurants/${restaurant.slug}/tables/${t.id}`)
+      .expect(200)
+    expect(res.body).toMatchObject({ id: t.id, label: "7", areaId })
+  })
+
+  it("returns TABLE_NOT_FOUND for an unknown table id", async () => {
+    const { restaurant } = await seed()
+    const res = await request(http())
+      .get(`/api/restaurants/${restaurant.slug}/tables/nope`)
+      .expect(404)
+    expect(res.body).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
+  })
+
+  it("returns RESTAURANT_NOT_FOUND for an unknown slug", async () => {
+    const res = await request(http())
+      .get("/api/restaurants/nope/tables/whatever")
+      .expect(404)
+    expect(res.body).toMatchObject({ code: ErrorCode.RESTAURANT_NOT_FOUND })
+  })
+
   it("lists tables as a paginated envelope", async () => {
     const { restaurant, areaId } = await seed()
     await request(http())

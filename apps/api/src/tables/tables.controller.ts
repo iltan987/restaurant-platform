@@ -42,6 +42,11 @@ export class TablesController {
     )
   }
 
+  @Get("restaurants/:slug/tables/:tableId")
+  findOne(@Param("slug") slug: string, @Param("tableId") tableId: string) {
+    return this.tables.findOneBySlug(slug, tableId)
+  }
+
   @Post("areas/:id/tables")
   create(
     @Param("id") areaId: string,

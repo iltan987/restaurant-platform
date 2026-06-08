@@ -42,6 +42,35 @@ export class TablesService {
     return { items, total, page, pageSize }
   }
 
+  /**
+   * Resolves a single table scoped to its restaurant — backs the customer
+   * validity gate (a QR points at `<slug>/t/<tableId>`). Unknown slug and
+   * unknown/out-of-restaurant table get distinct codes so the customer app can
+   * tell "no such restaurant" from "no such table".
+   */
+  async findOneBySlug(slug: string, tableId: string) {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { slug },
+    })
+    if (!restaurant) {
+      throw new NotFoundException({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+        message: `Restaurant with slug "${slug}" was not found`,
+      })
+    }
+
+    const table = await this.prisma.table.findFirst({
+      where: { id: tableId, area: { floor: { restaurantId: restaurant.id } } },
+    })
+    if (!table) {
+      throw new NotFoundException({
+        code: ErrorCode.TABLE_NOT_FOUND,
+        message: `Table with id "${tableId}" was not found`,
+      })
+    }
+    return table
+  }
+
   async create(areaId: string, input: CreateTableInput) {
     const area = await this.getAreaOrThrow(areaId)
     await this.assertWithinLimit(area.floor.restaurantId, 1)

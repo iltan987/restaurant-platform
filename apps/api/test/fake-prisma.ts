@@ -324,20 +324,25 @@ const table = {
   }: {
     where: {
       label?: { in?: string[] }
-      area?: { floorId?: string }
-      id?: { not?: string }
+      area?: { floorId?: string; floor?: { restaurantId?: string } }
+      id?: string | { not?: string }
     }
   }) {
-    const labels = where.label?.in ?? []
+    const labels = where.label?.in
     const floorId = where.area?.floorId
-    const notId = where.id?.not
+    const restaurantId = where.area?.floor?.restaurantId
+    const idEq = typeof where.id === "string" ? where.id : undefined
+    const notId = typeof where.id === "object" ? where.id.not : undefined
     const floorIdOfTable = (t: Table) =>
       areas.find((a) => a.id === t.areaId)?.floorId
     return Promise.resolve(
       tables.find(
         (t) =>
-          labels.includes(t.label) &&
+          (labels === undefined || labels.includes(t.label)) &&
           (floorId === undefined || floorIdOfTable(t) === floorId) &&
+          (restaurantId === undefined ||
+            restaurantIdOfTable(t) === restaurantId) &&
+          (idEq === undefined || t.id === idEq) &&
           (notId === undefined || t.id !== notId)
       ) ?? null
     )
