@@ -201,9 +201,9 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 ### Implementation for User Story 6
 
 - [X] T055 [US6] Add `update` + `remove` to `apps/api/src/restaurants/restaurants.service.ts` (uniqueness re-check → `SLUG_TAKEN`; `RESTAURANT_NOT_FOUND`; cascade delete) and `PATCH /restaurants/:id` + `DELETE /restaurants/:id` to the controller.
-- [ ] T056 [P] [US6] Admin `apps/admin/features/restaurants/`: extend `api.ts` with `updateRestaurant`/`deleteRestaurant`/`setRestaurantStatus`; add `use-update-restaurant.ts` + `use-delete-restaurant.ts`.
-- [ ] T057 [P] [US6] Admin plain management feature folders `apps/admin/features/{floors,areas,tables}/` (`api.ts`/`queries.ts`/`use-*.ts`) calling the **same** endpoints as the dashboard.
-- [ ] T058 [US6] Admin management UI in `apps/admin/features/*/components/`: edit dialog, slug-change-on-live warning (FR-008), deactivate/reactivate, delete confirmation stating consequences (FR-007), and plain floor/area/table management (no wizard, no canvas — FR-048/FR-050) reusing the shared validation/confirmation rules.
+- [X] T056 [P] [US6] Admin `apps/admin/features/restaurants/`: extend `api.ts` with `updateRestaurant`/`deleteRestaurant`/`setRestaurantStatus`; add `use-update-restaurant.ts` + `use-delete-restaurant.ts`.
+- [X] T057 [P] [US6] Admin plain management feature folders `apps/admin/features/{floors,areas,tables}/` (`api.ts`/`queries.ts`/`use-*.ts`) calling the **same** endpoints as the dashboard.
+- [X] T058 [US6] Admin management UI in `apps/admin/features/*/components/`: edit dialog, slug-change-on-live warning (FR-008), deactivate/reactivate, delete confirmation stating consequences (FR-007), and plain floor/area/table management (no wizard, no canvas — FR-048/FR-050) reusing the shared validation/confirmation rules.
 
 **Checkpoint**: All seven stories independently functional.
 
