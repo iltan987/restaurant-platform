@@ -1,7 +1,15 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { LayersIcon, MinusIcon, PlusIcon, XIcon } from "lucide-react"
+import {
+  LayersIcon,
+  MinusIcon,
+  PlusIcon,
+  PrinterIcon,
+  QrCodeIcon,
+  XIcon,
+} from "lucide-react"
+import Link from "next/link"
 import { useRef, useState } from "react"
 
 import {
@@ -25,6 +33,7 @@ import { useBulkCreateTables } from "../use-bulk-create-tables"
 import { useCreateTable } from "../use-create-table"
 import { useDeleteTable } from "../use-delete-table"
 import { useUpdateTable } from "../use-update-table"
+import { QrSheet } from "./qr-sheet"
 
 const MAX_TABLES = 200
 
@@ -74,10 +83,16 @@ function CountStepper({
 
 /** A table chip whose label is click-to-rename inline; × deletes (confirmed). */
 function TableChip({
+  slug,
+  restaurantName,
+  areaName,
   table,
   onRename,
   onDelete,
 }: {
+  slug: string
+  restaurantName: string
+  areaName: string
   table: Table
   onRename: (label: string) => void
   onDelete: () => void
@@ -147,6 +162,22 @@ function TableChip({
           · {table.capacity}
         </span>
       ) : null}
+      <QrSheet
+        slug={slug}
+        restaurantName={restaurantName}
+        areaName={areaName}
+        table={table}
+        trigger={
+          <button
+            type="button"
+            disabled={optimistic}
+            aria-label={`${table.label} masasının QR kodu`}
+            className="grid size-4 place-items-center rounded text-muted-foreground transition hover:text-primary disabled:opacity-40"
+          >
+            <QrCodeIcon className="size-3.5" />
+          </button>
+        }
+      />
       <ConfirmDialog
         trigger={
           <button
@@ -171,6 +202,7 @@ function TableChip({
 
 function AreaBlock({
   slug,
+  restaurantName,
   area,
   floorLabel,
   tables,
@@ -178,6 +210,7 @@ function AreaBlock({
   remaining,
 }: {
   slug: string
+  restaurantName: string
   area: Area
   floorLabel?: string
   tables: Table[]
@@ -212,6 +245,9 @@ function AreaBlock({
             {tables.map((t) => (
               <TableChip
                 key={t.id}
+                slug={slug}
+                restaurantName={restaurantName}
+                areaName={area.name}
                 table={t}
                 onRename={(label) =>
                   update.mutate({ id: t.id, input: { label } })
@@ -331,6 +367,7 @@ export function TablesStep({
         <AreaBlock
           key={a.id}
           slug={slug}
+          restaurantName={restaurant.name}
           area={a}
           floorLabel={isMulti ? floorName(a.floorId) : undefined}
           tables={tablesOf(a.id)}
@@ -346,10 +383,27 @@ export function TablesStep({
     </div>
   )
 
+  const printAll = tables.length > 0 && (
+    <Button
+      variant="outline"
+      size="sm"
+      nativeButton={false}
+      render={
+        <Link href="/qr">
+          <PrinterIcon className="size-4" />
+          Tüm QR kodlarını yazdır
+        </Link>
+      }
+    />
+  )
+
   if (embedded) {
     return (
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold">Masalar</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold">Masalar</h2>
+          {printAll}
+        </div>
         {blocks}
       </section>
     )
@@ -380,6 +434,7 @@ export function TablesStep({
           </div>
         ))}
       </div>
+      {printAll && <div className="flex justify-center">{printAll}</div>}
     </div>
   )
 }

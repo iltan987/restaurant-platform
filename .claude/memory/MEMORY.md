@@ -10,3 +10,4 @@ Memories for this project are checked into the repo here (`.claude/memory/`), no
 - [Minimal diffs, no unrelated churn](minimal-diffs-no-unrelated-churn.md) — scope diffs to the task; never reformat unrelated files
 - [Single floor hides floor UI](single-floor-hides-floor-ui.md) — dashboard hides the floor concept entirely until a 2nd floor exists
 - [Dashboard design direction](dashboard-design-direction.md) — indigo accent, light+dark, onboarding wizard shape; project name still TBD
+- [QR placement card](qr-placement-card.md) — table QR is a print-ready card (print + PNG via canvas), not a bare code

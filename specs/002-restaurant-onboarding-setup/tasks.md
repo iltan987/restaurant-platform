@@ -112,10 +112,10 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] QR URL helper in `apps/dashboard/features/tables/qr.ts`: build the **customer** storefront URL `https://<slug>.<NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN>/t/<tableId>` from the stable `tableId` (FR-021/FR-022/FR-045) — targets the customer app, not the dashboard.
-- [ ] T032 [US3] `QrSheet` component in `apps/dashboard/features/tables/components/qr-sheet.tsx`: render a single table's QR via `<QRCodeCanvas>` from `qrcode.react`, then `canvas.toDataURL("image/png")` → anchor download (FR-023).
-- [ ] T033 [US3] Print-all view + `@media print` stylesheet rendering one `<QRCodeSVG>` (`qrcode.react`, vector for crisp print) per table paired with its label in `apps/dashboard/app/s/[slug]/` (one action, ≤2 interactions — FR-024/FR-025/SC-003), usable at 150+ tables.
-- [ ] T034 [US3] Wire single-download and print-all entry points into the wizard's `TablesStep` and the management view.
+- [X] T031 [P] [US3] QR URL helper in `apps/dashboard/features/tables/qr.ts`: build the **customer** storefront URL `https://<slug>.<NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN>/t/<tableId>` from the stable `tableId` (FR-021/FR-022/FR-045) — targets the customer app, not the dashboard.
+- [X] T032 [US3] `QrSheet` component in `apps/dashboard/features/tables/components/qr-sheet.tsx`: render a single table's QR via `<QRCodeCanvas>` from `qrcode.react`, then `canvas.toDataURL("image/png")` → anchor download (FR-023).
+- [X] T033 [US3] Print-all view + `@media print` stylesheet rendering one `<QRCodeSVG>` (`qrcode.react`, vector for crisp print) per table paired with its label in `apps/dashboard/app/s/[slug]/` (one action, ≤2 interactions — FR-024/FR-025/SC-003), usable at 150+ tables.
+- [X] T034 [US3] Wire single-download and print-all entry points into the wizard's `TablesStep` and the management view.
 
 **Checkpoint**: Staff walk away with printable, label-paired QR codes.
 
