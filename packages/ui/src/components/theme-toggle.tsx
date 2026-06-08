@@ -29,7 +29,7 @@ function ThemeToggle({
   const { resolvedTheme, setTheme } = useTheme()
   const mounted = useMounted()
 
-  const isDark = resolvedTheme === "dark"
+  const isDark = mounted && resolvedTheme === "dark"
 
   return (
     <Button
@@ -41,7 +41,7 @@ function ThemeToggle({
       onClick={() => setTheme(isDark ? "light" : "dark")}
       {...props}
     >
-      {mounted && isDark ? (
+      {isDark ? (
         <MoonIcon className="size-4" />
       ) : (
         <SunIcon className="size-4" />
