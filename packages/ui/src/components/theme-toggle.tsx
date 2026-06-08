@@ -41,11 +41,10 @@ function ThemeToggle({
       onClick={() => setTheme(isDark ? "light" : "dark")}
       {...props}
     >
-      {isDark ? (
-        <MoonIcon className="size-4" />
-      ) : (
-        <SunIcon className="size-4" />
-      )}
+      {/* Both icons render; CSS picks one from the `.dark` class that
+          next-themes sets pre-hydration, so there's no theme flash. */}
+      <SunIcon className="size-4 dark:hidden" />
+      <MoonIcon className="hidden size-4 dark:block" />
     </Button>
   )
 }
