@@ -37,6 +37,7 @@ export function useBulkCreateTables(slug: string) {
           areaId,
           label: `${prefix}${start + i}`,
           capacity: null,
+          shape: "SQUARE",
           positionX: null,
           positionY: null,
           createdAt: new Date().toISOString(),

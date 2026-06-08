@@ -28,6 +28,7 @@ export function useCreateTable(slug: string) {
         areaId,
         label: input.label,
         capacity: input.capacity ?? null,
+        shape: input.shape ?? "SQUARE",
         positionX: null,
         positionY: null,
         createdAt: new Date().toISOString(),

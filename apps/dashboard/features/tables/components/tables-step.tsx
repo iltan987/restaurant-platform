@@ -10,10 +10,11 @@ import {
   XIcon,
 } from "lucide-react"
 import Link from "next/link"
-import { useRef, useState } from "react"
+import { useState } from "react"
 
 import {
   type Area,
+  type Floor,
   type Restaurant,
   type Table,
   TABLE_LIMIT_PER_RESTAURANT,
@@ -32,8 +33,8 @@ import { tablesQueries } from "../queries"
 import { useBulkCreateTables } from "../use-bulk-create-tables"
 import { useCreateTable } from "../use-create-table"
 import { useDeleteTable } from "../use-delete-table"
-import { useUpdateTable } from "../use-update-table"
 import { QrSheet } from "./qr-sheet"
+import { TableEditDialog } from "./table-edit-dialog"
 
 const MAX_TABLES = 200
 
@@ -81,65 +82,24 @@ function CountStepper({
   )
 }
 
-/** A table chip whose label is click-to-rename inline; × deletes (confirmed). */
+/** A table chip: click the label to edit (name/capacity/shape/area); × deletes. */
 function TableChip({
   slug,
   restaurantName,
-  areaName,
+  areas,
+  floors,
   table,
-  onRename,
   onDelete,
 }: {
   slug: string
   restaurantName: string
-  areaName: string
+  areas: Area[]
+  floors: Floor[]
   table: Table
-  onRename: (label: string) => void
   onDelete: () => void
 }) {
   const optimistic = table.id.startsWith("__optimistic__")
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(table.label)
-  const cancelRef = useRef(false)
-
-  function startEdit() {
-    if (optimistic) return
-    setDraft(table.label)
-    setEditing(true)
-  }
-
-  function commit() {
-    setEditing(false)
-    if (cancelRef.current) {
-      cancelRef.current = false
-      return
-    }
-    const next = draft.trim()
-    if (next && next !== table.label) onRename(next)
-  }
-
-  if (editing) {
-    return (
-      <span className="inline-flex items-center rounded-md border border-ring bg-background py-1 pr-1 pl-1 ring-3 ring-ring/30">
-        <input
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.currentTarget.blur()
-            if (e.key === "Escape") {
-              cancelRef.current = true
-              e.currentTarget.blur()
-            }
-          }}
-          aria-label={`${table.label} masa adı`}
-          maxLength={40}
-          className="field-sizing-content w-20 min-w-0 bg-transparent px-1.5 text-sm font-medium outline-none"
-        />
-      </span>
-    )
-  }
+  const areaName = areas.find((a) => a.id === table.areaId)?.name ?? ""
 
   return (
     <span
@@ -148,15 +108,22 @@ function TableChip({
         optimistic && "opacity-50"
       )}
     >
-      <button
-        type="button"
-        onClick={startEdit}
-        disabled={optimistic}
-        aria-label={`${table.label} masasını yeniden adlandır`}
-        className="rounded px-1.5 py-0.5 font-medium transition hover:bg-muted disabled:hover:bg-transparent"
-      >
-        {table.label}
-      </button>
+      <TableEditDialog
+        slug={slug}
+        table={table}
+        areas={areas}
+        floors={floors}
+        trigger={
+          <button
+            type="button"
+            disabled={optimistic}
+            aria-label={`${table.label} masasını düzenle`}
+            className="rounded px-1.5 py-0.5 font-medium transition hover:bg-muted disabled:hover:bg-transparent"
+          >
+            {table.label}
+          </button>
+        }
+      />
       {table.capacity ? (
         <span className="text-xs text-muted-foreground">
           · {table.capacity}
@@ -204,6 +171,8 @@ function AreaBlock({
   slug,
   restaurantName,
   area,
+  areas,
+  floors,
   floorLabel,
   tables,
   nextStart,
@@ -212,6 +181,8 @@ function AreaBlock({
   slug: string
   restaurantName: string
   area: Area
+  areas: Area[]
+  floors: Floor[]
   floorLabel?: string
   tables: Table[]
   nextStart: number
@@ -221,7 +192,6 @@ function AreaBlock({
   const bulk = useBulkCreateTables(slug)
   const single = useCreateTable(slug)
   const del = useDeleteTable(slug)
-  const update = useUpdateTable(slug)
   const seats = tables.reduce((s, t) => s + (t.capacity ?? 0), 0)
 
   return (
@@ -247,11 +217,9 @@ function AreaBlock({
                 key={t.id}
                 slug={slug}
                 restaurantName={restaurantName}
-                areaName={area.name}
+                areas={areas}
+                floors={floors}
                 table={t}
-                onRename={(label) =>
-                  update.mutate({ id: t.id, input: { label } })
-                }
                 onDelete={() => del.mutate(t.id)}
               />
             ))}
@@ -369,6 +337,8 @@ export function TablesStep({
           slug={slug}
           restaurantName={restaurant.name}
           area={a}
+          areas={areas}
+          floors={floors}
           floorLabel={isMulti ? floorName(a.floorId) : undefined}
           tables={tablesOf(a.id)}
           nextStart={nextStartFor(a)}

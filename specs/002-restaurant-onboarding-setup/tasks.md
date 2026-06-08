@@ -180,8 +180,8 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 ### Implementation for User Story 5
 
 - [X] T050 [US5] Add `update` (rename, capacity, `areaId` reassignment) + `remove` to `apps/api/src/tables/tables.service.ts` and `PATCH /tables/:id` + `DELETE /tables/:id` to `apps/api/src/tables/tables.controller.ts`.
-- [ ] T051 [P] [US5] Dashboard `use-update-table.ts` + `use-delete-table.ts` (and floor/area update/delete hooks if not already added in T027) in `apps/dashboard/features/{tables,floors,areas}/`.
-- [ ] T052 [US5] `TableManager` management view in `apps/dashboard/features/tables/components/table-manager.tsx`: all tables at once (no small cap), grouped by floor/area, warned destructive confirmations (FR-026/FR-031/FR-036), per-row QR download, post-setup add yields immediate QR (FR-032), live/not-live toggle reusing `use-set-status` (FR-020).
+- [X] T051 [P] [US5] Dashboard `use-update-table.ts` + `use-delete-table.ts` (and floor/area update/delete hooks if not already added in T027) in `apps/dashboard/features/{tables,floors,areas}/`.
+- [X] T052 [US5] `TableManager` management view in `apps/dashboard/features/tables/components/table-manager.tsx`: all tables at once (no small cap), grouped by floor/area, warned destructive confirmations (FR-026/FR-031/FR-036), per-row QR download, post-setup add yields immediate QR (FR-032), live/not-live toggle reusing `use-set-status` (FR-020).
 
 **Checkpoint**: Full staff lifecycle (edit floors/areas/tables + toggle) without the wizard.
 
