@@ -36,6 +36,7 @@ type Table = {
   areaId: string
   label: string
   capacity: number | null
+  shape: "SQUARE" | "RECT" | "ROUND"
   positionX: number | null
   positionY: number | null
   createdAt: Date
@@ -50,7 +51,9 @@ let seq = 0
 // Simulates a unique-constraint race (P2002) on the next restaurant insert —
 // the only path that surfaces SLUG_TAKEN (the service pre-uniquifies otherwise).
 let forceP2002 = false
-const id = (p: string) => `${p}-${++seq}`
+// cuid2-shaped ids (lowercase alphanumeric, no hyphen) so body fields validated
+// with z.cuid2() — e.g. areaId on PATCH /tables/:id — pass through the pipe.
+const id = (p: string) => `${p}${++seq}`
 const now = () => new Date()
 
 const restaurantIdOfFloor = (floorId: string) =>
@@ -108,6 +111,24 @@ const restaurant = {
   }) {
     const row = restaurants.find((r) => r.id === where.id)!
     Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    // DB-level cascade: restaurant → floors → areas → tables.
+    const floorIds = floors
+      .filter((f) => f.restaurantId === where.id)
+      .map((f) => f.id)
+    const areaIds = areas
+      .filter((a) => floorIds.includes(a.floorId))
+      .map((a) => a.id)
+    for (let j = tables.length - 1; j >= 0; j--)
+      if (areaIds.includes(tables[j]!.areaId)) tables.splice(j, 1)
+    for (let j = areas.length - 1; j >= 0; j--)
+      if (floorIds.includes(areas[j]!.floorId)) areas.splice(j, 1)
+    for (let j = floors.length - 1; j >= 0; j--)
+      if (floors[j]!.restaurantId === where.id) floors.splice(j, 1)
+    const i = restaurants.findIndex((r) => r.id === where.id)
+    const [row] = restaurants.splice(i, 1)
     return Promise.resolve(row)
   },
 }
@@ -277,13 +298,19 @@ const table = {
   create({
     data,
   }: {
-    data: { areaId: string; label: string; capacity?: number | null }
+    data: {
+      areaId: string
+      label: string
+      capacity?: number | null
+      shape?: "SQUARE" | "RECT" | "ROUND"
+    }
   }) {
     const row: Table = {
       id: id("table"),
       areaId: data.areaId,
       label: data.label,
       capacity: data.capacity ?? null,
+      shape: data.shape ?? "SQUARE",
       positionX: null,
       positionY: null,
       createdAt: now(),

@@ -81,6 +81,7 @@ export class TablesService {
         areaId,
         label: input.label,
         capacity: input.capacity ?? null,
+        ...(input.shape ? { shape: input.shape } : {}),
       },
     })
   }
@@ -117,10 +118,25 @@ export class TablesService {
         message: `Table with id "${id}" was not found`,
       })
     }
-    // A rename must stay unique on the floor; exclude this table from the check.
-    if (input.label && input.label !== table.label) {
-      await this.assertLabelsFree(table.area.floorId, [input.label], id)
+
+    // Reassigning the area may move the table to another floor, which is where
+    // its label must stay unique.
+    let floorId = table.area.floorId
+    if (input.areaId && input.areaId !== table.areaId) {
+      const area = await this.getAreaOrThrow(input.areaId)
+      floorId = area.floorId
     }
+
+    // Re-check label uniqueness when the label changes or the table changes
+    // floor; exclude this table from the check.
+    const nextLabel = input.label ?? table.label
+    const labelChanged =
+      input.label !== undefined && input.label !== table.label
+    const floorChanged = floorId !== table.area.floorId
+    if (labelChanged || floorChanged) {
+      await this.assertLabelsFree(floorId, [nextLabel], id)
+    }
+
     return this.prisma.table.update({ where: { id }, data: input })
   }
 

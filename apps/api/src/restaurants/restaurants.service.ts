@@ -10,6 +10,7 @@ import {
   ErrorCode,
   type OnboardingStatusInput,
   type RestaurantStatusInput,
+  type UpdateRestaurantInput,
 } from "@repo/schemas"
 
 import { isP2002 } from "../common/prisma-error"
@@ -102,6 +103,37 @@ export class RestaurantsService {
       where: { id },
       data: { status: input.status },
     })
+  }
+
+  /**
+   * Admin edit of name/slug. A slug change is re-uniqued and P2002-guarded
+   * (SLUG_TAKEN); the caller is responsible for warning about broken links on a
+   * live restaurant (FR-008).
+   */
+  async update(id: string, input: UpdateRestaurantInput) {
+    await this.getByIdOrThrow(id)
+
+    const data: { name?: string; slug?: string } = {}
+    if (input.name !== undefined) data.name = input.name
+    if (input.slug !== undefined) data.slug = slugify(input.slug)
+
+    try {
+      return await this.prisma.restaurant.update({ where: { id }, data })
+    } catch (err: unknown) {
+      if (isP2002(err)) {
+        throw new ConflictException({
+          code: ErrorCode.SLUG_TAKEN,
+          message: `Slug "${data.slug}" is already taken`,
+        })
+      }
+      throw err
+    }
+  }
+
+  /** Admin delete. Floors → areas → tables cascade via the DB FKs (FR-007). */
+  async remove(id: string) {
+    await this.getByIdOrThrow(id)
+    await this.prisma.restaurant.delete({ where: { id } })
   }
 
   /** Finish / skip onboarding — never auto-activates (FR-019). */

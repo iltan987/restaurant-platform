@@ -174,12 +174,12 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T048 [P] [US5] Extend `apps/api/src/tables/tables.service.spec.ts`: `update` label conflict → `TABLE_LABEL_TAKEN`, area reassignment, `update`/`delete` of missing table → `TABLE_NOT_FOUND`.
-- [ ] T049 [P] [US5] Extend `apps/api/test/tables.e2e-spec.ts`: `PATCH /tables/:id` (rename/move/reassign) and `DELETE /tables/:id` (204).
+- [X] T048 [P] [US5] Extend `apps/api/src/tables/tables.service.spec.ts`: `update` label conflict → `TABLE_LABEL_TAKEN`, area reassignment, `update`/`delete` of missing table → `TABLE_NOT_FOUND`.
+- [X] T049 [P] [US5] Extend `apps/api/test/tables.e2e-spec.ts`: `PATCH /tables/:id` (rename/move/reassign) and `DELETE /tables/:id` (204).
 
 ### Implementation for User Story 5
 
-- [ ] T050 [US5] Add `update` (rename, capacity, `areaId` reassignment) + `remove` to `apps/api/src/tables/tables.service.ts` and `PATCH /tables/:id` + `DELETE /tables/:id` to `apps/api/src/tables/tables.controller.ts`.
+- [X] T050 [US5] Add `update` (rename, capacity, `areaId` reassignment) + `remove` to `apps/api/src/tables/tables.service.ts` and `PATCH /tables/:id` + `DELETE /tables/:id` to `apps/api/src/tables/tables.controller.ts`.
 - [ ] T051 [P] [US5] Dashboard `use-update-table.ts` + `use-delete-table.ts` (and floor/area update/delete hooks if not already added in T027) in `apps/dashboard/features/{tables,floors,areas}/`.
 - [ ] T052 [US5] `TableManager` management view in `apps/dashboard/features/tables/components/table-manager.tsx`: all tables at once (no small cap), grouped by floor/area, warned destructive confirmations (FR-026/FR-031/FR-036), per-row QR download, post-setup add yields immediate QR (FR-032), live/not-live toggle reusing `use-set-status` (FR-020).
 
@@ -195,12 +195,12 @@ Turborepo monorepo: NestJS API at `apps/api/src/`, Next.js apps at `apps/{dashbo
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T053 [P] [US6] Extend `apps/api/src/restaurants/restaurants.service.spec.ts`: `update` slug conflict → `SLUG_TAKEN`, missing → `RESTAURANT_NOT_FOUND`; `remove` cascades floors→areas→tables.
-- [ ] T054 [P] [US6] Extend `apps/api/test/restaurants.e2e-spec.ts`: `PATCH /restaurants/:id` and `DELETE /restaurants/:id` (204, cascade).
+- [X] T053 [P] [US6] Extend `apps/api/src/restaurants/restaurants.service.spec.ts`: `update` slug conflict → `SLUG_TAKEN`, missing → `RESTAURANT_NOT_FOUND`; `remove` cascades floors→areas→tables.
+- [X] T054 [P] [US6] Extend `apps/api/test/restaurants.e2e-spec.ts`: `PATCH /restaurants/:id` and `DELETE /restaurants/:id` (204, cascade).
 
 ### Implementation for User Story 6
 
-- [ ] T055 [US6] Add `update` + `remove` to `apps/api/src/restaurants/restaurants.service.ts` (uniqueness re-check → `SLUG_TAKEN`; `RESTAURANT_NOT_FOUND`; cascade delete) and `PATCH /restaurants/:id` + `DELETE /restaurants/:id` to the controller.
+- [X] T055 [US6] Add `update` + `remove` to `apps/api/src/restaurants/restaurants.service.ts` (uniqueness re-check → `SLUG_TAKEN`; `RESTAURANT_NOT_FOUND`; cascade delete) and `PATCH /restaurants/:id` + `DELETE /restaurants/:id` to the controller.
 - [ ] T056 [P] [US6] Admin `apps/admin/features/restaurants/`: extend `api.ts` with `updateRestaurant`/`deleteRestaurant`/`setRestaurantStatus`; add `use-update-restaurant.ts` + `use-delete-restaurant.ts`.
 - [ ] T057 [P] [US6] Admin plain management feature folders `apps/admin/features/{floors,areas,tables}/` (`api.ts`/`queries.ts`/`use-*.ts`) calling the **same** endpoints as the dashboard.
 - [ ] T058 [US6] Admin management UI in `apps/admin/features/*/components/`: edit dialog, slug-change-on-live warning (FR-008), deactivate/reactivate, delete confirmation stating consequences (FR-007), and plain floor/area/table management (no wizard, no canvas — FR-048/FR-050) reusing the shared validation/confirmation rules.

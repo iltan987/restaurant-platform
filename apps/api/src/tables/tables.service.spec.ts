@@ -46,6 +46,7 @@ describe("TablesService", () => {
         findUnique: jest.fn().mockResolvedValue({
           id: "t1",
           label: "1",
+          areaId: "a1",
           area: { floorId: "f1" },
         }),
         count: jest.fn().mockResolvedValue(0),
@@ -222,6 +223,34 @@ describe("TablesService", () => {
       await service.update("t1", { label: "1" })
       expect(prismaMock.table.findFirst).not.toHaveBeenCalled()
       expect(prismaMock.table.update).toHaveBeenCalled()
+    })
+
+    it("reassigns area, re-checking the label on the destination floor", async () => {
+      // moving table t1 (floor f1) into area a2 on floor f2
+      prismaMock.area.findUnique.mockResolvedValue({
+        id: "a2",
+        floorId: "f2",
+        floor: { restaurantId: "r1" },
+      })
+      await service.update("t1", { areaId: "a2" })
+      expect(prismaMock.table.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            label: { in: ["1"] },
+            area: { floorId: "f2" },
+            id: { not: "t1" },
+          },
+        })
+      )
+      expect(prismaMock.table.update).toHaveBeenCalled()
+    })
+
+    it("throws AREA_NOT_FOUND when reassigning to a missing area", async () => {
+      prismaMock.area.findUnique.mockResolvedValue(null)
+      const err = await service.update("t1", { areaId: "nope" }).catch((e) => e)
+      expect(err).toBeInstanceOf(NotFoundException)
+      expect(responseOf(err)).toMatchObject({ code: ErrorCode.AREA_NOT_FOUND })
+      expect(prismaMock.table.update).not.toHaveBeenCalled()
     })
   })
 

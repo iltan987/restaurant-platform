@@ -19,6 +19,12 @@ enum OnboardingStatus {
   SKIPPED
 }
 
+enum TableShape {
+  SQUARE
+  RECT
+  ROUND
+}
+
 model Restaurant {
   id               String           @id @default(cuid(2))
   name             String
@@ -69,10 +75,11 @@ model Table {
   area      Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
   label     String
   capacity  Int?
+  shape     TableShape @default(SQUARE)
   positionX Float?
   positionY Float?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([areaId])
   @@map("tables")

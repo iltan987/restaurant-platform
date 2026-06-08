@@ -35,6 +35,7 @@ describe("RestaurantsService", () => {
     findUnique: jest.Mock
     count: jest.Mock
     update: jest.Mock
+    delete: jest.Mock
   }
   let mockFloor: { create: jest.Mock }
   let mockArea: { create: jest.Mock }
@@ -56,6 +57,7 @@ describe("RestaurantsService", () => {
       update: jest
         .fn()
         .mockImplementation(({ data }) => Promise.resolve(makeRow(data))),
+      delete: jest.fn().mockResolvedValue(makeRow()),
     }
     mockFloor = { create: jest.fn().mockResolvedValue({ id: "floor-1" }) }
     mockArea = { create: jest.fn().mockResolvedValue({ id: "area-1" }) }
@@ -261,6 +263,69 @@ describe("RestaurantsService", () => {
       expect((err as NotFoundException).getResponse()).toMatchObject({
         code: ErrorCode.RESTAURANT_NOT_FOUND,
       })
+    })
+  })
+
+  describe("update", () => {
+    it("updates the name and re-slugs the slug", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.update("cuid-1", { name: "New Name", slug: "Yeni Slug" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { name: "New Name", slug: "yeni-slug" },
+      })
+    })
+
+    it("throws SLUG_TAKEN on a P2002 unique-constraint violation", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+      mockRestaurant.update.mockRejectedValue({ code: "P2002" })
+
+      const err = await service
+        .update("cuid-1", { slug: "taken" })
+        .catch((e: unknown) => e)
+
+      expect(err).toBeInstanceOf(ConflictException)
+      expect((err as ConflictException).getResponse()).toMatchObject({
+        code: ErrorCode.SLUG_TAKEN,
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .update("nope", { name: "x" })
+        .catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+      expect(mockRestaurant.update).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("remove", () => {
+    it("deletes an existing restaurant (cascade handled by the DB)", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.remove("cuid-1")
+
+      expect(mockRestaurant.delete).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service.remove("nope").catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+      expect(mockRestaurant.delete).not.toHaveBeenCalled()
     })
   })
 

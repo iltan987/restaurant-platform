@@ -110,6 +110,65 @@ describe("Tables (e2e)", () => {
     expect(fakePrisma.__stores.tables).toHaveLength(1)
   })
 
+  it("renames, sets shape, and reassigns a table's area via PATCH", async () => {
+    const { restaurant, areaId } = await seed()
+    const t = (
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "1" })
+    ).body
+
+    // a second area on the same floor to move into
+    const area2 = (
+      await request(http())
+        .post(`/api/floors/${fakePrisma.__stores.floors[0]!.id}/areas`)
+        .send({ name: "Teras" })
+    ).body
+
+    const res = await request(http())
+      .patch(`/api/tables/${t.id}`)
+      .send({ label: "VIP", shape: "ROUND", capacity: 6, areaId: area2.id })
+      .expect(200)
+    expect(res.body).toMatchObject({
+      id: t.id,
+      label: "VIP",
+      shape: "ROUND",
+      capacity: 6,
+      areaId: area2.id,
+    })
+    // confirm it now resolves under the restaurant with the new values
+    const fetched = await request(http())
+      .get(`/api/restaurants/${restaurant.slug}/tables/${t.id}`)
+      .expect(200)
+    expect(fetched.body).toMatchObject({ label: "VIP", areaId: area2.id })
+  })
+
+  it("rejects a rename that collides on the floor (TABLE_LABEL_TAKEN)", async () => {
+    const { areaId } = await seed()
+    await request(http())
+      .post(`/api/areas/${areaId}/tables`)
+      .send({ label: "1" })
+    const t2 = (
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "2" })
+    ).body
+    const res = await request(http())
+      .patch(`/api/tables/${t2.id}`)
+      .send({ label: "1" })
+      .expect(409)
+    expect(res.body).toMatchObject({ code: ErrorCode.TABLE_LABEL_TAKEN })
+  })
+
+  it("returns TABLE_NOT_FOUND patching an unknown table", async () => {
+    await seed()
+    const res = await request(http())
+      .patch("/api/tables/nope")
+      .send({ label: "x" })
+      .expect(404)
+    expect(res.body).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
+  })
+
   it("deletes a table (204); unknown table → TABLE_NOT_FOUND", async () => {
     const { areaId } = await seed()
     const t = (

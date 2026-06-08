@@ -148,4 +148,40 @@ describe("Restaurants (e2e)", () => {
       })
     })
   })
+
+  describe("PATCH /api/restaurants/:id", () => {
+    it("edits the name and re-slugs the slug", async () => {
+      const created = await request(http())
+        .post("/api/restaurants")
+        .send({ name: "Old Name" })
+
+      const res = await request(http())
+        .patch(`/api/restaurants/${created.body.id}`)
+        .send({ name: "New Name", slug: "yeni-ad" })
+        .expect(200)
+      expect(res.body).toMatchObject({ name: "New Name", slug: "yeni-ad" })
+    })
+  })
+
+  describe("DELETE /api/restaurants/:id", () => {
+    it("deletes a restaurant and cascades floors/areas/tables (204)", async () => {
+      const created = await request(http())
+        .post("/api/restaurants")
+        .send({ name: "Doomed" })
+      const areaId = fakePrisma.__stores.areas[0]!.id
+      await request(http())
+        .post(`/api/areas/${areaId}/tables`)
+        .send({ label: "1" })
+        .expect(201)
+
+      await request(http())
+        .delete(`/api/restaurants/${created.body.id}`)
+        .expect(204)
+
+      expect(fakePrisma.__stores.restaurants).toHaveLength(0)
+      expect(fakePrisma.__stores.floors).toHaveLength(0)
+      expect(fakePrisma.__stores.areas).toHaveLength(0)
+      expect(fakePrisma.__stores.tables).toHaveLength(0)
+    })
+  })
 })

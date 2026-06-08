@@ -3,20 +3,27 @@ import { z } from "zod"
 /** Hard ceiling on tables per restaurant — anti-spam guard, enforced server-side. */
 export const TABLE_LIMIT_PER_RESTAURANT = 500
 
+/** Table outline on the floor-plan canvas — visual only, no behavior. */
+export const tableShapeSchema = z.enum(["SQUARE", "RECT", "ROUND"])
+
+export type TableShape = z.infer<typeof tableShapeSchema>
+
 // ── Input schemas (locale-agnostic) ──
 
 /** Create under an area (areaId comes from the path). */
 export const createTableSchema = z.object({
   label: z.string().min(1).max(40),
   capacity: z.number().int().min(1).optional(),
+  shape: tableShapeSchema.optional(),
 })
 
 export type CreateTableInput = z.infer<typeof createTableSchema>
 
-/** Rename / set capacity / reassign area / single-table reposition. */
+/** Rename / set capacity / shape / reassign area / single-table reposition. */
 export const updateTableSchema = z.object({
   label: z.string().min(1).max(40).optional(),
   capacity: z.number().int().min(1).nullable().optional(),
+  shape: tableShapeSchema.optional(),
   areaId: z.cuid2().optional(),
   positionX: z.number().min(0).max(1).nullable().optional(),
   positionY: z.number().min(0).max(1).nullable().optional(),
@@ -53,6 +60,7 @@ export const tableSchema = z.object({
   areaId: z.string(),
   label: z.string(),
   capacity: z.number().int().nullable().optional(),
+  shape: tableShapeSchema,
   positionX: z.number().nullable().optional(),
   positionY: z.number().nullable().optional(),
   createdAt: z.string(),

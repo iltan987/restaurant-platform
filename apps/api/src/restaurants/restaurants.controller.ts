@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -17,6 +19,8 @@ import {
   paginationQuerySchema,
   type RestaurantStatusInput,
   restaurantStatusSchema,
+  type UpdateRestaurantInput,
+  updateRestaurantSchema,
 } from "@repo/schemas"
 
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
@@ -70,5 +74,22 @@ export class RestaurantsController {
     input: OnboardingStatusInput
   ) {
     return this.restaurants.setOnboarding(id, input)
+  }
+
+  /** Admin edit name/slug */
+  @Patch(":id")
+  update(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(updateRestaurantSchema))
+    input: UpdateRestaurantInput
+  ) {
+    return this.restaurants.update(id, input)
+  }
+
+  /** Admin delete (cascades floors → areas → tables) */
+  @Delete(":id")
+  @HttpCode(204)
+  remove(@Param("id") id: string) {
+    return this.restaurants.remove(id)
   }
 }
