@@ -37,6 +37,7 @@ import { useCreateItem } from "../use-create-item"
 import { useUpdateItem } from "../use-update-item"
 import { AllergenPicker } from "./allergen-picker"
 import { AvailabilityEditor } from "./availability-editor"
+import { MediaUploader } from "./media-uploader"
 import { OptionGroupsEditor } from "./option-groups-editor"
 import { TagPicker } from "./tag-picker"
 
@@ -193,6 +194,10 @@ export function ItemEditorDialog({
 
         {item && (
           <>
+            <Separator />
+
+            <MediaUploader itemId={item.id} categoryId={categoryId} />
+
             <Separator />
 
             <div className="flex flex-col gap-1.5">

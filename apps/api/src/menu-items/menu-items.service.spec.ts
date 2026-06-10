@@ -4,6 +4,7 @@ import { Test, TestingModule } from "@nestjs/testing"
 import { ErrorCode } from "@repo/schemas"
 
 import { PrismaService } from "../prisma/prisma.service"
+import { S3Service } from "../storage/s3.service"
 import { MenuItemsService } from "./menu-items.service"
 
 const responseOf = (err: unknown) => (err as NotFoundException).getResponse()
@@ -47,6 +48,10 @@ describe("MenuItemsService", () => {
       providers: [
         MenuItemsService,
         { provide: PrismaService, useValue: prismaMock },
+        {
+          provide: S3Service,
+          useValue: { publicUrl: (key: string) => `http://media/${key}` },
+        },
       ],
     }).compile()
 

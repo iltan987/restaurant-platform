@@ -157,15 +157,15 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ### Tests
 
-- [ ] T045 [P] [US5] `apps/api/src/storage/s3.service.spec.ts` — presign + HEAD verify + delete (S3 client mocked)
-- [ ] T048 [P] [US5] `apps/api/src/menu-items/media.service.spec.ts` — cap, type/size, confirm-HEAD, no-orphan-on-failure
+- [x] T045 [P] [US5] `apps/api/src/storage/s3.service.spec.ts` — presign + HEAD verify + delete (S3 client mocked)
+- [x] T048 [P] [US5] `apps/api/src/menu-items/media.service.spec.ts` — cap, type/size, confirm-HEAD, no-orphan-on-failure
 
 ### Implementation
 
-- [ ] T046 [US5] `storage` module + `S3Service` in `apps/api/src/storage/` — presign PUT, HEAD verify, delete, compose public URL (env-selected MinIO/R2, one code path) (depends T001, T011)
-- [ ] T047 [P] [US5] Media schemas in `packages/schemas/src/media.ts` (request-upload, confirm, response) + export
-- [ ] T049 [US5] Media endpoints (`upload-url`/`confirm`/`delete`/`order`) + service in the `menu-items` module — limits at grant, HEAD-verify on confirm (depends T046, T047, T018)
-- [ ] T050 [US5] Dashboard media uploader in the item editor — presigned `PUT` from browser, client pre-check, reorder/cover, rejection messages (depends T021, T047)
+- [x] T046 [US5] `storage` module + `S3Service` in `apps/api/src/storage/` — presign PUT, HEAD verify, delete, compose public URL (env-selected MinIO/R2, one code path) (depends T001, T011)
+- [x] T047 [P] [US5] Media schemas in `packages/schemas/src/media.ts` (request-upload, confirm, response) + export
+- [x] T049 [US5] Media endpoints (`upload-url`/`confirm`/`delete`/`order`) + service in the `menu-items` module — limits at grant, HEAD-verify on confirm (depends T046, T047, T018)
+- [x] T050 [US5] Dashboard media uploader in the item editor — presigned `PUT` from browser, client pre-check, reorder/cover, rejection messages (depends T021, T047)
 
 **Checkpoint**: Items carry photos/videos via direct upload, with limits enforced and no orphans.
 

@@ -7,10 +7,14 @@ import {
 } from "@repo/schemas"
 
 import { PrismaService } from "../prisma/prisma.service"
+import { S3Service } from "../storage/s3.service"
 
 @Injectable()
 export class MenuItemsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly s3: S3Service
+  ) {}
 
   /** Items within a category, ordered. */
   async findAllByCategory(categoryId: string) {
@@ -36,6 +40,7 @@ export class MenuItemsService {
         allergens: { orderBy: { label: "asc" } },
         tags: { orderBy: { label: "asc" } },
         availabilityWindows: { orderBy: { startMin: "asc" } },
+        media: { orderBy: { position: "asc" } },
       },
     })
     if (!item) {
@@ -44,7 +49,18 @@ export class MenuItemsService {
         message: `Menu item with id "${id}" was not found`,
       })
     }
-    return item
+    // Media rows store an object key; the API exposes a composed public URL.
+    return {
+      ...item,
+      media: item.media.map((m) => ({
+        id: m.id,
+        itemId: m.itemId,
+        type: m.type,
+        url: this.s3.publicUrl(m.storageKey),
+        mimeType: m.mimeType,
+        position: m.position,
+      })),
+    }
   }
 
   async create(categoryId: string, input: CreateMenuItemInput) {

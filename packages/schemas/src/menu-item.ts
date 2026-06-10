@@ -4,6 +4,7 @@ import { SERVING_UNITS } from "@repo/core"
 
 import { allergenSchema } from "./allergen"
 import { availabilityWindowSchema } from "./availability"
+import { mediaAssetSchema } from "./media"
 import { optionGroupSchema } from "./option"
 import { tagSchema } from "./tag"
 
@@ -64,14 +65,15 @@ export type MenuItem = z.infer<typeof menuItemSchema>
 
 /**
  * Full item detail (GET /menu-items/:id) — the base item plus its ordered
- * option groups (each with ordered options) and its assigned allergens & tags.
- * Later stories extend this with media and availability windows.
+ * option groups (each with ordered options), assigned allergens & tags,
+ * availability windows, and ordered media.
  */
 export const menuItemDetailSchema = menuItemSchema.extend({
   optionGroups: z.array(optionGroupSchema),
   allergens: z.array(allergenSchema),
   tags: z.array(tagSchema),
   availabilityWindows: z.array(availabilityWindowSchema),
+  media: z.array(mediaAssetSchema),
 })
 
 export type MenuItemDetail = z.infer<typeof menuItemDetailSchema>
