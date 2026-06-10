@@ -126,14 +126,47 @@ const restaurant = {
     restaurants.push(row)
     return Promise.resolve(row)
   },
-  findUnique({ where }: { where: { id?: string; slug?: string } }) {
-    return Promise.resolve(
+  findUnique({
+    where,
+    include,
+  }: {
+    where: { id?: string; slug?: string }
+    include?: { categories?: { where?: { isHidden?: boolean } } }
+  }) {
+    const row =
       restaurants.find(
         (r) =>
           (where.id !== undefined && r.id === where.id) ||
           (where.slug !== undefined && r.slug === where.slug)
       ) ?? null
-    )
+    if (!row || !include?.categories) return Promise.resolve(row)
+
+    // Public menu tree: categories (optionally non-hidden) → items, each with
+    // the relation arrays the MenuService composes over. The fake has no
+    // option/allergen/tag/window/media stores, so those come back empty.
+    const onlyVisible = include.categories.where?.isHidden === false
+    const cats = categories
+      .filter((c) => c.restaurantId === row.id && (!onlyVisible || !c.isHidden))
+      .sort((a, b) => a.position - b.position)
+      .map((c) => ({
+        ...c,
+        items: menuItems
+          .filter((m) => m.categoryId === c.id)
+          .sort((a, b) => a.position - b.position)
+          .map((m) => ({
+            ...m,
+            description: null,
+            calories: null,
+            servingAmount: null,
+            servingUnit: null,
+            optionGroups: [],
+            allergens: [],
+            tags: [],
+            availabilityWindows: [],
+            media: [],
+          })),
+      }))
+    return Promise.resolve({ ...row, categories: cats })
   },
   findMany({ skip, take }: { skip?: number; take?: number } = {}) {
     const sorted = [...restaurants].sort(

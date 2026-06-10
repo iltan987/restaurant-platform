@@ -179,15 +179,15 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ### Tests
 
-- [ ] T051 [P] [US6] `apps/api/src/menu/menu.service.spec.ts` — active gating, tree shape, `orderableNow` per item
-- [ ] T053 [P] [US6] `apps/api/test/public-menu.e2e-spec.ts` — by-slug active vs non-active, hidden category excluded
+- [x] T051 [P] [US6] `apps/api/src/menu/menu.service.spec.ts` — active gating, tree shape, `orderableNow` per item
+- [x] T053 [P] [US6] `apps/api/test/public-menu.e2e-spec.ts` — by-slug active vs non-active, hidden category excluded
 
 ### Implementation
 
-- [ ] T052 [P] [US6] `MenuTree` schema in `packages/schemas/src/menu.ts` + export
-- [ ] T054 [US6] `menu` module in `apps/api/src/menu/` — public `GET by-slug`, active-gated, computes `orderableNow` (Europe/Istanbul) per item; composes media public URLs (depends T052, T040, T018, T026, T032, T033, T043, T049)
-- [ ] T055 [US6] Customer `features/menu/` `api.ts` + `queries.ts` — fetch `MenuTree` by slug (depends T052)
-- [ ] T056 [P] [US6] Customer in-memory search util (item name/description/tags + category names, Turkish-normalized) + unit test (depends T055)
+- [x] T052 [P] [US6] `MenuTree` schema in `packages/schemas/src/menu.ts` + export
+- [x] T054 [US6] `menu` module in `apps/api/src/menu/` — public `GET by-slug`, active-gated, computes `orderableNow` (Europe/Istanbul) per item; composes media public URLs (depends T052, T040, T018, T026, T032, T033, T043, T049)
+- [x] T055 [US6] Customer `features/menu/` `api.ts` + `queries.ts` — fetch `MenuTree` by slug (depends T052)
+- [x] T056 [P] [US6] Customer in-memory search util (item name/description/tags + category names, Turkish-normalized) + unit test (depends T055)
 - [ ] T057 [US6] ⏸️ **DEFERRED — blocked on the design handoff.** Customer mobile menu UI: warm theme, sticky scroll-spy categories, balanced-photo item cards, item-detail **bottom sheet** (media gallery, price + unit price, calories, allergens, tags, options shown informatively, availability states). **Adapt the provided design (see Notes), NOT 1:1, using shadcn + Tailwind (no raw HTML/CSS), and NO placeholder company name.** (depends T055, T056, design)
 
 **Checkpoint**: The public menu endpoint + payload are complete and tested; the customer UI is a later presentation layer.

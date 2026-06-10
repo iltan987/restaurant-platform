@@ -7,6 +7,7 @@ import { AreasModule } from "./areas/areas.module"
 import { CategoriesModule } from "./categories/categories.module"
 import { HttpExceptionFilter } from "./common/http-exception.filter"
 import { FloorsModule } from "./floors/floors.module"
+import { MenuModule } from "./menu/menu.module"
 import { MenuItemsModule } from "./menu-items/menu-items.module"
 import { PrismaModule } from "./prisma/prisma.module"
 import { RestaurantsModule } from "./restaurants/restaurants.module"
@@ -23,6 +24,7 @@ import { TagsModule } from "./tags/tags.module"
     TablesModule,
     CategoriesModule,
     MenuItemsModule,
+    MenuModule,
     AllergensModule,
     TagsModule,
   ],
