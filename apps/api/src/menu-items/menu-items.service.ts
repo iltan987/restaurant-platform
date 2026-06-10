@@ -35,6 +35,7 @@ export class MenuItemsService {
         },
         allergens: { orderBy: { label: "asc" } },
         tags: { orderBy: { label: "asc" } },
+        availabilityWindows: { orderBy: { startMin: "asc" } },
       },
     })
     if (!item) {

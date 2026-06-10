@@ -1,5 +1,6 @@
 export * from "./allergen"
 export * from "./area"
+export * from "./availability"
 export * from "./category"
 export * from "./common"
 export * from "./errors"

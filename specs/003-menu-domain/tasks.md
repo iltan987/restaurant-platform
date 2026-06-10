@@ -135,15 +135,15 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ### Tests
 
-- [ ] T039 [P] [US4] `packages/core/src/availability.spec.ts` — multi-day, midnight-crossing, out-of-stock, no-windows
-- [ ] T042 [P] [US4] `apps/api/src/menu-items/availability.service.spec.ts` — replace semantics, window invariants
+- [x] T039 [P] [US4] `packages/core/src/availability.spec.ts` — multi-day, midnight-crossing, out-of-stock, no-windows
+- [x] T042 [P] [US4] `apps/api/src/menu-items/availability.service.spec.ts` — replace semantics, window invariants
 
 ### Implementation
 
-- [ ] T040 [US4] `packages/core/src/availability.ts` — pure `isOrderableNow(item, nowLocal)` + an edge helper to derive `{day, minutes}` for `Europe/Istanbul` via `Intl` + export (depends T003)
-- [ ] T041 [P] [US4] Availability schema in `packages/schemas/src/availability.ts` (replace-all `{windows}`) + export
-- [ ] T043 [US4] Availability `PUT` endpoint + service in the `menu-items` module (full replace, `AVAILABILITY_WINDOW_INVALID`) (depends T041, T040, T018)
-- [ ] T044 [US4] Dashboard availability-window editor in the item editor (day-set + time ranges) (depends T021, T041)
+- [x] T040 [US4] `packages/core/src/availability.ts` — pure `isOrderableNow(item, nowLocal)` + an edge helper to derive `{day, minutes}` for `Europe/Istanbul` via `Intl` + export (depends T003)
+- [x] T041 [P] [US4] Availability schema in `packages/schemas/src/availability.ts` (replace-all `{windows}`) + export
+- [x] T043 [US4] Availability `PUT` endpoint + service in the `menu-items` module (full replace, `AVAILABILITY_WINDOW_INVALID`) (depends T041, T040, T018)
+- [x] T044 [US4] Dashboard availability-window editor in the item editor (day-set + time ranges) (depends T021, T041)
 
 **Checkpoint**: Items can be time-restricted; orderability is correct across edge cases.
 

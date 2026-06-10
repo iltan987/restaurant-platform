@@ -3,6 +3,7 @@ import { z } from "zod"
 import { SERVING_UNITS } from "@repo/core"
 
 import { allergenSchema } from "./allergen"
+import { availabilityWindowSchema } from "./availability"
 import { optionGroupSchema } from "./option"
 import { tagSchema } from "./tag"
 
@@ -70,6 +71,7 @@ export const menuItemDetailSchema = menuItemSchema.extend({
   optionGroups: z.array(optionGroupSchema),
   allergens: z.array(allergenSchema),
   tags: z.array(tagSchema),
+  availabilityWindows: z.array(availabilityWindowSchema),
 })
 
 export type MenuItemDetail = z.infer<typeof menuItemDetailSchema>
