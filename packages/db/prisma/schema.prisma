@@ -25,6 +25,30 @@ enum TableShape {
   ROUND
 }
 
+enum ServingUnit {
+  GRAM
+  KILOGRAM
+  MILLILITER
+  LITER
+  PIECE // adet
+  PORTION // porsiyon (no unit price)
+}
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
 model Restaurant {
   id               String           @id @default(cuid(2))
   name             String
@@ -34,6 +58,10 @@ model Restaurant {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   floors           Floor[]
+  categories       Category[]
+  menuItems        MenuItem[]
+  allergens        Allergen[]
+  tags             Tag[]
 
   @@map("restaurants")
 }
@@ -70,9 +98,9 @@ model Area {
 }
 
 model Table {
-  id        String   @id @default(cuid(2))
+  id        String     @id @default(cuid(2))
   areaId    String
-  area      Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  area      Area       @relation(fields: [areaId], references: [id], onDelete: Cascade)
   label     String
   capacity  Int?
   shape     TableShape @default(SQUARE)
@@ -83,4 +111,135 @@ model Table {
 
   @@index([areaId])
   @@map("tables")
+}
+
+// ── Menu domain (feature 003) ──────────────────────────────────────────────
+
+model Category {
+  id           String     @id @default(cuid(2))
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  position     Int        @default(0)
+  isHidden     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        MenuItem[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId])
+  @@map("categories")
+}
+
+model MenuItem {
+  id                  String               @id @default(cuid(2))
+  restaurantId        String
+  restaurant          Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryId          String
+  category            Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name                String
+  description         String?
+  priceMinor          Int
+  inStock             Boolean              @default(true)
+  calories            Int?
+  servingAmount       Decimal?
+  servingUnit         ServingUnit?
+  position            Int                  @default(0)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  optionGroups        OptionGroup[]
+  media               MediaAsset[]
+  availabilityWindows AvailabilityWindow[]
+  allergens           Allergen[]
+  tags                Tag[]
+
+  @@index([restaurantId])
+  @@index([categoryId])
+  @@map("menu_items")
+}
+
+model Allergen {
+  id           String     @id @default(cuid(2))
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  label        String
+  isStandard   Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        MenuItem[]
+
+  @@unique([restaurantId, label])
+  @@index([restaurantId])
+  @@map("allergens")
+}
+
+model Tag {
+  id           String     @id @default(cuid(2))
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  label        String
+  color        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        MenuItem[]
+
+  @@unique([restaurantId, label])
+  @@index([restaurantId])
+  @@map("tags")
+}
+
+model OptionGroup {
+  id        String   @id @default(cuid(2))
+  itemId    String
+  item      MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  name      String
+  minSelect Int      @default(0)
+  maxSelect Int?
+  required  Boolean  @default(false)
+  position  Int      @default(0)
+  options   Option[]
+
+  @@index([itemId])
+  @@map("option_groups")
+}
+
+model Option {
+  id              String      @id @default(cuid(2))
+  groupId         String
+  group           OptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name            String
+  priceDeltaMinor Int         @default(0)
+  defaultSelected Boolean     @default(false)
+  isAvailable     Boolean     @default(true)
+  position        Int         @default(0)
+
+  @@index([groupId])
+  @@map("options")
+}
+
+model AvailabilityWindow {
+  id       String      @id @default(cuid(2))
+  itemId   String
+  item     MenuItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  days     DayOfWeek[]
+  startMin Int
+  endMin   Int
+
+  @@index([itemId])
+  @@map("availability_windows")
+}
+
+model MediaAsset {
+  id         String    @id @default(cuid(2))
+  itemId     String
+  item       MenuItem  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  type       MediaType
+  storageKey String
+  mimeType   String
+  sizeBytes  Int
+  position   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([itemId])
+  @@map("media_assets")
 }

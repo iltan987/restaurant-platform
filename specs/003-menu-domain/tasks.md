@@ -38,14 +38,14 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 **⚠️ CRITICAL**: No user-story work begins until this phase completes.
 
-- [ ] T004 Add `ServingUnit`/`DayOfWeek`/`MediaType` enums + the 8 models (`Category, MenuItem, Allergen, Tag, OptionGroup, Option, AvailabilityWindow, MediaAsset`) and the item↔allergen / item↔tag implicit m2m to `packages/db/prisma/schema.prisma` (per [data-model.md](./data-model.md))
-- [ ] T005 Generate client + create the migration: `pnpm --filter @repo/db db:generate` then `db:migrate` (depends T004)
-- [ ] T006 Add the 8 model delegates to `apps/api/src/prisma/prisma.service.ts` (depends T005)
-- [ ] T007 [P] Add the new `ErrorCode`s (CATEGORY_*/MENU_ITEM_*/ALLERGEN_*/TAG_*/OPTION_*/AVAILABILITY_*/MEDIA_*) to `packages/schemas/src/errors.ts` (research §10)
-- [ ] T008 [P] Add Turkish messages for each new code to `packages/i18n/src/error-messages.ts`
-- [ ] T009 [P] Add the shared `reorderSchema {ids: string[]}` to `packages/schemas/src/common.ts` and export from `index.ts`
-- [ ] T010 [P] Add the `STANDARD_ALLERGENS` (Turkish EU-14) constant to `packages/core/src/allergens.ts` and export from `index.ts` (research §8)
-- [ ] T011 [P] Add media limits (per-item cap, allowed types, max sizes) to `packages/core/src/media-limits.ts` and export from `index.ts` (research §2)
+- [x] T004 Add `ServingUnit`/`DayOfWeek`/`MediaType` enums + the 8 models (`Category, MenuItem, Allergen, Tag, OptionGroup, Option, AvailabilityWindow, MediaAsset`) and the item↔allergen / item↔tag implicit m2m to `packages/db/prisma/schema.prisma` (per [data-model.md](./data-model.md))
+- [x] T005 Generate client + create the migration: `pnpm --filter @repo/db db:generate` then `db:migrate` (depends T004)
+- [x] T006 Add the 8 model delegates to `apps/api/src/prisma/prisma.service.ts` (depends T005)
+- [x] T007 [P] Add the new `ErrorCode`s (CATEGORY_*/MENU_ITEM_*/ALLERGEN_*/TAG_*/OPTION_*/AVAILABILITY_*/MEDIA_*) to `packages/schemas/src/errors.ts` (research §10)
+- [x] T008 [P] Add Turkish messages for each new code to `packages/i18n/src/error-messages.ts`
+- [x] T009 [P] Add the shared `reorderSchema {ids: string[]}` to `packages/schemas/src/common.ts` and export from `index.ts`
+- [x] T010 [P] Add the `STANDARD_ALLERGENS` (Turkish EU-14) constant to `packages/core/src/allergens.ts` and export from `index.ts` (research §8)
+- [x] T011 [P] Add media limits (per-item cap, allowed types, max sizes) to `packages/core/src/media-limits.ts` and export from `index.ts` (research §2)
 
 **Checkpoint**: Schema + contract scaffolding ready — stories can begin.
 
