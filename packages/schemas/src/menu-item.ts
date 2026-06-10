@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { optionGroupSchema } from "./option"
+
 // ── Input schemas (locale-agnostic) ──
 // US1 base: name + price + stock. Descriptive/dietary fields (description,
 // calories, serving, allergenIds, tagIds) are added by US3 (see menu-item
@@ -36,3 +38,14 @@ export const menuItemSchema = z.object({
 })
 
 export type MenuItem = z.infer<typeof menuItemSchema>
+
+/**
+ * Full item detail (GET /menu-items/:id) — the base item plus its ordered
+ * option groups (each with ordered options). Later stories extend this with
+ * allergens, tags, media, and availability windows.
+ */
+export const menuItemDetailSchema = menuItemSchema.extend({
+  optionGroups: z.array(optionGroupSchema),
+})
+
+export type MenuItemDetail = z.infer<typeof menuItemDetailSchema>

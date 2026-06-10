@@ -2,6 +2,8 @@ import { apiFetch, apiSend } from "@repo/api-client"
 import {
   type CreateMenuItemInput,
   type MenuItem,
+  type MenuItemDetail,
+  menuItemDetailSchema,
   menuItemSchema,
   type UpdateMenuItemInput,
 } from "@repo/schemas"
@@ -14,6 +16,13 @@ const itemListSchema = menuItemSchema.array()
 /** Items within a category, ordered. */
 export function fetchItems(categoryId: string): Promise<MenuItem[]> {
   return apiFetch(`${API}/categories/${categoryId}/items`, itemListSchema, {
+    cache: "no-store",
+  })
+}
+
+/** Full item detail (incl. option groups) for the item editor. */
+export function fetchItemDetail(id: string): Promise<MenuItemDetail> {
+  return apiFetch(`${API}/menu-items/${id}`, menuItemDetailSchema, {
     cache: "no-store",
   })
 }

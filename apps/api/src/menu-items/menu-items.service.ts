@@ -21,8 +21,24 @@ export class MenuItemsService {
     })
   }
 
-  findOne(id: string) {
-    return this.getItemOrThrow(id)
+  /** Full item detail incl. ordered option groups (each with ordered options). */
+  async findOne(id: string) {
+    const item = await this.prisma.menuItem.findUnique({
+      where: { id },
+      include: {
+        optionGroups: {
+          orderBy: { position: "asc" },
+          include: { options: { orderBy: { position: "asc" } } },
+        },
+      },
+    })
+    if (!item) {
+      throw new NotFoundException({
+        code: ErrorCode.MENU_ITEM_NOT_FOUND,
+        message: `Menu item with id "${id}" was not found`,
+      })
+    }
+    return item
   }
 
   async create(categoryId: string, input: CreateMenuItemInput) {

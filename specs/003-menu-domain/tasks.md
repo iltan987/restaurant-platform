@@ -85,15 +85,15 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ### Tests
 
-- [ ] T022 [P] [US2] `packages/core/src/options.spec.ts` — `effectivePriceMinor` + `validateConfiguration` (required-empty, over/under min-max, unavailable/unknown option, default config)
-- [ ] T025 [P] [US2] `apps/api/src/menu-items/option-groups.service.spec.ts` — group invariants, CRUD, reorder
+- [x] T022 [P] [US2] `packages/core/src/options.spec.ts` — `effectivePriceMinor` + `validateConfiguration` (required-empty, over/under min-max, unavailable/unknown option, default config)
+- [x] T025 [P] [US2] `apps/api/src/menu-items/option-groups.service.spec.ts` — group invariants, CRUD, reorder
 
 ### Implementation
 
-- [ ] T023 [US2] `packages/core/src/options.ts` — pure `effectivePriceMinor`, `validateConfiguration`, `defaultConfiguration` + export (depends T003)
-- [ ] T024 [P] [US2] Option-group/option schemas in `packages/schemas/src/option.ts` + export
-- [ ] T026 [US2] Option-group + option endpoints/service in the `menu-items` module (CRUD + reorder, `INVALID_OPTION_CONFIG` on invariant violations) (depends T024, T023, T018)
-- [ ] T027 [US2] Dashboard option-group editor in the item editor (variant/extras/ingredient groups, `defaultSelected`, live effective price via `@repo/core`) (depends T021, T023)
+- [x] T023 [US2] `packages/core/src/options.ts` — pure `effectivePriceMinor`, `validateConfiguration`, `defaultConfiguration` + export (depends T003)
+- [x] T024 [P] [US2] Option-group/option schemas in `packages/schemas/src/option.ts` + export
+- [x] T026 [US2] Option-group + option endpoints/service in the `menu-items` module (CRUD + reorder, `INVALID_OPTION_CONFIG` on invariant violations) (depends T024, T023, T018)
+- [x] T027 [US2] Dashboard option-group editor in the item editor (variant/extras/ingredient groups, `defaultSelected`, live effective price via `@repo/core`) (depends T021, T023)
 
 **Checkpoint**: Items support size variants, paid extras, and add/remove ingredients with correct pricing.
 

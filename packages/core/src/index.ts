@@ -1,4 +1,5 @@
 export * from "./allergens"
 export * from "./media-limits"
 export * from "./money"
+export * from "./options"
 export * from "./slug"

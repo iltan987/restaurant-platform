@@ -18,9 +18,11 @@ import {
 } from "@repo/ui/components/ui/dialog"
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
+import { Separator } from "@repo/ui/components/ui/separator"
 
 import { useCreateItem } from "../use-create-item"
 import { useUpdateItem } from "../use-update-item"
+import { OptionGroupsEditor } from "./option-groups-editor"
 
 /** Pre-fills the price field with the major amount, Turkish-formatted (10,50). */
 function toMajorInput(priceMinor: number): string {
@@ -85,7 +87,7 @@ export function ItemEditorDialog({
   return (
     <Dialog open={open} onOpenChange={change}>
       <DialogTrigger render={trigger} />
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{item ? "Ürünü düzenle" : "Yeni ürün"}</DialogTitle>
           <DialogDescription>
@@ -128,6 +130,16 @@ export function ItemEditorDialog({
           />
           <span>Stokta</span>
         </label>
+
+        {item && (
+          <>
+            <Separator />
+            <OptionGroupsEditor
+              itemId={item.id}
+              basePriceMinor={priceMinor ?? item.priceMinor}
+            />
+          </>
+        )}
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline">Vazgeç</Button>} />
