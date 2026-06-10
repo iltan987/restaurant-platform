@@ -7,3 +7,7 @@ node_modules/
 # Environment variables
 .env
 .env*.local
+.superpowers/
+
+# local-only design references (never commit — contain placeholder names)
+.claude/design-refs.local.md

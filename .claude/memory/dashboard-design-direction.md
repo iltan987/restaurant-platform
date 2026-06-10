@@ -9,7 +9,7 @@ metadata:
 
 The dashboard UI follows a design mocked in Claude Design (a full restaurant POS concept). We adopt its **setup/onboarding** language for feature 002; its POS/billing/floor-plan parts map to later stories.
 
-- **No project name yet.** The mock used a placeholder name that is already taken by another product — never reuse that name anywhere (code, copy, or git). The user will choose a real name later.
+- **No project name yet.** Design mocks use placeholder names that are already taken by other products — never reuse a mock's placeholder name anywhere (code, copy, git, or these memory files; they are git-tracked). This applies to the dashboard mock and the feature-003 customer-menu design handoff alike. The user will choose a real name later.
 - **Accent:** indigo-violet (`--primary` ≈ `oklch(0.457 0.24 277)`), applied in `packages/ui/src/styles/globals.css` for **both** `:root` and `.dark`. `--ring` is tied to the accent. Fonts already match the mock (Geist / Geist Mono).
 - **Light + dark are required** and already wired (shadcn tokens + `next-themes`, `.dark` class, "press D" hotkey). Shared [[`ThemeToggle`]] lives at `@repo/ui/components/theme-toggle` (it is our own component, not a shadcn primitive, so it sits in `components/`, not `components/ui/`).
 - **Onboarding wizard** (`apps/dashboard/features/restaurants/components/setup-wizard.tsx`): full-screen, left rail stepper, steps Katlar → Bölgeler → Masalar → Yayına Al. Choice cards, editable list rows, suggestion chips, count steppers, summary tiles. Reused step components render `embedded` in the management view.
