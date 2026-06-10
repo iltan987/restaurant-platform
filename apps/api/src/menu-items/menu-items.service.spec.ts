@@ -65,6 +65,10 @@ describe("MenuItemsService", () => {
           priceMinor: 1000,
           inStock: true,
           position: 2,
+          description: null,
+          calories: null,
+          servingAmount: null,
+          servingUnit: null,
         },
       })
     })

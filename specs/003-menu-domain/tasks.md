@@ -107,21 +107,21 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ### Tests
 
-- [ ] T028 [P] [US3] `packages/core/src/unit-price.spec.ts` — per kg/L/piece normalization, zero/empty amount → null
-- [ ] T031 [P] [US3] `apps/api/src/allergens/allergens.service.spec.ts` + `apps/api/src/tags/tags.service.spec.ts` — uniqueness, standard-protected deletion, and deleting a custom allergen/tag detaches it from items without corrupting them
-- [ ] T035a [P] [US3] Extend `apps/api/src/restaurants/restaurants.service.spec.ts` — standard allergens seeded on create
+- [x] T028 [P] [US3] `packages/core/src/unit-price.spec.ts` — per kg/L/piece normalization, zero/empty amount → null
+- [x] T031 [P] [US3] `apps/api/src/allergens/allergens.service.spec.ts` + `apps/api/src/tags/tags.service.spec.ts` — uniqueness, standard-protected deletion, and deleting a custom allergen/tag detaches it from items without corrupting them
+- [x] T035a [P] [US3] Extend `apps/api/src/restaurants/restaurants.service.spec.ts` — standard allergens seeded on create
 
 ### Implementation
 
-- [ ] T029 [US3] `packages/core/src/unit-price.ts` — normalized display unit price + export
-- [ ] T030 [P] [US3] Allergen + tag schemas (`packages/schemas/src/allergen.ts`, `tag.ts`) and extend `menu-item.ts` (description, calories, servingAmount/Unit, allergenIds, tagIds) + exports
-- [ ] T032 [US3] `allergens` module in `apps/api/src/allergens/` — CRUD + standard-protected guard (depends T030, T006)
-- [ ] T033 [US3] `tags` module in `apps/api/src/tags/` — CRUD (depends T030, T006)
-- [ ] T034 [US3] Extend `menu-items` service to persist serving fields and allergen/tag assignment (set semantics) on create/update (depends T032, T033, T018)
-- [ ] T035 [US3] Seed `STANDARD_ALLERGENS` inside the `restaurants.service` create transaction (depends T010, T006)
-- [ ] T036 [US3] Idempotent backfill of standard allergens for pre-existing restaurants (migration/one-off script) (depends T010, T005)
-- [ ] T037 [P] [US3] Dashboard `features/allergens/` + `features/tags/` (api/queries/use-*)
-- [ ] T038 [US3] Dashboard item editor: description/calories/serving fields + allergen & tag pickers + unit-price display; allergen/tag management UI (depends T037, T029, T021)
+- [x] T029 [US3] `packages/core/src/unit-price.ts` — normalized display unit price + export
+- [x] T030 [P] [US3] Allergen + tag schemas (`packages/schemas/src/allergen.ts`, `tag.ts`) and extend `menu-item.ts` (description, calories, servingAmount/Unit, allergenIds, tagIds) + exports
+- [x] T032 [US3] `allergens` module in `apps/api/src/allergens/` — CRUD + standard-protected guard (depends T030, T006)
+- [x] T033 [US3] `tags` module in `apps/api/src/tags/` — CRUD (depends T030, T006)
+- [x] T034 [US3] Extend `menu-items` service to persist serving fields and allergen/tag assignment (set semantics) on create/update (depends T032, T033, T018)
+- [x] T035 [US3] Seed `STANDARD_ALLERGENS` inside the `restaurants.service` create transaction (depends T010, T006)
+- [x] T036 [US3] Idempotent backfill of standard allergens for pre-existing restaurants (migration/one-off script) (depends T010, T005)
+- [x] T037 [P] [US3] Dashboard `features/allergens/` + `features/tags/` (api/queries/use-*)
+- [x] T038 [US3] Dashboard item editor: description/calories/serving fields + allergen & tag pickers + unit-price display; allergen/tag management UI (depends T037, T029, T021)
 
 **Checkpoint**: Items carry full dietary/descriptive info; every new restaurant has the standard allergen set.
 

@@ -64,12 +64,31 @@ type MenuItem = {
   updatedAt: Date
 }
 
+type Allergen = {
+  id: string
+  restaurantId: string
+  label: string
+  isStandard: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+type Tag = {
+  id: string
+  restaurantId: string
+  label: string
+  color: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
 const restaurants: Restaurant[] = []
 const floors: Floor[] = []
 const areas: Area[] = []
 const tables: Table[] = []
 const categories: Category[] = []
 const menuItems: MenuItem[] = []
+const allergens: Allergen[] = []
+const tags: Tag[] = []
 let seq = 0
 // Simulates a unique-constraint race (P2002) on the next restaurant insert —
 // the only path that surfaces SLUG_TAKEN (the service pre-uniquifies otherwise).
@@ -155,6 +174,10 @@ const restaurant = {
       if (menuItems[j]!.restaurantId === where.id) menuItems.splice(j, 1)
     for (let j = categories.length - 1; j >= 0; j--)
       if (categories[j]!.restaurantId === where.id) categories.splice(j, 1)
+    for (let j = allergens.length - 1; j >= 0; j--)
+      if (allergens[j]!.restaurantId === where.id) allergens.splice(j, 1)
+    for (let j = tags.length - 1; j >= 0; j--)
+      if (tags[j]!.restaurantId === where.id) tags.splice(j, 1)
     const i = restaurants.findIndex((r) => r.id === where.id)
     const [row] = restaurants.splice(i, 1)
     return Promise.resolve(row)
@@ -573,6 +596,113 @@ const menuItem = {
   },
 }
 
+const allergen = {
+  create({
+    data,
+  }: {
+    data: { restaurantId: string; label: string; isStandard?: boolean }
+  }) {
+    if (
+      allergens.some(
+        (a) => a.restaurantId === data.restaurantId && a.label === data.label
+      )
+    ) {
+      return Promise.reject({ code: "P2002" })
+    }
+    const row: Allergen = {
+      id: id("alg"),
+      restaurantId: data.restaurantId,
+      label: data.label,
+      isStandard: data.isStandard ?? false,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    allergens.push(row)
+    return Promise.resolve(row)
+  },
+  createMany({
+    data,
+  }: {
+    data: { restaurantId: string; label: string; isStandard?: boolean }[]
+  }) {
+    for (const d of data) {
+      allergens.push({
+        id: id("alg"),
+        restaurantId: d.restaurantId,
+        label: d.label,
+        isStandard: d.isStandard ?? false,
+        createdAt: now(),
+        updatedAt: now(),
+      })
+    }
+    return Promise.resolve({ count: data.length })
+  },
+  findUnique({ where }: { where: { id: string } }) {
+    return Promise.resolve(allergens.find((a) => a.id === where.id) ?? null)
+  },
+  findMany({ where }: { where?: { restaurantId?: string } } = {}) {
+    const rid = where?.restaurantId
+    return Promise.resolve(
+      allergens.filter((a) => rid === undefined || a.restaurantId === rid)
+    )
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<Allergen> }) {
+    const row = allergens.find((a) => a.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = allergens.findIndex((a) => a.id === where.id)
+    const [row] = allergens.splice(i, 1)
+    return Promise.resolve(row)
+  },
+}
+
+const tag = {
+  create({
+    data,
+  }: {
+    data: { restaurantId: string; label: string; color?: string | null }
+  }) {
+    if (
+      tags.some(
+        (t) => t.restaurantId === data.restaurantId && t.label === data.label
+      )
+    ) {
+      return Promise.reject({ code: "P2002" })
+    }
+    const row: Tag = {
+      id: id("tag"),
+      restaurantId: data.restaurantId,
+      label: data.label,
+      color: data.color ?? null,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    tags.push(row)
+    return Promise.resolve(row)
+  },
+  findUnique({ where }: { where: { id: string } }) {
+    return Promise.resolve(tags.find((t) => t.id === where.id) ?? null)
+  },
+  findMany({ where }: { where?: { restaurantId?: string } } = {}) {
+    const rid = where?.restaurantId
+    return Promise.resolve(
+      tags.filter((t) => rid === undefined || t.restaurantId === rid)
+    )
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<Tag> }) {
+    const row = tags.find((t) => t.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = tags.findIndex((t) => t.id === where.id)
+    const [row] = tags.splice(i, 1)
+    return Promise.resolve(row)
+  },
+}
+
 export const fakePrisma = {
   restaurant,
   floor,
@@ -580,9 +710,11 @@ export const fakePrisma = {
   table,
   category,
   menuItem,
+  allergen,
+  tag,
   $transaction(cb: (tx: unknown) => unknown) {
     return Promise.resolve(
-      cb({ restaurant, floor, area, table, category, menuItem })
+      cb({ restaurant, floor, area, table, category, menuItem, allergen, tag })
     )
   },
   __reset() {
@@ -592,11 +724,22 @@ export const fakePrisma = {
     tables.length = 0
     categories.length = 0
     menuItems.length = 0
+    allergens.length = 0
+    tags.length = 0
     seq = 0
     forceP2002 = false
   },
   __forceP2002(value: boolean) {
     forceP2002 = value
   },
-  __stores: { restaurants, floors, areas, tables, categories, menuItems },
+  __stores: {
+    restaurants,
+    floors,
+    areas,
+    tables,
+    categories,
+    menuItems,
+    allergens,
+    tags,
+  },
 }

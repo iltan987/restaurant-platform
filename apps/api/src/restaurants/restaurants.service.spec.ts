@@ -40,11 +40,13 @@ describe("RestaurantsService", () => {
   let mockFloor: { create: jest.Mock }
   let mockArea: { create: jest.Mock }
   let mockTable: { count: jest.Mock }
+  let mockAllergen: { createMany: jest.Mock }
   let prismaMock: {
     restaurant: typeof mockRestaurant
     floor: typeof mockFloor
     area: typeof mockArea
     table: typeof mockTable
+    allergen: typeof mockAllergen
     $transaction: jest.Mock
   }
 
@@ -62,14 +64,21 @@ describe("RestaurantsService", () => {
     mockFloor = { create: jest.fn().mockResolvedValue({ id: "floor-1" }) }
     mockArea = { create: jest.fn().mockResolvedValue({ id: "area-1" }) }
     mockTable = { count: jest.fn().mockResolvedValue(0) }
+    mockAllergen = { createMany: jest.fn().mockResolvedValue({ count: 14 }) }
     prismaMock = {
       restaurant: mockRestaurant,
       floor: mockFloor,
       area: mockArea,
       table: mockTable,
+      allergen: mockAllergen,
       // Interactive transaction — invoke the callback with the same delegates.
       $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
-        cb({ restaurant: mockRestaurant, floor: mockFloor, area: mockArea })
+        cb({
+          restaurant: mockRestaurant,
+          floor: mockFloor,
+          area: mockArea,
+          allergen: mockAllergen,
+        })
       ),
     }
 
@@ -103,6 +112,23 @@ describe("RestaurantsService", () => {
       expect(result).toBe(row)
       expect(result.status).toBe("INACTIVE")
       expect(result.onboardingStatus).toBe("IN_PROGRESS")
+    })
+
+    it("seeds the standard allergen set on create (SC-007)", async () => {
+      const row = makeRow()
+      mockRestaurant.create.mockResolvedValue(row)
+
+      await service.create({ name: "Burger Joint" })
+
+      expect(mockAllergen.createMany).toHaveBeenCalledTimes(1)
+      const arg = mockAllergen.createMany.mock.calls[0][0] as {
+        data: { restaurantId: string; label: string; isStandard: boolean }[]
+      }
+      expect(arg.data).toHaveLength(14)
+      expect(
+        arg.data.every((a) => a.restaurantId === row.id && a.isStandard)
+      ).toBe(true)
+      expect(arg.data.map((a) => a.label)).toContain("Süt")
     })
 
     it("uses the provided slug instead of deriving one from the name", async () => {

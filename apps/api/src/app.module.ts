@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
 import { APP_FILTER } from "@nestjs/core"
 
+import { AllergensModule } from "./allergens/allergens.module"
 import { AreasModule } from "./areas/areas.module"
 import { CategoriesModule } from "./categories/categories.module"
 import { HttpExceptionFilter } from "./common/http-exception.filter"
@@ -10,6 +11,7 @@ import { MenuItemsModule } from "./menu-items/menu-items.module"
 import { PrismaModule } from "./prisma/prisma.module"
 import { RestaurantsModule } from "./restaurants/restaurants.module"
 import { TablesModule } from "./tables/tables.module"
+import { TagsModule } from "./tags/tags.module"
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { TablesModule } from "./tables/tables.module"
     TablesModule,
     CategoriesModule,
     MenuItemsModule,
+    AllergensModule,
+    TagsModule,
   ],
   providers: [
     {

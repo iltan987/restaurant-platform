@@ -21,7 +21,10 @@ export class MenuItemsService {
     })
   }
 
-  /** Full item detail incl. ordered option groups (each with ordered options). */
+  /**
+   * Full item detail incl. ordered option groups (each with ordered options)
+   * and the item's assigned allergens & tags.
+   */
   async findOne(id: string) {
     const item = await this.prisma.menuItem.findUnique({
       where: { id },
@@ -30,6 +33,8 @@ export class MenuItemsService {
           orderBy: { position: "asc" },
           include: { options: { orderBy: { position: "asc" } } },
         },
+        allergens: { orderBy: { label: "asc" } },
+        tags: { orderBy: { label: "asc" } },
       },
     })
     if (!item) {
@@ -44,21 +49,41 @@ export class MenuItemsService {
   async create(categoryId: string, input: CreateMenuItemInput) {
     const category = await this.getCategoryOrThrow(categoryId)
     const position = await this.prisma.menuItem.count({ where: { categoryId } })
+    const { allergenIds, tagIds, inStock, ...fields } = input
     return this.prisma.menuItem.create({
       data: {
         restaurantId: category.restaurantId,
         categoryId,
-        name: input.name,
-        priceMinor: input.priceMinor,
-        inStock: input.inStock ?? true,
         position,
+        inStock: inStock ?? true,
+        name: fields.name,
+        priceMinor: fields.priceMinor,
+        description: fields.description ?? null,
+        calories: fields.calories ?? null,
+        servingAmount: fields.servingAmount ?? null,
+        servingUnit: fields.servingUnit ?? null,
+        ...(allergenIds
+          ? { allergens: { connect: allergenIds.map((id) => ({ id })) } }
+          : {}),
+        ...(tagIds ? { tags: { connect: tagIds.map((id) => ({ id })) } } : {}),
       },
     })
   }
 
+  /** Updates scalar fields and, when provided, replaces allergen/tag sets. */
   async update(id: string, input: UpdateMenuItemInput) {
     await this.getItemOrThrow(id)
-    return this.prisma.menuItem.update({ where: { id }, data: input })
+    const { allergenIds, tagIds, ...fields } = input
+    return this.prisma.menuItem.update({
+      where: { id },
+      data: {
+        ...fields,
+        ...(allergenIds
+          ? { allergens: { set: allergenIds.map((id) => ({ id })) } }
+          : {}),
+        ...(tagIds ? { tags: { set: tagIds.map((id) => ({ id })) } } : {}),
+      },
+    })
   }
 
   async remove(id: string) {
