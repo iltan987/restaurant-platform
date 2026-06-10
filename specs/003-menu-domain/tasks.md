@@ -59,19 +59,19 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ### Tests (constitution-mandated)
 
-- [ ] T012 [P] [US1] `apps/api/src/categories/categories.service.spec.ts` — create, name-uniqueness, not-empty delete guard, reorder
-- [ ] T013 [P] [US1] `apps/api/src/menu-items/menu-items.service.spec.ts` — create, in-stock toggle, reorder within category
-- [ ] T014 [P] [US1] `apps/api/test/menu-categories.e2e-spec.ts` — category + item CRUD contract
+- [x] T012 [P] [US1] `apps/api/src/categories/categories.service.spec.ts` — create, name-uniqueness, not-empty delete guard, reorder
+- [x] T013 [P] [US1] `apps/api/src/menu-items/menu-items.service.spec.ts` — create, in-stock toggle, reorder within category
+- [x] T014 [P] [US1] `apps/api/test/menu-categories.e2e-spec.ts` — category + item CRUD contract
 
 ### Implementation
 
-- [ ] T015 [P] [US1] Category schemas in `packages/schemas/src/category.ts` (create/update/response) + export
-- [ ] T016 [P] [US1] Base menu-item schemas in `packages/schemas/src/menu-item.ts` (create/update/response — name, priceMinor, inStock) + export
-- [ ] T017 [US1] `categories` module (`controller`/`service`/`module`) in `apps/api/src/categories/` — CRUD + `PUT order` + not-empty guard, mirroring `restaurants/` (depends T015, T006)
-- [ ] T018 [US1] `menu-items` module in `apps/api/src/menu-items/` — base CRUD + `PUT order` (sub-resources land in later stories) (depends T016, T006)
-- [ ] T019 [P] [US1] Dashboard `features/categories/` (`api.ts`, `queries.ts`, `use-*.ts`) over `apiFetch`
-- [ ] T020 [P] [US1] Dashboard `features/menu-items/` (`api.ts`, `queries.ts`, `use-*.ts`)
-- [ ] T021 [US1] Dashboard menu-management route `apps/dashboard/app/s/[slug]/menu/` — category + item lists with `@dnd-kit` reorder, create/edit (name/price/inStock), hide toggle, and a client-side search scaffold (depends T019, T020)
+- [x] T015 [P] [US1] Category schemas in `packages/schemas/src/category.ts` (create/update/response) + export
+- [x] T016 [P] [US1] Base menu-item schemas in `packages/schemas/src/menu-item.ts` (create/update/response — name, priceMinor, inStock) + export
+- [x] T017 [US1] `categories` module (`controller`/`service`/`module`) in `apps/api/src/categories/` — CRUD + `PUT order` + not-empty guard, mirroring `restaurants/` (depends T015, T006)
+- [x] T018 [US1] `menu-items` module in `apps/api/src/menu-items/` — base CRUD + `PUT order` (sub-resources land in later stories) (depends T016, T006)
+- [x] T019 [P] [US1] Dashboard `features/categories/` (`api.ts`, `queries.ts`, `use-*.ts`) over `apiFetch`
+- [x] T020 [P] [US1] Dashboard `features/menu-items/` (`api.ts`, `queries.ts`, `use-*.ts`)
+- [x] T021 [US1] Dashboard menu-management route `apps/dashboard/app/s/[slug]/menu/` — category + item lists with `@dnd-kit` reorder, create/edit (name/price/inStock), hide toggle, and a client-side search scaffold (depends T019, T020)
 
 **Checkpoint**: A priced, ordered, hideable menu exists and is managed in the dashboard — MVP.
 
