@@ -26,9 +26,9 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 **Purpose**: Dependencies and dev infra needed before any story.
 
-- [ ] T001 [P] Add `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner` to the `catalog:` in `pnpm-workspace.yaml` and reference them (`catalog:`) in `apps/api/package.json` (via `pnpm add` — never hand-edit), then `pnpm install`
-- [ ] T002 [P] Add a **MinIO** service + bucket-init to `docker-compose.yml` (beside Postgres) and add `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `MEDIA_PUBLIC_BASE_URL` to `apps/api/.env.example` (+ local `.env`)
-- [ ] T003 [P] Add a unit-test runner to `@repo/core` (Jest config + `test` script in `packages/core/package.json`) for the pure-helper specs
+- [x] T001 [P] Add `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner` to the `catalog:` in `pnpm-workspace.yaml` and reference them (`catalog:`) in `apps/api/package.json` (via `pnpm add` — never hand-edit), then `pnpm install`
+- [x] T002 [P] Add a **MinIO** service + bucket-init to `docker-compose.yml` (beside Postgres) and add `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `MEDIA_PUBLIC_BASE_URL` to `apps/api/.env.example` (+ local `.env`)
+- [x] T003 [P] Add a unit-test runner to `@repo/core` (Jest config + `test` script in `packages/core/package.json`) for the pure-helper specs
 
 ---
 
