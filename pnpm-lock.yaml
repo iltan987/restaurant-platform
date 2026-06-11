@@ -280,6 +280,9 @@ importers:
       '@repo/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@repo/query':
         specifier: workspace:*
         version: link:../../packages/query

@@ -188,7 +188,7 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 - [x] T054 [US6] `menu` module in `apps/api/src/menu/` — public `GET by-slug`, active-gated, computes `orderableNow` (Europe/Istanbul) per item; composes media public URLs (depends T052, T040, T018, T026, T032, T033, T043, T049)
 - [x] T055 [US6] Customer `features/menu/` `api.ts` + `queries.ts` — fetch `MenuTree` by slug (depends T052)
 - [x] T056 [P] [US6] Customer in-memory search util (item name/description/tags + category names, Turkish-normalized) + unit test (depends T055)
-- [ ] T057 [US6] ⏸️ **DEFERRED — blocked on the design handoff.** Customer mobile menu UI: warm theme, sticky scroll-spy categories, balanced-photo item cards, item-detail **bottom sheet** (media gallery, price + unit price, calories, allergens, tags, options shown informatively, availability states). **Adapt the provided design (see Notes), NOT 1:1, using shadcn + Tailwind (no raw HTML/CSS), and NO placeholder company name.** (depends T055, T056, design)
+- [x] T057 [US6] Customer mobile menu UI: warm theme, sticky scroll-spy categories, balanced-photo item cards, item-detail **bottom sheet** (media gallery, price + unit price, calories, allergens, tags, options shown informatively, availability states). Adapted from the design handoff (not 1:1) with shadcn + Tailwind. (depends T055, T056, design)
 
 **Checkpoint**: The public menu endpoint + payload are complete and tested; the customer UI is a later presentation layer.
 
