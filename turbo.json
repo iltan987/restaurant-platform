@@ -6,7 +6,8 @@
     "DATABASE_URL",
     "ADMIN_URL",
     "DASHBOARD_URL",
-    "CUSTOMER_URL"
+    "CUSTOMER_URL",
+    "API_INTERNAL_URL"
   ],
   "tasks": {
     "db:generate": {

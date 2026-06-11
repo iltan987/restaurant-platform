@@ -1,8 +1,7 @@
 import { ApiError, apiFetch } from "@repo/api-client"
 import { type MenuTree, menuTreeSchema } from "@repo/schemas"
 
-const API = process.env.NEXT_PUBLIC_API_URL
-if (!API) throw new Error("NEXT_PUBLIC_API_URL is not set")
+import { apiBase as API } from "@/lib/api-base"
 
 /**
  * The whole public menu for an ACTIVE restaurant, by slug. Returns null on 404
