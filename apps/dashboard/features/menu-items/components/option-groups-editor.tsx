@@ -21,21 +21,23 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 import { menuItemsQueries } from "../queries"
 import { useOptionMutations } from "../use-option-mutations"
 
-/** Two presets cover all three customizations; per-option defaults do the rest. */
+/** Starting points; the per-group "Zorunlu" toggle flips required/optional after. */
 const PRESETS = {
   single: { minSelect: 1, maxSelect: 1, required: true },
   multi: { minSelect: 0, maxSelect: null, required: false },
 } as const
 
+/** Single vs multiple is the maxSelect shape — independent of required. */
 function groupKind(g: OptionGroup): "single" | "multi" {
-  return g.required && g.maxSelect === 1 ? "single" : "multi"
+  return g.maxSelect === 1 ? "single" : "multi"
 }
 
 /**
- * Option-group editor for an item (US2). Add required single-select variants or
- * optional multi-select groups; each option carries a price delta and a
- * "default selected" flag (a removable ingredient = default-on, 0 delta). Shows
- * a live effective price for the default configuration via @repo/core.
+ * Option-group editor for an item (US2). Add single- or multi-select groups,
+ * each independently toggled required/optional ("Zorunlu"); every option
+ * carries a price delta and a "default selected" flag (a removable ingredient =
+ * default-on, 0 delta). Shows a live effective price for the default
+ * configuration via @repo/core.
  */
 export function OptionGroupsEditor({
   itemId,
@@ -150,10 +152,20 @@ function GroupCard({
           {group.name}
         </span>
         <Badge variant="secondary">
-          {groupKind(group) === "single"
-            ? "Tek seçim · zorunlu"
-            : "Çoklu seçim"}
+          {groupKind(group) === "single" ? "Tek seçim" : "Çoklu seçim"}
         </Badge>
+        <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+          <Checkbox
+            checked={group.required}
+            onCheckedChange={(v) =>
+              mutations.updateGroup.mutate({
+                groupId: group.id,
+                input: { required: v === true, minSelect: v === true ? 1 : 0 },
+              })
+            }
+          />
+          Zorunlu
+        </label>
         <Button
           variant="ghost"
           size="icon"
