@@ -1,6 +1,6 @@
 "use client"
 
-import { MoonIcon, SearchIcon, SunIcon } from "lucide-react"
+import { MoonIcon, SearchIcon, SunIcon, SunMoonIcon } from "lucide-react"
 
 import { useTheme } from "@repo/ui/components/theme-provider"
 
@@ -73,25 +73,31 @@ export function MenuHeader({
 }
 
 /**
- * Light/dark toggle floating over the cover. next-themes resolves the theme in
- * an effect, so `resolvedTheme` is undefined on both the server and the first
- * client render (icon = moon); it corrects post-hydration — no mismatch.
+ * Theme control floating over the cover: cycles Auto → Light → Dark and shows
+ * the current mode's icon. `theme` is the diner's choice ("system" follows the
+ * device); next-themes resolves it in an effect, so it's undefined on the server
+ * and first client render (icon = auto), correcting post-hydration — no mismatch.
  */
 function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme()
-  const isDark = resolvedTheme === "dark"
+  const { theme, setTheme } = useTheme()
+  const mode = theme === "light" || theme === "dark" ? theme : "system"
+
+  const next =
+    mode === "system" ? "light" : mode === "light" ? "dark" : "system"
+  const label =
+    mode === "light" ? "aydınlık" : mode === "dark" ? "karanlık" : "otomatik"
+  const Icon =
+    mode === "light" ? SunIcon : mode === "dark" ? MoonIcon : SunMoonIcon
+
   return (
     <button
       type="button"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={isDark ? "Aydınlık temaya geç" : "Karanlık temaya geç"}
+      onClick={() => setTheme(next)}
+      aria-label={`Tema: ${label} — değiştirmek için dokunun`}
+      title={`Tema: ${label}`}
       className="absolute top-[9px] right-[11px] z-[3] grid size-9 place-items-center rounded-full border border-white/[0.22] bg-[oklch(0.28_0.03_45/0.34)] text-white/[0.95] shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] dark:border-white/[0.16] dark:bg-white/[0.12]"
     >
-      {isDark ? (
-        <SunIcon className="size-[18px]" />
-      ) : (
-        <MoonIcon className="size-[17px]" />
-      )}
+      <Icon className="size-[18px]" />
     </button>
   )
 }

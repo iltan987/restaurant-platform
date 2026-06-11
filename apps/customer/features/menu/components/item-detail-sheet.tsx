@@ -80,7 +80,7 @@ function Gallery({ item }: { item: MenuTreeItem }) {
               key={m.id}
               src={m.url}
               alt=""
-              className="size-full shrink-0 basis-full snap-center snap-always object-cover"
+              className="size-full shrink-0 basis-full snap-center snap-always object-cover dark:brightness-[0.82] dark:saturate-[0.9]"
             />
           ) : (
             <video
@@ -88,7 +88,7 @@ function Gallery({ item }: { item: MenuTreeItem }) {
               src={m.url}
               controls
               playsInline
-              className="size-full shrink-0 basis-full snap-center snap-always bg-black object-contain"
+              className="size-full shrink-0 basis-full snap-center snap-always bg-black object-contain dark:brightness-[0.82] dark:saturate-[0.9]"
             />
           )
         )}

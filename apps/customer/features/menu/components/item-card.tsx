@@ -80,7 +80,7 @@ export function Thumbnail({
               src={cover.url}
               alt=""
               className={cn(
-                "size-full object-cover",
+                "size-full object-cover dark:brightness-[0.82] dark:saturate-[0.9]",
                 dimmed && "brightness-[1.02] grayscale-[0.85]"
               )}
             />
@@ -91,7 +91,7 @@ export function Thumbnail({
               playsInline
               preload="metadata"
               className={cn(
-                "size-full object-cover",
+                "size-full object-cover dark:brightness-[0.82] dark:saturate-[0.9]",
                 dimmed && "brightness-[1.02] grayscale-[0.85]"
               )}
             />
