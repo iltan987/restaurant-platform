@@ -2,8 +2,17 @@ const CUSTOMER_ROOT = process.env.NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN
 if (!CUSTOMER_ROOT)
   throw new Error("NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN is not set")
 
-// Local dev (localhost / *.localhost / bare IP) isn't served over TLS.
-const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(CUSTOMER_ROOT)
+// Dev hosts aren't served over TLS, so their QR links must use http: localhost,
+// a bare LAN IPv4, the wildcard-DNS helpers used to reach a dev box from a phone
+// (nip.io / sslip.io), and mDNS (.local). A real domain gets https.
+const rootHost = (CUSTOMER_ROOT.split(":")[0] ?? "").toLowerCase()
+const isLocal =
+  rootHost === "localhost" ||
+  rootHost.endsWith(".localhost") ||
+  rootHost.endsWith(".local") ||
+  rootHost.endsWith(".nip.io") ||
+  rootHost.endsWith(".sslip.io") ||
+  /^\d{1,3}(\.\d{1,3}){3}$/.test(rootHost)
 const PROTOCOL = isLocal ? "http" : "https"
 
 /**

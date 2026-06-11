@@ -48,4 +48,12 @@ export const nextJsConfig = [
     },
   },
   ...pluginQuery.configs["flat/recommended"],
+  {
+    // Config files (next.config.mjs, postcss.config.mjs, …) run in Node, not
+    // the browser, so they may read `process.env`.
+    files: ["**/*.config.{js,cjs,mjs}"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
 ]
