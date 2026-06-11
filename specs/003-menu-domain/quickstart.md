@@ -64,13 +64,17 @@ Map to the spec's user stories; run against a freshly created restaurant.
 2. Try a 60 MB video → refused (`MEDIA_TOO_LARGE`); try a 6th asset → `MEDIA_LIMIT_REACHED`; try a
    `.txt` → `MEDIA_TYPE_NOT_ALLOWED`. Confirm no dangling media appears after a cancelled upload.
 
-### US6 — public menu + search (P6) — backend now, UI after design
+### US6 — public menu + search (P6)
 1. `GET /api/menu/by-slug/:slug` for an **ACTIVE** restaurant → full visible `MenuTree` with
    `orderableNow` per item; hidden category absent.
 2. Same call for a **non-active** restaurant → 404 `RESTAURANT_NOT_FOUND`.
 3. Client-side search over the returned tree matches item name/description/tag and category name.
-4. **Customer visual menu is built once the design handoff lands** (research §12) — validate the
-   endpoint/payload now; the UI is a later presentation task.
+4. **Customer menu UI** — open the table QR target `<slug>.localhost:3002/t/<tableId>` (active
+   restaurant + valid table). Confirm: sticky category rail scroll-spies as you scroll and jumps on
+   tap; item cards show price / unit price / tags / dimmed sold-out & off-hours states; tapping a
+   card opens the bottom sheet (gallery, meta tiles, availability callout, allergens, read-only
+   options); the search overlay filters Turkish-insensitively. An inactive venue or unknown table
+   shows "not available" (never the menu) — SC-006.
 
 ## Expected outcomes
 
@@ -78,3 +82,19 @@ Map to the spec's user stories; run against a freshly created restaurant.
 - Prices/unit-prices exact (SC-003); availability correct across edge cases (SC-004); disallowed
   uploads refused pre-store with no orphans (SC-005); hidden categories & non-active menus never
   exposed (SC-006); standard allergens present on every new restaurant (SC-007).
+
+## Operational notes — object storage (media)
+
+**Dev (MinIO)** is wired by `docker compose up`: the `menu-media` bucket is created and set to
+anonymous `download`, so `MEDIA_PUBLIC_BASE_URL` (`http://localhost:9000/menu-media`) serves objects
+directly — the same shape as an R2 public bucket. **Prod (Cloudflare R2)**: create the bucket, point
+`S3_ENDPOINT` at the R2 S3 API, and set `MEDIA_PUBLIC_BASE_URL` to the bucket's public URL or custom
+domain. One code path (`storage/S3Service`, `forcePathStyle`) covers both.
+
+**Lifecycle rule — expire unconfirmed uploads (ops; research §1).** Uploads are direct-to-storage
+(presigned PUT) and only become menu rows on `confirm`, which HEAD-verifies first — so the DB never
+holds an orphan. But a client that PUTs then never confirms (closed tab, crash) leaves an object with
+no row. Configure a storage **lifecycle rule to delete objects older than ~24h under the `items/`
+prefix**; confirmed media is long-lived regardless of age, so a generous window is safe. On R2: an
+object-lifecycle rule (expire after 1 day) on the prefix; on MinIO: `mc ilm rule add --expiry-days 1
+local/menu-media --prefix items/`. Not load-bearing for correctness — purely housekeeping.

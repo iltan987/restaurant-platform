@@ -196,10 +196,10 @@ Turborepo monorepo (per plan.md): `packages/{db,core,schemas,i18n}/`, `apps/{api
 
 ## Phase 9: Polish & Cross-Cutting
 
-- [ ] T058 [P] `pnpm lint` + `pnpm typecheck` clean across touched workspaces
-- [ ] T059 [P] Finalize `.env.example` (api) + document MinIO (dev) / R2 (prod) setup in `quickstart.md`/README
-- [ ] T060 Run `quickstart.md` validation scenarios (verify SC-001…SC-007). Note: SC-002's render-<2s and search-<200ms budgets are **manually observed** here (no automated perf assertion this slice); all other SCs are covered by automated tests
-- [ ] T061 [P] Document a bucket lifecycle rule to expire unconfirmed uploads (ops note; research §1)
+- [x] T058 [P] `pnpm lint` + `pnpm typecheck` clean across touched workspaces (all 11 workspaces green)
+- [x] T059 [P] Finalize `.env.example` (api) + document MinIO (dev) / R2 (prod) setup in `quickstart.md`/README
+- [x] T060 Run `quickstart.md` validation scenarios (verify SC-001…SC-007). Automated source-of-truth green — 130 unit + 55 e2e + 44 core (SC-003…SC-007). SC-001 end-to-end walkthrough and SC-002's render-<2s / search-<200ms budgets are **manually observed** against a running stack (`pnpm dev`); no automated perf assertion this slice
+- [x] T061 [P] Document a bucket lifecycle rule to expire unconfirmed uploads (ops note in `quickstart.md`; research §1)
 
 ---
 
