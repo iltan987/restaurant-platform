@@ -5,8 +5,9 @@ import { type ReactElement, useState } from "react"
 import {
   formatPriceMinor,
   parsePriceToMinor,
+  resolveUnitPrice,
   type ServingUnit,
-  unitPrice,
+  type UnitPriceBasis,
 } from "@repo/core"
 import { type MenuItem, type UpdateMenuItemInput } from "@repo/schemas"
 import { Button } from "@repo/ui/components/ui/button"
@@ -52,6 +53,34 @@ const SERVING_UNITS: { value: string; label: string }[] = [
   { value: "PORTION", label: "porsiyon" },
 ]
 
+// Birim-fiyat (unit price) basis options, labelled in Turkish. AUTO + HIDE are
+// always offered; the magnitude options depend on the chosen serving unit.
+const UNIT_PRICE_BASIS_LABEL: Record<UnitPriceBasis, string> = {
+  AUTO: "Otomatik",
+  HIDE: "Gizle",
+  PER_KG: "kg başına",
+  PER_100G: "100 g başına",
+  PER_L: "litre başına",
+  PER_100ML: "100 ml başına",
+  PER_PIECE: "adet başına",
+}
+
+/** Which basis options make sense for a given serving unit (empty = N/A). */
+function basisOptionsFor(servingUnit: string): UnitPriceBasis[] {
+  switch (servingUnit) {
+    case "GRAM":
+    case "KILOGRAM":
+      return ["AUTO", "HIDE", "PER_KG", "PER_100G"]
+    case "MILLILITER":
+    case "LITER":
+      return ["AUTO", "HIDE", "PER_L", "PER_100ML"]
+    case "PIECE":
+      return ["AUTO", "HIDE", "PER_PIECE"]
+    default:
+      return []
+  }
+}
+
 /** Pre-fills the price field with the major amount, Turkish-formatted (10,50). */
 function toMajorInput(priceMinor: number): string {
   return (priceMinor / 100).toLocaleString("tr-TR", {
@@ -87,6 +116,7 @@ export function ItemEditorDialog({
   const [calories, setCalories] = useState("")
   const [servingAmount, setServingAmount] = useState("")
   const [servingUnit, setServingUnit] = useState<string>(NONE)
+  const [unitPriceBasis, setUnitPriceBasis] = useState<UnitPriceBasis>("AUTO")
   const [touched, setTouched] = useState(false)
 
   function change(next: boolean) {
@@ -101,6 +131,7 @@ export function ItemEditorDialog({
         item?.servingAmount != null ? String(item.servingAmount) : ""
       )
       setServingUnit(item?.servingUnit ?? NONE)
+      setUnitPriceBasis(item?.unitPriceBasis ?? "AUTO")
       setTouched(false)
     }
   }
@@ -112,9 +143,15 @@ export function ItemEditorDialog({
 
   const amountNum = servingAmount.trim() === "" ? null : Number(servingAmount)
   const caloriesNum = calories.trim() === "" ? null : Number(calories)
+  const basisOptions = basisOptionsFor(servingUnit)
   const preview =
     priceMinor !== null && servingUnit !== NONE
-      ? unitPrice(priceMinor, amountNum, servingUnit as ServingUnit)
+      ? resolveUnitPrice(
+          priceMinor,
+          amountNum,
+          servingUnit as ServingUnit,
+          unitPriceBasis
+        )
       : null
 
   function save() {
@@ -138,6 +175,7 @@ export function ItemEditorDialog({
             ? amountNum
             : null,
         servingUnit: servingUnit === NONE ? null : (servingUnit as ServingUnit),
+        unitPriceBasis,
       }
       update.mutate({ id: item.id, input })
     } else {
@@ -240,7 +278,14 @@ export function ItemEditorDialog({
                 <Label>Birim</Label>
                 <Select
                   value={servingUnit}
-                  onValueChange={(v) => setServingUnit(v ?? NONE)}
+                  onValueChange={(v) => {
+                    const next = v ?? NONE
+                    setServingUnit(next)
+                    // Drop an now-incompatible magnitude back to Otomatik.
+                    if (!basisOptionsFor(next).includes(unitPriceBasis)) {
+                      setUnitPriceBasis("AUTO")
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue>
@@ -260,13 +305,39 @@ export function ItemEditorDialog({
               </div>
             </div>
 
-            {preview && (
-              <p className="text-xs text-muted-foreground">
-                Birim fiyat:{" "}
-                <span className="font-medium text-foreground tabular-nums">
-                  {formatPriceMinor(preview.perUnitMinor)}/{preview.unit}
-                </span>
-              </p>
+            {basisOptions.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Birim fiyat</Label>
+                <Select
+                  value={unitPriceBasis}
+                  onValueChange={(v) =>
+                    setUnitPriceBasis((v ?? "AUTO") as UnitPriceBasis)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      {(value: string) =>
+                        UNIT_PRICE_BASIS_LABEL[value as UnitPriceBasis]
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {basisOptions.map((b) => (
+                      <SelectItem key={b} value={b}>
+                        {UNIT_PRICE_BASIS_LABEL[b]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Müşteriye gösterilen:{" "}
+                  <span className="font-medium text-foreground tabular-nums">
+                    {preview
+                      ? `${formatPriceMinor(preview.perUnitMinor)}/${preview.unit}`
+                      : "Gösterilmiyor"}
+                  </span>
+                </p>
+              </div>
             )}
 
             <Separator />

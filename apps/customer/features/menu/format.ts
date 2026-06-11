@@ -1,8 +1,8 @@
 import {
   type DayOfWeek,
   formatPriceMinor,
+  resolveUnitPrice,
   type ServingUnit,
-  unitPrice,
 } from "@repo/core"
 import { type MenuTreeItem } from "@repo/schemas"
 
@@ -31,9 +31,14 @@ export function servingLabel(item: MenuTreeItem): string | null {
   return `${item.servingAmount} ${SERVING_UNIT_LABEL[item.servingUnit]}`
 }
 
-/** Normalized unit price, e.g. `₺1.700/kg`. Null when it can't be shown. */
+/** Normalized unit price, e.g. `₺96,25/100 g`. Null when it can't be shown. */
 export function unitPriceLabel(item: MenuTreeItem): string | null {
-  const up = unitPrice(item.priceMinor, item.servingAmount, item.servingUnit)
+  const up = resolveUnitPrice(
+    item.priceMinor,
+    item.servingAmount,
+    item.servingUnit,
+    item.unitPriceBasis
+  )
   return up ? `${formatTRY(up.perUnitMinor)}/${up.unit}` : null
 }
 

@@ -34,6 +34,20 @@ enum ServingUnit {
   PORTION // porsiyon (no unit price)
 }
 
+// How an item's normalized unit price is shown. AUTO lets @repo/core pick
+// visibility + magnitude (per-100g for pricey weights, per-L for sensible
+// volumes, hidden for tiny servings); HIDE suppresses it; the rest force a
+// specific magnitude. See packages/core/src/unit-price.ts.
+enum UnitPriceBasis {
+  AUTO
+  HIDE
+  PER_KG
+  PER_100G
+  PER_L
+  PER_100ML
+  PER_PIECE
+}
+
 enum DayOfWeek {
   MON
   TUE
@@ -144,6 +158,7 @@ model MenuItem {
   calories            Int?
   servingAmount       Decimal?
   servingUnit         ServingUnit?
+  unitPriceBasis      UnitPriceBasis       @default(AUTO)
   position            Int                  @default(0)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt

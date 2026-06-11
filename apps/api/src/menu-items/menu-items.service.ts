@@ -79,6 +79,7 @@ export class MenuItemsService {
         calories: fields.calories ?? null,
         servingAmount: fields.servingAmount ?? null,
         servingUnit: fields.servingUnit ?? null,
+        unitPriceBasis: fields.unitPriceBasis ?? "AUTO",
         ...(allergenIds
           ? { allergens: { connect: allergenIds.map((id) => ({ id })) } }
           : {}),

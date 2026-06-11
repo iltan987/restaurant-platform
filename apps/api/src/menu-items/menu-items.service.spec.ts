@@ -74,6 +74,7 @@ describe("MenuItemsService", () => {
           calories: null,
           servingAmount: null,
           servingUnit: null,
+          unitPriceBasis: "AUTO",
         },
       })
     })

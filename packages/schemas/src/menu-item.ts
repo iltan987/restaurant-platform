@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { SERVING_UNITS } from "@repo/core"
+import { SERVING_UNITS, UNIT_PRICE_BASES } from "@repo/core"
 
 import { allergenSchema } from "./allergen"
 import { availabilityWindowSchema } from "./availability"
@@ -9,6 +9,7 @@ import { optionGroupSchema } from "./option"
 import { tagSchema } from "./tag"
 
 const servingUnitSchema = z.enum(SERVING_UNITS)
+const unitPriceBasisSchema = z.enum(UNIT_PRICE_BASES)
 
 // ── Input schemas (locale-agnostic) ──
 // Base item plus US3 descriptive/dietary fields. Prices are integer minor
@@ -22,6 +23,7 @@ export const createMenuItemSchema = z.object({
   calories: z.number().int().min(0).nullable().optional(),
   servingAmount: z.number().positive().nullable().optional(),
   servingUnit: servingUnitSchema.nullable().optional(),
+  unitPriceBasis: unitPriceBasisSchema.optional(),
   allergenIds: z.array(z.string()).optional(),
   tagIds: z.array(z.string()).optional(),
 })
@@ -36,6 +38,7 @@ export const updateMenuItemSchema = z.object({
   calories: z.number().int().min(0).nullable().optional(),
   servingAmount: z.number().positive().nullable().optional(),
   servingUnit: servingUnitSchema.nullable().optional(),
+  unitPriceBasis: unitPriceBasisSchema.optional(),
   allergenIds: z.array(z.string()).optional(),
   tagIds: z.array(z.string()).optional(),
 })
@@ -56,6 +59,7 @@ export const menuItemSchema = z.object({
   calories: z.number().int().nullable(),
   servingAmount: z.coerce.number().nullable(),
   servingUnit: servingUnitSchema.nullable(),
+  unitPriceBasis: unitPriceBasisSchema,
   position: z.number().int(),
   createdAt: z.string(),
   updatedAt: z.string(),
