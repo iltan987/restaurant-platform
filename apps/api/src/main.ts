@@ -16,33 +16,37 @@ async function bootstrap() {
 
   app.enableCors({ origin: buildCorsOrigins() })
 
-  await app.listen(process.env.PORT ?? 3000)
+  await app.listen(process.env.PORT ?? 3000, "0.0.0.0")
 }
 
 /**
- * Derives allowed CORS origins from ADMIN_URL and DASHBOARD_URL.
- * DASHBOARD_URL also covers tenant subdomains (<slug>.<host>).
+ * Derives allowed CORS origins from ADMIN_URL, DASHBOARD_URL and CUSTOMER_URL.
+ * The dashboard and customer apps are tenant-facing, so they're allowed on both
+ * the apex host and `<slug>.<host>` tenant subdomains; admin is apex-only.
  */
 function buildCorsOrigins(): RegExp[] {
-  const adminUrl = process.env.ADMIN_URL
-  const dashboardUrl = process.env.DASHBOARD_URL
-
   const origins: RegExp[] = []
 
-  if (adminUrl) {
-    const { host } = new URL(adminUrl)
+  // Apex-host matcher for a configured URL (no-op when the env var is unset).
+  const apex = (url: string | undefined) => {
+    if (!url) return
+    const { host } = new URL(url)
     const escapedHost = host.replace(/\./g, "\\.").replace(/:/g, "\\:")
     origins.push(new RegExp(`^https?:\\/\\/${escapedHost}$`))
   }
 
-  if (dashboardUrl) {
-    const { host } = new URL(dashboardUrl)
+  // Apex + `<slug>.<host>` tenant subdomains for a configured URL.
+  const apexAndSubdomains = (url: string | undefined) => {
+    if (!url) return
+    apex(url)
+    const { host } = new URL(url)
     const escapedHost = host.replace(/\./g, "\\.").replace(/:/g, "\\:")
-    // apex
-    origins.push(new RegExp(`^https?:\\/\\/${escapedHost}$`))
-    // tenant subdomains
     origins.push(new RegExp(`^https?:\\/\\/[a-z0-9-]+\\.${escapedHost}$`))
   }
+
+  apex(process.env.ADMIN_URL)
+  apexAndSubdomains(process.env.DASHBOARD_URL)
+  apexAndSubdomains(process.env.CUSTOMER_URL)
 
   return origins
 }

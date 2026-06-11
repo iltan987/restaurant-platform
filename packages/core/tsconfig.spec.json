@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Tests transpile per-file (ts-jest); type-checking runs separately via
+    // `tsc --noEmit`. isolatedModules silences the NodeNext/ts-jest TS151002
+    // warning. rootDir spans src/ so the inherited config does not trip TS5011.
+    "isolatedModules": true,
+    "rootDir": "src"
+  }
+}

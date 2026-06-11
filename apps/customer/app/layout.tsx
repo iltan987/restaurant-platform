@@ -1,7 +1,8 @@
 import "@repo/ui/globals.css"
+import "./menu-theme.css"
 
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Newsreader } from "next/font/google"
 
 import { cn } from "@repo/ui/lib/utils"
 
@@ -19,6 +20,13 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+// Soft serif for menu display headings (restaurant & item names) — the warm,
+// appetite-driven counterpart to Geist. Exposed as --font-serif.
+const fontSerif = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-serif",
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +39,7 @@ export default function RootLayout({
       className={cn(
         "antialiased",
         fontMono.variable,
+        fontSerif.variable,
         "font-sans",
         geist.variable
       )}

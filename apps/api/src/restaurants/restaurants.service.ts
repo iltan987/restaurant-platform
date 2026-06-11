@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 
-import { slugify } from "@repo/core"
+import { slugify, STANDARD_ALLERGENS } from "@repo/core"
 import {
   type CreateRestaurantInput,
   ErrorCode,
@@ -33,7 +33,8 @@ export class RestaurantsService {
 
     try {
       // Create the restaurant (INACTIVE / IN_PROGRESS via DB defaults) together
-      // with its default floor + area so onboarding always starts non-empty.
+      // with its default floor + area so onboarding always starts non-empty,
+      // and seed the standard allergen set (SC-007).
       return await this.prisma.$transaction(async (tx) => {
         const restaurant = await tx.restaurant.create({
           data: { name: input.name, slug },
@@ -43,6 +44,13 @@ export class RestaurantsService {
         })
         await tx.area.create({
           data: { floorId: floor.id, name: "Genel" },
+        })
+        await tx.allergen.createMany({
+          data: STANDARD_ALLERGENS.map((label) => ({
+            restaurantId: restaurant.id,
+            label,
+            isStandard: true,
+          })),
         })
         return restaurant
       })

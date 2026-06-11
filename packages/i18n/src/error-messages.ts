@@ -24,6 +24,25 @@ const tr: Record<string, string> = {
   [ErrorCode.TABLE_NOT_FOUND]: "Masa bulunamadı.",
   [ErrorCode.TABLE_LIMIT_REACHED]:
     "Masa sınırına ulaşıldı. Daha fazla masa eklemek için mevcut masaları kaldırın.",
+  // Menu domain (feature 003)
+  [ErrorCode.CATEGORY_NAME_TAKEN]: "Bu kategori adı zaten kullanımda.",
+  [ErrorCode.CATEGORY_NOT_FOUND]: "Kategori bulunamadı.",
+  [ErrorCode.CATEGORY_NOT_EMPTY]:
+    "Bu kategoriyi silmeden önce içindeki ürünleri kaldırmalısınız.",
+  [ErrorCode.MENU_ITEM_NOT_FOUND]: "Ürün bulunamadı.",
+  [ErrorCode.ALLERGEN_LABEL_TAKEN]: "Bu alerjen adı zaten kullanımda.",
+  [ErrorCode.ALLERGEN_NOT_FOUND]: "Alerjen bulunamadı.",
+  [ErrorCode.ALLERGEN_STANDARD_PROTECTED]: "Standart alerjenler silinemez.",
+  [ErrorCode.TAG_LABEL_TAKEN]: "Bu etiket adı zaten kullanımda.",
+  [ErrorCode.TAG_NOT_FOUND]: "Etiket bulunamadı.",
+  [ErrorCode.OPTION_GROUP_NOT_FOUND]: "Seçenek grubu bulunamadı.",
+  [ErrorCode.OPTION_NOT_FOUND]: "Seçenek bulunamadı.",
+  [ErrorCode.INVALID_OPTION_CONFIG]: "Seçenek yapılandırması geçersiz.",
+  [ErrorCode.AVAILABILITY_WINDOW_INVALID]: "Servis saati aralığı geçersiz.",
+  [ErrorCode.MEDIA_LIMIT_REACHED]: "Bu ürün için medya sınırına ulaşıldı.",
+  [ErrorCode.MEDIA_TYPE_NOT_ALLOWED]: "Bu dosya türü desteklenmiyor.",
+  [ErrorCode.MEDIA_TOO_LARGE]: "Dosya boyutu izin verilen sınırı aşıyor.",
+  [ErrorCode.MEDIA_OBJECT_NOT_FOUND]: "Yüklenen dosya bulunamadı.",
 }
 
 /**

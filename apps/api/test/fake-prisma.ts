@@ -43,10 +43,52 @@ type Table = {
   updatedAt: Date
 }
 
+type Category = {
+  id: string
+  restaurantId: string
+  name: string
+  position: number
+  isHidden: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+type MenuItem = {
+  id: string
+  restaurantId: string
+  categoryId: string
+  name: string
+  priceMinor: number
+  inStock: boolean
+  position: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+type Allergen = {
+  id: string
+  restaurantId: string
+  label: string
+  isStandard: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+type Tag = {
+  id: string
+  restaurantId: string
+  label: string
+  color: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
 const restaurants: Restaurant[] = []
 const floors: Floor[] = []
 const areas: Area[] = []
 const tables: Table[] = []
+const categories: Category[] = []
+const menuItems: MenuItem[] = []
+const allergens: Allergen[] = []
+const tags: Tag[] = []
 let seq = 0
 // Simulates a unique-constraint race (P2002) on the next restaurant insert —
 // the only path that surfaces SLUG_TAKEN (the service pre-uniquifies otherwise).
@@ -84,14 +126,47 @@ const restaurant = {
     restaurants.push(row)
     return Promise.resolve(row)
   },
-  findUnique({ where }: { where: { id?: string; slug?: string } }) {
-    return Promise.resolve(
+  findUnique({
+    where,
+    include,
+  }: {
+    where: { id?: string; slug?: string }
+    include?: { categories?: { where?: { isHidden?: boolean } } }
+  }) {
+    const row =
       restaurants.find(
         (r) =>
           (where.id !== undefined && r.id === where.id) ||
           (where.slug !== undefined && r.slug === where.slug)
       ) ?? null
-    )
+    if (!row || !include?.categories) return Promise.resolve(row)
+
+    // Public menu tree: categories (optionally non-hidden) → items, each with
+    // the relation arrays the MenuService composes over. The fake has no
+    // option/allergen/tag/window/media stores, so those come back empty.
+    const onlyVisible = include.categories.where?.isHidden === false
+    const cats = categories
+      .filter((c) => c.restaurantId === row.id && (!onlyVisible || !c.isHidden))
+      .sort((a, b) => a.position - b.position)
+      .map((c) => ({
+        ...c,
+        items: menuItems
+          .filter((m) => m.categoryId === c.id)
+          .sort((a, b) => a.position - b.position)
+          .map((m) => ({
+            ...m,
+            description: null,
+            calories: null,
+            servingAmount: null,
+            servingUnit: null,
+            optionGroups: [],
+            allergens: [],
+            tags: [],
+            availabilityWindows: [],
+            media: [],
+          })),
+      }))
+    return Promise.resolve({ ...row, categories: cats })
   },
   findMany({ skip, take }: { skip?: number; take?: number } = {}) {
     const sorted = [...restaurants].sort(
@@ -114,7 +189,8 @@ const restaurant = {
     return Promise.resolve(row)
   },
   delete({ where }: { where: { id: string } }) {
-    // DB-level cascade: restaurant → floors → areas → tables.
+    // DB-level cascade: restaurant → floors → areas → tables, and
+    // restaurant → categories → menu items.
     const floorIds = floors
       .filter((f) => f.restaurantId === where.id)
       .map((f) => f.id)
@@ -127,6 +203,14 @@ const restaurant = {
       if (floorIds.includes(areas[j]!.floorId)) areas.splice(j, 1)
     for (let j = floors.length - 1; j >= 0; j--)
       if (floors[j]!.restaurantId === where.id) floors.splice(j, 1)
+    for (let j = menuItems.length - 1; j >= 0; j--)
+      if (menuItems[j]!.restaurantId === where.id) menuItems.splice(j, 1)
+    for (let j = categories.length - 1; j >= 0; j--)
+      if (categories[j]!.restaurantId === where.id) categories.splice(j, 1)
+    for (let j = allergens.length - 1; j >= 0; j--)
+      if (allergens[j]!.restaurantId === where.id) allergens.splice(j, 1)
+    for (let j = tags.length - 1; j >= 0; j--)
+      if (tags[j]!.restaurantId === where.id) tags.splice(j, 1)
     const i = restaurants.findIndex((r) => r.id === where.id)
     const [row] = restaurants.splice(i, 1)
     return Promise.resolve(row)
@@ -417,24 +501,278 @@ const table = {
   },
 }
 
+const category = {
+  create({
+    data,
+  }: {
+    data: { restaurantId: string; name: string; position?: number }
+  }) {
+    if (
+      categories.some(
+        (c) => c.restaurantId === data.restaurantId && c.name === data.name
+      )
+    ) {
+      return Promise.reject({ code: "P2002" })
+    }
+    const row: Category = {
+      id: id("cat"),
+      restaurantId: data.restaurantId,
+      name: data.name,
+      position: data.position ?? 0,
+      isHidden: false,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    categories.push(row)
+    return Promise.resolve(row)
+  },
+  findUnique({ where }: { where: { id: string } }) {
+    return Promise.resolve(categories.find((c) => c.id === where.id) ?? null)
+  },
+  findMany({
+    where,
+  }: {
+    where?: { restaurantId?: string; id?: { in?: string[] } }
+    orderBy?: unknown
+    select?: unknown
+  } = {}) {
+    const rid = where?.restaurantId
+    const idIn = where?.id?.in
+    const rows = categories
+      .filter(
+        (c) =>
+          (rid === undefined || c.restaurantId === rid) &&
+          (idIn === undefined || idIn.includes(c.id))
+      )
+      .sort((a, b) => a.position - b.position)
+    return Promise.resolve(rows)
+  },
+  count({ where }: { where: { restaurantId: string } }) {
+    return Promise.resolve(
+      categories.filter((c) => c.restaurantId === where.restaurantId).length
+    )
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<Category> }) {
+    const row = categories.find((c) => c.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = categories.findIndex((c) => c.id === where.id)
+    const [row] = categories.splice(i, 1)
+    return Promise.resolve(row)
+  },
+}
+
+const menuItem = {
+  create({
+    data,
+  }: {
+    data: {
+      restaurantId: string
+      categoryId: string
+      name: string
+      priceMinor: number
+      inStock?: boolean
+      position?: number
+    }
+  }) {
+    const row: MenuItem = {
+      id: id("item"),
+      restaurantId: data.restaurantId,
+      categoryId: data.categoryId,
+      name: data.name,
+      priceMinor: data.priceMinor,
+      inStock: data.inStock ?? true,
+      position: data.position ?? 0,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    menuItems.push(row)
+    return Promise.resolve(row)
+  },
+  findUnique({ where }: { where: { id: string } }) {
+    return Promise.resolve(menuItems.find((m) => m.id === where.id) ?? null)
+  },
+  findMany({
+    where,
+  }: {
+    where?: { categoryId?: string; id?: { in?: string[] } }
+    orderBy?: unknown
+    select?: unknown
+  } = {}) {
+    const cid = where?.categoryId
+    const idIn = where?.id?.in
+    const rows = menuItems
+      .filter(
+        (m) =>
+          (cid === undefined || m.categoryId === cid) &&
+          (idIn === undefined || idIn.includes(m.id))
+      )
+      .sort((a, b) => a.position - b.position)
+    return Promise.resolve(rows)
+  },
+  count({ where }: { where: { categoryId: string } }) {
+    return Promise.resolve(
+      menuItems.filter((m) => m.categoryId === where.categoryId).length
+    )
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<MenuItem> }) {
+    const row = menuItems.find((m) => m.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = menuItems.findIndex((m) => m.id === where.id)
+    const [row] = menuItems.splice(i, 1)
+    return Promise.resolve(row)
+  },
+}
+
+const allergen = {
+  create({
+    data,
+  }: {
+    data: { restaurantId: string; label: string; isStandard?: boolean }
+  }) {
+    if (
+      allergens.some(
+        (a) => a.restaurantId === data.restaurantId && a.label === data.label
+      )
+    ) {
+      return Promise.reject({ code: "P2002" })
+    }
+    const row: Allergen = {
+      id: id("alg"),
+      restaurantId: data.restaurantId,
+      label: data.label,
+      isStandard: data.isStandard ?? false,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    allergens.push(row)
+    return Promise.resolve(row)
+  },
+  createMany({
+    data,
+  }: {
+    data: { restaurantId: string; label: string; isStandard?: boolean }[]
+  }) {
+    for (const d of data) {
+      allergens.push({
+        id: id("alg"),
+        restaurantId: d.restaurantId,
+        label: d.label,
+        isStandard: d.isStandard ?? false,
+        createdAt: now(),
+        updatedAt: now(),
+      })
+    }
+    return Promise.resolve({ count: data.length })
+  },
+  findUnique({ where }: { where: { id: string } }) {
+    return Promise.resolve(allergens.find((a) => a.id === where.id) ?? null)
+  },
+  findMany({ where }: { where?: { restaurantId?: string } } = {}) {
+    const rid = where?.restaurantId
+    return Promise.resolve(
+      allergens.filter((a) => rid === undefined || a.restaurantId === rid)
+    )
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<Allergen> }) {
+    const row = allergens.find((a) => a.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = allergens.findIndex((a) => a.id === where.id)
+    const [row] = allergens.splice(i, 1)
+    return Promise.resolve(row)
+  },
+}
+
+const tag = {
+  create({
+    data,
+  }: {
+    data: { restaurantId: string; label: string; color?: string | null }
+  }) {
+    if (
+      tags.some(
+        (t) => t.restaurantId === data.restaurantId && t.label === data.label
+      )
+    ) {
+      return Promise.reject({ code: "P2002" })
+    }
+    const row: Tag = {
+      id: id("tag"),
+      restaurantId: data.restaurantId,
+      label: data.label,
+      color: data.color ?? null,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    tags.push(row)
+    return Promise.resolve(row)
+  },
+  findUnique({ where }: { where: { id: string } }) {
+    return Promise.resolve(tags.find((t) => t.id === where.id) ?? null)
+  },
+  findMany({ where }: { where?: { restaurantId?: string } } = {}) {
+    const rid = where?.restaurantId
+    return Promise.resolve(
+      tags.filter((t) => rid === undefined || t.restaurantId === rid)
+    )
+  },
+  update({ where, data }: { where: { id: string }; data: Partial<Tag> }) {
+    const row = tags.find((t) => t.id === where.id)!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({ where }: { where: { id: string } }) {
+    const i = tags.findIndex((t) => t.id === where.id)
+    const [row] = tags.splice(i, 1)
+    return Promise.resolve(row)
+  },
+}
+
 export const fakePrisma = {
   restaurant,
   floor,
   area,
   table,
+  category,
+  menuItem,
+  allergen,
+  tag,
   $transaction(cb: (tx: unknown) => unknown) {
-    return Promise.resolve(cb({ restaurant, floor, area, table }))
+    return Promise.resolve(
+      cb({ restaurant, floor, area, table, category, menuItem, allergen, tag })
+    )
   },
   __reset() {
     restaurants.length = 0
     floors.length = 0
     areas.length = 0
     tables.length = 0
+    categories.length = 0
+    menuItems.length = 0
+    allergens.length = 0
+    tags.length = 0
     seq = 0
     forceP2002 = false
   },
   __forceP2002(value: boolean) {
     forceP2002 = value
   },
-  __stores: { restaurants, floors, areas, tables },
+  __stores: {
+    restaurants,
+    floors,
+    areas,
+    tables,
+    categories,
+    menuItems,
+    allergens,
+    tags,
+  },
 }

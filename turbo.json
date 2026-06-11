@@ -1,8 +1,14 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": ["NODE_ENV", "PORT"],
-  "globalPassThroughEnv": ["DATABASE_URL", "ADMIN_URL", "DASHBOARD_URL"],
+  "globalEnv": ["NODE_ENV", "PORT", "ALLOWED_DEV_ORIGIN"],
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "ADMIN_URL",
+    "DASHBOARD_URL",
+    "CUSTOMER_URL",
+    "API_INTERNAL_URL"
+  ],
   "tasks": {
     "db:generate": {
       "inputs": ["prisma/schema.prisma"],

@@ -3,28 +3,22 @@ import { type NextRequest, NextResponse } from "next/server"
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
 
 function extractSubdomain(request: NextRequest): string | null {
-  const url = request.url
   const host = request.headers.get("host") ?? ""
   const hostname = host.split(":")[0] ?? ""
   const rootHostname = ROOT_DOMAIN.split(":")[0] ?? ""
 
-  // Local development — match against the full URL for reliability
-  if (url.includes("localhost") || url.includes("127.0.0.1")) {
-    const match = url.match(/https?:\/\/([^.]+)\.localhost/)
-    if (match?.[1]) return match[1]
+  // Direct localhost access — no subdomain
+  if (hostname === "localhost" || hostname === "127.0.0.1") return null
 
-    // Fallback: host header
-    if (hostname.includes(".localhost")) return hostname.split(".")[0] ?? null
-
-    return null
-  }
+  // Local development subdomain: <slug>.localhost
+  if (hostname.endsWith(".localhost")) return hostname.split(".")[0] ?? null
 
   // Vercel preview deployments: tenant---branch-name.vercel.app
   if (hostname.includes("---") && hostname.endsWith(".vercel.app")) {
     return hostname.split("---")[0] ?? null
   }
 
-  // Production: regular subdomain of ROOT_DOMAIN
+  // Production / LAN: subdomain of ROOT_DOMAIN
   const isSubdomain =
     hostname !== rootHostname &&
     hostname !== `www.${rootHostname}` &&
