@@ -1,10 +1,12 @@
 "use client"
 
+import { useQuery } from "@tanstack/react-query"
 import { UtensilsCrossedIcon } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { type MenuTree, type MenuTreeItem } from "@repo/schemas"
+import { type MenuTreeItem } from "@repo/schemas"
 
+import { menuQueries } from "../queries"
 import { CategoryBar } from "./category-bar"
 import { ItemCard } from "./item-card"
 import { ItemDetailSheet } from "./item-detail-sheet"
@@ -17,15 +19,19 @@ const STICKY_OFFSET = 64
  * The customer menu surface (read-only). Composes the header, sticky scroll-spy
  * category rail, photo item cards, the search overlay, and the item-detail
  * bottom sheet over a `MenuTree`. Warm theme via the `.menu-scope` wrapper.
+ *
+ * The tree is read via `useQuery` and served from the server-dehydrated cache
+ * (see the table menu page), so it's present on first render.
  */
 export function MenuView({
-  tree,
+  slug,
   tableLabel,
 }: {
-  tree: MenuTree
+  slug: string
   tableLabel?: string
 }) {
-  const { restaurant, categories } = tree
+  const { data: tree } = useQuery(menuQueries.tree(slug))
+  const categories = useMemo(() => tree?.categories ?? [], [tree])
   const [activeId, setActiveId] = useState(categories[0]?.id ?? "")
   const [searchOpen, setSearchOpen] = useState(false)
   // The sheet stays mounted (Vaul owns its open/close lifecycle so its body
@@ -71,6 +77,11 @@ export function MenuView({
     setOpenItem(item)
     setSheetOpen(true)
   }, [])
+
+  // Hydrated from the server cache, so this is present on first render; the
+  // guard satisfies the type and covers an unexpected cache miss.
+  if (!tree) return null
+  const { restaurant } = tree
 
   return (
     <div className="menu-scope relative min-h-svh">

@@ -88,7 +88,7 @@ Each Next app sets its Zod locale **once on the client** via a `ZodInit` compone
 - **TS:** strict, `NodeNext` modules, `noUncheckedIndexedAccess` on. Path alias `@/*` maps to app/src root.
 - **NestJS build (SWC/TS6 gotchas):** see the `project_nestjs_swc` memory — `baseUrl` panic and `dist/src` output bug have specific fixes.
 - **PrismaService** (`apps/api/src/prisma/prisma.service.ts`) wraps the `@repo/db` singleton and re-exposes model delegates directly (`this.prisma.restaurant`). Add a delegate field per new model.
-- **Env files:** each app has its own `.env` / `.env.local` (see `.env.example` in each). Frontend needs `NEXT_PUBLIC_API_URL`; dashboard needs `NEXT_PUBLIC_ROOT_DOMAIN`; admin needs `NEXT_PUBLIC_DASHBOARD_URL`; api needs `DATABASE_URL`, `ADMIN_URL`, `DASHBOARD_URL` (the latter two derive CORS origins, including tenant subdomains).
+- **Env files:** each app has its own `.env` / `.env.local` (see `.env.example` in each). Frontend needs `NEXT_PUBLIC_API_URL`; dashboard needs `NEXT_PUBLIC_ROOT_DOMAIN`; admin needs `NEXT_PUBLIC_DASHBOARD_URL`; api needs `DATABASE_URL`, `ADMIN_URL`, `DASHBOARD_URL`, `CUSTOMER_URL` (the latter three derive CORS origins; `DASHBOARD_URL`/`CUSTOMER_URL` also allow `<slug>.<host>` tenant subdomains — the customer storefront fetches from the browser via TanStack Query, so its origin must be allowed).
 - **SpecKit:** this repo uses SpecKit (`.specify/`, speckit-* skills). Spec/plan/task artifacts drive feature work; the block at the top of this file is SpecKit-managed — leave it intact.
 
 ## Project memory
