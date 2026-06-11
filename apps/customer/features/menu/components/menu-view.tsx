@@ -28,7 +28,10 @@ export function MenuView({
   const { restaurant, categories } = tree
   const [activeId, setActiveId] = useState(categories[0]?.id ?? "")
   const [searchOpen, setSearchOpen] = useState(false)
+  // The sheet stays mounted (Vaul owns its open/close lifecycle so its body
+  // cleanup runs); `openItem` is the item it shows, `sheetOpen` toggles it.
   const [openItem, setOpenItem] = useState<MenuTreeItem | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const lockUntil = useRef(0)
@@ -64,7 +67,10 @@ export function MenuView({
     }
   }, [])
 
-  const openItemCb = useCallback((item: MenuTreeItem) => setOpenItem(item), [])
+  const openItemCb = useCallback((item: MenuTreeItem) => {
+    setOpenItem(item)
+    setSheetOpen(true)
+  }, [])
 
   return (
     <div className="menu-scope relative min-h-svh">
@@ -127,13 +133,16 @@ export function MenuView({
           onOpen={(item) => {
             setSearchOpen(false)
             setOpenItem(item)
+            setSheetOpen(true)
           }}
         />
       )}
 
-      {openItem && (
-        <ItemDetailSheet item={openItem} onClose={() => setOpenItem(null)} />
-      )}
+      <ItemDetailSheet
+        item={openItem}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+      />
     </div>
   )
 }
