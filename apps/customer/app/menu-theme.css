@@ -76,3 +76,11 @@
 .menu-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* Snappier item-sheet open/close than Vaul's 0.5s default — the slide is a CSS
+   animation on the drawer, so overriding only `animation-duration` (with a more
+   specific selector, no !important) leaves the drag's inline transform transition
+   untouched, so finger-tracking stays 1:1. Vaul's easing is kept. */
+[data-vaul-drawer][data-vaul-snap-points="false"] {
+  animation-duration: 0.4s;
+}
