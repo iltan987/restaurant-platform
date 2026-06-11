@@ -127,6 +127,20 @@ function GroupCard({
   const [optName, setOptName] = useState("")
   const [optPrice, setOptPrice] = useState("")
   const [optDefault, setOptDefault] = useState(false)
+  const [maxStr, setMaxStr] = useState(group.maxSelect?.toString() ?? "")
+
+  // Commit the "max selections" cap for a multi group (blank = unlimited).
+  function commitMax() {
+    const trimmed = maxStr.trim()
+    const next =
+      trimmed === "" ? null : Math.max(1, Math.floor(Number(trimmed)) || 1)
+    setMaxStr(next?.toString() ?? "")
+    if (next === group.maxSelect) return
+    mutations.updateGroup.mutate({
+      groupId: group.id,
+      input: { maxSelect: next },
+    })
+  }
 
   function addOption() {
     const name = optName.trim()
@@ -154,6 +168,21 @@ function GroupCard({
         <Badge variant="secondary">
           {groupKind(group) === "single" ? "Tek seçim" : "Çoklu seçim"}
         </Badge>
+        {groupKind(group) === "multi" && (
+          <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+            En fazla
+            <Input
+              value={maxStr}
+              inputMode="numeric"
+              placeholder="∞"
+              aria-label="En fazla seçim"
+              className="h-7 w-14 text-center"
+              onChange={(e) => setMaxStr(e.target.value.replace(/[^0-9]/g, ""))}
+              onBlur={commitMax}
+              onKeyDown={(e) => e.key === "Enter" && commitMax()}
+            />
+          </label>
+        )}
         <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
           <Checkbox
             checked={group.required}
