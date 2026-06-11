@@ -92,6 +92,7 @@ export function MenuManager({
         </p>
       ) : (
         <DndContext
+          id="menu-categories"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onDragEnd}

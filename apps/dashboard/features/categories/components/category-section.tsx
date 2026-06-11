@@ -197,6 +197,7 @@ export function CategorySection({
         </div>
       ) : (
         <DndContext
+          id={`menu-items-${category.id}`}
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onItemDragEnd}
