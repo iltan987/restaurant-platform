@@ -416,12 +416,12 @@ function SheetBody({
   return (
     <>
       {/* Decorative grabber — the whole sheet is draggable (Vaul default). */}
-      <span className="absolute top-2.5 left-1/2 z-[3] h-[5px] w-[38px] -translate-x-1/2 rounded-full bg-white/70" />
+      <span className="absolute top-2.5 left-1/2 z-[3] h-[5px] w-[38px] -translate-x-1/2 rounded-full bg-white/70 dark:bg-white/[0.45]" />
       <button
         type="button"
         onClick={onClose}
         aria-label="Kapat"
-        className="absolute top-3 right-3 z-[3] grid size-[34px] place-items-center rounded-full bg-white/85 text-foreground shadow-sm backdrop-blur-[4px]"
+        className="absolute top-3 right-3 z-[3] grid size-[34px] place-items-center rounded-full bg-white/85 text-foreground shadow-sm backdrop-blur-[4px] dark:bg-[oklch(0.30_0.014_60/0.9)]"
       >
         <XIcon className="size-[18px]" />
       </button>

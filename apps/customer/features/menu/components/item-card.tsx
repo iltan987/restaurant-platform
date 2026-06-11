@@ -96,7 +96,7 @@ export function Thumbnail({
               )}
             />
           )}
-          <span className="absolute right-1.5 bottom-1.5 grid size-5 place-items-center rounded-md bg-white/80 text-secondary-foreground backdrop-blur-[2px]">
+          <span className="absolute right-1.5 bottom-1.5 grid size-5 place-items-center rounded-md bg-white/80 text-secondary-foreground backdrop-blur-[2px] dark:bg-[oklch(0.22_0.012_60/0.7)]">
             {cover.type === "PHOTO" ? (
               <CameraIcon className="size-3" />
             ) : (
