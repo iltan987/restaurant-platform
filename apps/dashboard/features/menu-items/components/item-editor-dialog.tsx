@@ -243,7 +243,11 @@ export function ItemEditorDialog({
                   onValueChange={(v) => setServingUnit(v ?? NONE)}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue>
+                      {(value: string) =>
+                        SERVING_UNITS.find((u) => u.value === value)?.label
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {SERVING_UNITS.map((u) => (
