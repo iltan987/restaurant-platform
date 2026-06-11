@@ -33,7 +33,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
-    "@turbo/gen": "^2.9.16",
+    "@turbo/gen": "^2.9.17",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
