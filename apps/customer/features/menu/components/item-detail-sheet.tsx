@@ -2,14 +2,21 @@
 
 import {
   CameraIcon,
+  CheckIcon,
   ClockIcon,
-  InfoIcon,
+  MinusIcon,
   PlayIcon,
+  PlusIcon,
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react"
 import { useRef, useState } from "react"
 
+import {
+  defaultConfiguration,
+  effectivePriceMinor,
+  validateConfiguration,
+} from "@repo/core"
 import { type MenuTreeItem } from "@repo/schemas"
 import {
   Drawer,
@@ -18,6 +25,7 @@ import {
   DrawerTitle,
 } from "@repo/ui/components/ui/drawer"
 import { Separator } from "@repo/ui/components/ui/separator"
+import { toast } from "@repo/ui/components/ui/sonner"
 import { cn } from "@repo/ui/lib/utils"
 
 import {
@@ -184,47 +192,129 @@ function Callout({
   )
 }
 
-/* ---------- read-only option groups (informative) ---------- */
-function ReadOnlyOptions({ item }: { item: MenuTreeItem }) {
-  if (item.optionGroups.length === 0) return null
+/* ---------- interactive option groups (configurator) ---------- */
+/** Apply a tap on an option, honouring the group's single/multi + max rules. */
+function applyToggle(
+  group: {
+    maxSelect: number | null
+    required: boolean
+    options: { id: string }[]
+  },
+  optionId: string,
+  selected: ReadonlySet<string>
+): Set<string> {
+  const next = new Set(selected)
+  if (group.maxSelect === 1) {
+    // Single-select: tapping the chosen one clears it only when optional.
+    if (next.has(optionId)) {
+      if (!group.required) next.delete(optionId)
+      return next
+    }
+    for (const o of group.options) next.delete(o.id)
+    next.add(optionId)
+    return next
+  }
+  // Multi-select: toggle, but never exceed maxSelect.
+  if (next.has(optionId)) {
+    next.delete(optionId)
+    return next
+  }
+  const count = group.options.filter((o) => next.has(o.id)).length
+  if (group.maxSelect != null && count >= group.maxSelect) return next
+  next.add(optionId)
+  return next
+}
+
+function OptionSelector({
+  item,
+  selected,
+  onChange,
+}: {
+  item: MenuTreeItem
+  selected: Set<string>
+  onChange: (next: Set<string>) => void
+}) {
   return (
     <>
-      {item.optionGroups.map((g) => (
-        <div key={g.id} className="mt-5 px-5">
-          <div className="mb-2.5 text-xs font-bold tracking-[0.06em] text-[var(--text-faint)] uppercase">
-            {g.name}
+      {item.optionGroups.map((g) => {
+        const single = g.maxSelect === 1
+        const count = g.options.filter((o) => selected.has(o.id)).length
+        const atCap = !single && g.maxSelect != null && count >= g.maxSelect
+        // Action-oriented hint: tell the diner what to do, not "Zorunlu".
+        const hint = g.required
+          ? single
+            ? "Birini seçin"
+            : `En az ${Math.max(1, g.minSelect)} seçin`
+          : "İsteğe bağlı"
+        const cap =
+          !single && g.maxSelect != null ? ` · en fazla ${g.maxSelect}` : ""
+        return (
+          <div key={g.id} className="mt-5 px-5">
+            <div className="mb-2.5 flex items-center gap-2">
+              <span className="text-xs font-bold tracking-[0.06em] text-[var(--text-faint)] uppercase">
+                {g.name}
+              </span>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {hint}
+                {cap}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {g.options.map((o) => {
+                const isSelected = selected.has(o.id)
+                const disabled = !o.isAvailable || (atCap && !isSelected)
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => onChange(applyToggle(g, o.id, selected))}
+                    className={cn(
+                      "flex items-center gap-3 rounded-[var(--radius)] border px-3.5 py-2.5 text-left text-sm transition-colors",
+                      isSelected
+                        ? "border-primary bg-[var(--accent-softer)]"
+                        : "border-border/60 bg-card",
+                      disabled && "cursor-not-allowed opacity-50"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-[20px] shrink-0 place-items-center border text-white transition-colors",
+                        single ? "rounded-full" : "rounded-[6px]",
+                        isSelected
+                          ? "border-primary bg-primary"
+                          : "border-[var(--text-faint)]"
+                      )}
+                    >
+                      {isSelected && (
+                        <CheckIcon className="size-3.5" strokeWidth={3} />
+                      )}
+                    </span>
+                    <span
+                      className={cn(
+                        "flex-1 text-foreground",
+                        !o.isAvailable &&
+                          "text-[var(--text-faint)] line-through"
+                      )}
+                    >
+                      {o.name}
+                    </span>
+                    {o.priceDeltaMinor > 0 ? (
+                      <span className="font-mono text-[13px] text-muted-foreground">
+                        +{formatTRY(o.priceDeltaMinor)}
+                      </span>
+                    ) : o.defaultSelected ? (
+                      <span className="text-[11.5px] text-[var(--text-faint)]">
+                        dahil
+                      </span>
+                    ) : null}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div className="flex flex-col gap-0.5">
-            {g.options.map((o) => (
-              <div
-                key={o.id}
-                className={cn(
-                  "flex items-baseline gap-2 py-1.5 text-sm text-secondary-foreground",
-                  !o.isAvailable && "opacity-50"
-                )}
-              >
-                <span
-                  className={cn(
-                    "text-foreground",
-                    !o.isAvailable && "text-[var(--text-faint)] line-through"
-                  )}
-                >
-                  {o.name}
-                </span>
-                {o.priceDeltaMinor > 0 ? (
-                  <span className="ml-auto font-mono text-[13px] text-muted-foreground">
-                    +{formatTRY(o.priceDeltaMinor)}
-                  </span>
-                ) : o.defaultSelected ? (
-                  <span className="ml-auto text-[11.5px] text-[var(--text-faint)]">
-                    dahil
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </>
   )
 }
@@ -285,7 +375,13 @@ export function ItemDetailSheet({
           "menu-scope overflow-hidden bg-card shadow-[0_-10px_40px_oklch(0.26_0.03_55/0.18)] outline-none data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:max-h-none data-[vaul-drawer-direction=bottom]:rounded-t-[28px] data-[vaul-drawer-direction=bottom]:border-0"
         )}
       >
-        {item && <SheetBody item={item} onClose={() => onOpenChange(false)} />}
+        {item && (
+          <SheetBody
+            key={item.id}
+            item={item}
+            onClose={() => onOpenChange(false)}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   )
@@ -305,12 +401,17 @@ function SheetBody({
   const state = itemState(item)
   const unit = unitPriceLabel(item)
   const serving = servingLabel(item)
-  const footNote =
-    state === "sold-out"
-      ? "Bu ürün şu an tükendi."
-      : state === "off-hours"
-        ? "Bu ürün şu an servis dışı."
-        : "Görüntüleme menüsü — sipariş özelliği yakında eklenecek."
+
+  // Live configuration: selected option ids (seeded with the defaults) + qty.
+  // The configurator is local only — there's no cart yet, so "Sepete ekle" is a
+  // coming-soon stub. Pricing/validation reuse the shared @repo/core helpers.
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(defaultConfiguration(item.optionGroups))
+  )
+  const [qty, setQty] = useState(1)
+  const valid = validateConfiguration(item.optionGroups, selected).ok
+  const total =
+    effectivePriceMinor(item.priceMinor, item.optionGroups, selected) * qty
 
   return (
     <>
@@ -394,26 +495,72 @@ function SheetBody({
         {item.optionGroups.length > 0 && (
           <>
             <Separator className="mx-5 my-5 w-auto bg-border/60" />
-            <ReadOnlyOptions item={item} />
+            <OptionSelector
+              item={item}
+              selected={selected}
+              onChange={setSelected}
+            />
           </>
         )}
 
         <div className="h-[90px]" />
       </div>
 
-      <div className="shrink-0 border-t border-border/60 bg-card px-[18px] py-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
-        <div className="flex items-center gap-2">
-          <span className="shrink-0 text-muted-foreground">
-            {state === "available" ? (
-              <InfoIcon className="size-4" />
-            ) : (
-              <ClockIcon className="size-4" />
+      <div className="shrink-0 border-t border-border/60 bg-card px-[18px] pt-3 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+        {state === "available" ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 rounded-full border border-border bg-card">
+                <button
+                  type="button"
+                  aria-label="Adedi azalt"
+                  disabled={qty <= 1}
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="grid size-9 place-items-center rounded-full text-foreground disabled:opacity-40"
+                >
+                  <MinusIcon className="size-4" />
+                </button>
+                <span className="w-6 text-center font-mono text-sm font-semibold tabular-nums">
+                  {qty}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Adedi artır"
+                  disabled={qty >= 99}
+                  onClick={() => setQty((q) => Math.min(99, q + 1))}
+                  className="grid size-9 place-items-center rounded-full text-foreground disabled:opacity-40"
+                >
+                  <PlusIcon className="size-4" />
+                </button>
+              </div>
+              <button
+                type="button"
+                disabled={!valid}
+                onClick={() => toast.info("Sipariş özelliği çok yakında 🚧")}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 font-semibold text-primary-foreground transition-opacity disabled:opacity-50"
+              >
+                <span>Sepete ekle</span>
+                <span className="font-mono tabular-nums">
+                  {formatTRY(total)}
+                </span>
+              </button>
+            </div>
+            {!valid && (
+              <p className="mt-2 text-center text-[12px] text-muted-foreground">
+                Lütfen zorunlu seçimleri tamamlayın.
+              </p>
             )}
-          </span>
-          <span className="text-[12.5px] leading-snug text-muted-foreground">
-            {footNote}
-          </span>
-        </div>
+          </>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-muted font-semibold text-muted-foreground"
+          >
+            <ClockIcon className="size-4" />
+            {state === "sold-out" ? "Tükendi" : "Şu an servis dışı"}
+          </button>
+        )}
       </div>
     </>
   )
