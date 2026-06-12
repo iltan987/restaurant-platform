@@ -84,13 +84,13 @@
 
 **Independent test**: Owner invites a `STAFF` member → accept → sign in → owner-only actions denied, permitted ones succeed; change/remove role takes effect; demote/remove sole owner blocked; same user in two restaurants with no leakage.
 
-- [ ] T033 [P] [US3] Define the role→permission map in `@repo/schemas` (which actions each `RestaurantRole` may perform) and a typed permission-check helper. (See data-model.md.)
-- [ ] T034 [US3] Extend `apps/api/src/members/` service with role enforcement (`hasPermission(role, action)` → `INSUFFICIENT_ROLE`), and the member-invite path reusing the invitations service with a chosen role + `invitedByUserId`. (Depends on T033, T023, T026.)
-- [ ] T035 [US3] Implement member endpoints in the members controller: `POST /api/restaurants/:id/members/invitations` (owner-only), `GET /api/restaurants/:id/members`, `PATCH .../members/:userId` (role change), `DELETE .../members/:userId` — all `DashboardAuthGuard` + membership-scoped, with **last-owner protection** (`LAST_OWNER`) on demote/remove. (Depends on T034.)
-- [ ] T036 [US3] Build the dashboard members UI in `apps/dashboard/features/members/` (`api.ts`/`queries.ts`/`use-*.ts` over `apiFetch`) — list, invite-with-role, change role, remove. (Depends on T033, T022.)
-- [ ] T037 [US3] Add restaurant switching in `apps/dashboard` driven by `GET /api/me/restaurants` for multi-restaurant users (active-restaurant context, no cross-leak). (Depends on T025.)
-- [ ] T038 [P] [US3] Unit test role enforcement + last-owner invariant in `apps/api/src/members/members.service.spec.ts`.
-- [ ] T039 [US3] E2e test `apps/api/test/members.e2e-spec.ts`: role-gated actions, role change/remove effect, last-owner rejection, multi-restaurant isolation (FR-012–016).
+- [X] T033 [P] [US3] Define the role→permission map in `@repo/schemas` (which actions each `RestaurantRole` may perform) and a typed permission-check helper. (See data-model.md.)
+- [X] T034 [US3] Extend `apps/api/src/members/` service with role enforcement (`hasPermission(role, action)` → `INSUFFICIENT_ROLE`), and the member-invite path reusing the invitations service with a chosen role + `invitedByUserId`. (Depends on T033, T023, T026.)
+- [X] T035 [US3] Implement member endpoints in the members controller: `POST /api/restaurants/:id/members/invitations` (owner-only), `GET /api/restaurants/:id/members`, `PATCH .../members/:userId` (role change), `DELETE .../members/:userId` — all `DashboardAuthGuard` + membership-scoped, with **last-owner protection** (`LAST_OWNER`) on demote/remove. (Depends on T034.)
+- [X] T036 [US3] Build the dashboard members UI in `apps/dashboard/features/members/` (`api.ts`/`queries.ts`/`use-*.ts` over `apiFetch`) — list, invite-with-role, change role, remove. (Depends on T033, T022.)
+- [X] T037 [US3] Add restaurant switching in `apps/dashboard` driven by `GET /api/me/restaurants` for multi-restaurant users (active-restaurant context, no cross-leak). (Depends on T025.)
+- [X] T038 [P] [US3] Unit test role enforcement + last-owner invariant in `apps/api/src/members/members.service.spec.ts`.
+- [X] T039 [US3] E2e test `apps/api/test/members.e2e-spec.ts`: role-gated actions, role change/remove effect, last-owner rejection, multi-restaurant isolation (FR-012–016).
 
 **Checkpoint**: Multi-member restaurants with enforced RBAC.
 

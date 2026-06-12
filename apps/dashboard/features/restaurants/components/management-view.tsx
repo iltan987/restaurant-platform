@@ -13,6 +13,8 @@ import { cn } from "@repo/ui/lib/utils"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { AreasStep } from "@/features/areas/components/areas-step"
 import { FloorsStep } from "@/features/floors/components/floors-step"
+import { MembersSection } from "@/features/members/components/members-section"
+import { RestaurantSwitcher } from "@/features/members/components/restaurant-switcher"
 import { TablesStep } from "@/features/tables/components/tables-step"
 import { tablesQueries } from "@/features/tables/queries"
 
@@ -54,6 +56,8 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
             />
             {isActive ? "Yayında" : "Pasif"}
           </Badge>
+
+          <RestaurantSwitcher currentSlug={slug} />
 
           <div className="ml-auto flex items-center gap-2">
             <ConfirmDialog
@@ -109,6 +113,8 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
         <AreasStep restaurant={restaurant} embedded />
         <Separator />
         <TablesStep restaurant={restaurant} embedded />
+        <Separator />
+        <MembersSection restaurantId={restaurant.id} />
       </main>
     </div>
   )
