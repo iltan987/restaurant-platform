@@ -18,7 +18,11 @@ import { deriveStatus, fleetStats } from "../lib/derive"
 import { restaurantsQueries } from "../queries"
 import { CreateRestaurantDialog } from "./create-restaurant-dialog"
 import { FleetCard } from "./fleet-card"
-import { FleetFilters, type StatusFilter } from "./fleet-filters"
+import {
+  FleetFilters,
+  type PlanFilter,
+  type StatusFilter,
+} from "./fleet-filters"
 import { FleetTable } from "./fleet-table"
 import { Pager } from "./pager"
 import { RestaurantSkeleton } from "./restaurant-skeleton"
@@ -58,6 +62,7 @@ export function FleetView() {
   const [page, setPage] = useState(1)
   const [query, setQuery] = useState("")
   const [status, setStatus] = useState<StatusFilter>("all")
+  const [plan, setPlan] = useState<PlanFilter>("all")
   const [view, setView] = useViewMode()
 
   const { data, isPending } = useQuery(restaurantsQueries.list(page))
@@ -67,6 +72,7 @@ export function FleetView() {
   const q = query.trim().toLowerCase()
   const filtered = items.filter((r) => {
     if (status !== "all" && deriveStatus(r) !== status) return false
+    if (plan !== "all" && r.plan !== plan) return false
     if (q) {
       const hay = `${r.name} ${r.slug}`.toLowerCase()
       if (!hay.includes(q)) return false
@@ -104,6 +110,8 @@ export function FleetView() {
             onQuery={setQuery}
             status={status}
             onStatus={setStatus}
+            plan={plan}
+            onPlan={setPlan}
             stats={stats}
           />
         </div>

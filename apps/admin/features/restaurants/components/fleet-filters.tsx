@@ -1,8 +1,15 @@
 "use client"
 
-import { ChevronDown, Search } from "lucide-react"
+import { Search } from "lucide-react"
 
-import { Button } from "@repo/ui/components/ui/button"
+import { type Plan, planSchema } from "@repo/schemas"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/ui/select"
 import {
   Tooltip,
   TooltipContent,
@@ -11,10 +18,12 @@ import {
 import { cn } from "@repo/ui/lib/utils"
 
 import { type ConsoleStatus } from "@/components/console/status-pill"
+import { PLAN_LABELS } from "@/lib/plan"
 
 import { type FleetStats } from "../lib/derive"
 
 export type StatusFilter = "all" | ConsoleStatus
+export type PlanFilter = "all" | Plan
 
 const CHIPS: { id: StatusFilter; label: string; disabled?: boolean }[] = [
   { id: "all", label: "Tümü" },
@@ -34,12 +43,16 @@ export function FleetFilters({
   onQuery,
   status,
   onStatus,
+  plan,
+  onPlan,
   stats,
 }: {
   query: string
   onQuery: (q: string) => void
   status: StatusFilter
   onStatus: (s: StatusFilter) => void
+  plan: PlanFilter
+  onPlan: (p: PlanFilter) => void
   stats: FleetStats
 }) {
   return (
@@ -95,22 +108,26 @@ export function FleetFilters({
         })}
       </div>
 
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              className="ml-auto h-8"
-            >
-              Tüm planlar
-              <ChevronDown className="size-3.5" />
-            </Button>
-          }
-        />
-        <TooltipContent>Plan filtresi · yakında</TooltipContent>
-      </Tooltip>
+      <Select
+        value={plan}
+        onValueChange={(v) => {
+          if (v) onPlan(v as PlanFilter)
+        }}
+      >
+        <SelectTrigger size="sm" className="ml-auto h-8 w-36">
+          <SelectValue>
+            {plan === "all" ? "Tüm planlar" : PLAN_LABELS[plan]}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tüm planlar</SelectItem>
+          {planSchema.options.map((p) => (
+            <SelectItem key={p} value={p}>
+              {PLAN_LABELS[p]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }
