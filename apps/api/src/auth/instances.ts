@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { emailOTP, magicLink } from "better-auth/plugins"
+import { emailOTP } from "better-auth/plugins"
 
 import { prisma } from "@repo/db"
 
@@ -101,12 +101,14 @@ export const dashboardAuth = betterAuth({
 
 /**
  * Customer storefront (diners). Optional, non-gating sign-in: Google +
- * passwordless email (magic link + OTP). One verified email = one identity via
- * default (verified-email) account linking — `trustedProviders`/
- * `allowDifferentEmails` left off on purpose (research D6).
+ * passwordless email. One verified email = one identity via default
+ * (verified-email) account linking — `trustedProviders`/`allowDifferentEmails`
+ * left off on purpose (research D6).
  *
- * The magic link and the OTP are sent independently here; merging them into a
- * single email carrying both is finalized with the customer flow (task T040).
+ * Passwordless is a SINGLE plugin (email OTP) so exactly one email goes out:
+ * it carries the code AND a one-click link that embeds the same code (our
+ * "magic link"), either of which completes sign-in. Running the magic-link and
+ * OTP plugins side by side would each send their own email — the D6 gotcha.
  */
 export const customerAuth = betterAuth({
   ...sharedOptions("cust"),
@@ -115,15 +117,13 @@ export const customerAuth = betterAuth({
     ? { socialProviders: { google: googleCredentials } }
     : {}),
   plugins: [
-    magicLink({
-      sendMagicLink: async ({ email, url }) => {
-        const message = await renderPasswordlessEmail({ link: url })
-        await getEmailSender().send({ to: email, ...message })
-      },
-    }),
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
-        const message = await renderPasswordlessEmail({ code: otp })
+        const base = process.env.CUSTOMER_URL ?? ""
+        const link = base
+          ? `${base}/giris?email=${encodeURIComponent(email)}&otp=${otp}`
+          : undefined
+        const message = await renderPasswordlessEmail({ link, code: otp })
         await getEmailSender().send({ to: email, ...message })
       },
     }),

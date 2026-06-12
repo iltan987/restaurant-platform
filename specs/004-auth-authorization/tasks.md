@@ -102,9 +102,9 @@
 
 **Independent test**: Browse a menu anonymously (full access); sign in with Google; sign in with email via both the link and the code; Google + email on same address → one `cust_user`.
 
-- [ ] T040 [US4] Wire Google OAuth credentials + callback for the `customerAuth` instance and confirm magic-link + email-OTP both route through the **combined** customer email (reuse T010 helper); verify `account.accountLinking` defaults (no `trustedProviders`/`allowDifferentEmails`). (Instance defined in T005; this configures providers/keys.)
-- [ ] T041 [P] [US4] Create the customer Better Auth client in `apps/customer/lib/auth-client.ts` (basePath `/api/auth/customer`, Google + magic-link + email-OTP, `credentials: include`).
-- [ ] T042 [US4] Build optional customer sign-in UI in `apps/customer` (Google button + email entry that triggers the combined send; accept either link or code) WITHOUT gating menu browsing — anonymous access stays fully functional. (Depends on T041.)
+- [X] T040 [US4] Wire Google OAuth (env creds) + the **single** customer passwordless email on `customerAuth`: one email-OTP send carries the code AND a one-click link embedding it. The magic-link plugin is **dropped** (running it alongside email-OTP sent two emails — D6 gotcha); the OTP-bearing link is the "magic link". `accountLinking` defaults left at verified-email (no `trustedProviders`/`allowDifferentEmails`).
+- [X] T041 [P] [US4] Create the customer Better Auth client in `apps/customer/lib/auth-client.ts` (basePath `/api/auth/customer`, Google + email-OTP, `credentials: include`).
+- [X] T042 [US4] Build optional customer sign-in UI in `apps/customer/app/giris/` (email → link+code; arriving via the link auto-verifies; Google button gated on `NEXT_PUBLIC_GOOGLE_ENABLED`) WITHOUT gating menu browsing — anonymous access stays fully functional. (Depends on T041.)
 - [ ] T043 [US4] Confirm menu/storefront routes remain public (no `CustomerAuthGuard` on browsing) and that an optional guard exists for future per-user features only. (Depends on T009.)
 - [ ] T044 [US4] E2e test `apps/api/test/customer-auth.e2e-spec.ts`: anonymous browse works; Google sign-in; email link and code each complete; Google+email same address → single identity (no duplicate); **passwordless-email request for an unknown vs known address yields indistinguishable responses (no enumeration, FR-026)** (SC-004, SC-005, FR-017–021/026).
 
