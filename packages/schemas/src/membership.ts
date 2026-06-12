@@ -63,6 +63,8 @@ export const invitationLookupSchema = z.object({
   email: z.string(),
   role: restaurantRoleSchema,
   status: invitationStatusSchema,
+  /** Name of the inviting owner; null for admin-issued owner invites. */
+  invitedBy: z.string().nullable(),
 })
 export type InvitationLookup = z.infer<typeof invitationLookupSchema>
 

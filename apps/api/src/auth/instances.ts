@@ -4,7 +4,11 @@ import { emailOTP, magicLink } from "better-auth/plugins"
 
 import { prisma } from "@repo/db"
 
-import { getEmailSender, renderPasswordlessEmail } from "./email"
+import {
+  getEmailSender,
+  renderPasswordlessEmail,
+  renderPasswordResetEmail,
+} from "./email"
 import { googleCredentials, rootDomain, trustedOrigins } from "./env"
 
 /**
@@ -79,6 +83,15 @@ export const dashboardAuth = betterAuth({
     enabled: true,
     disableSignUp: true,
     requireEmailVerification: true,
+    // Self-service recovery: emailed single-use link (1h default TTL). Resetting
+    // invalidates other sessions so a leaked password can't outlive the reset.
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await getEmailSender().send({
+        to: user.email,
+        ...renderPasswordResetEmail({ link: url }),
+      })
+    },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {

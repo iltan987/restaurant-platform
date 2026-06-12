@@ -129,11 +129,21 @@ export class InvitationsService {
       where: { id: invitation.restaurantId },
       select: { name: true },
     })
+    // Owner-issued invites name the inviter; admin-issued owner invites don't.
+    let invitedBy: string | null = null
+    if (invitation.invitedByUserId) {
+      const inviter = await this.prisma.dashUser.findUnique({
+        where: { id: invitation.invitedByUserId },
+        select: { name: true, email: true },
+      })
+      invitedBy = inviter?.name || inviter?.email?.split("@")[0] || null
+    }
     return {
       restaurantName: restaurant?.name ?? "",
       email: invitation.email,
       role: invitation.role,
       status: invitation.status,
+      invitedBy,
     }
   }
 

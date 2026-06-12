@@ -5,7 +5,11 @@ import type { EmailSender } from "./email.types"
 import { SmtpEmailSender } from "./smtp-email-sender"
 
 export type { EmailMessage, EmailSender } from "./email.types"
-export { renderInvitationEmail, renderPasswordlessEmail } from "./templates"
+export {
+  renderInvitationEmail,
+  renderPasswordlessEmail,
+  renderPasswordResetEmail,
+} from "./templates"
 
 let sender: EmailSender | undefined
 

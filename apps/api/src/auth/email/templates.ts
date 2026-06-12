@@ -30,6 +30,33 @@ export function renderPasswordlessEmail(opts: {
 }
 
 /**
+ * Dashboard password-reset email. Carries the single-use reset link Better Auth
+ * builds (valid ~1 hour). Wired via `dashboardAuth.emailAndPassword.sendResetPassword`.
+ */
+export function renderPasswordResetEmail(opts: {
+  link: string
+}): Omit<EmailMessage, "to"> {
+  const { link } = opts
+  const text = [
+    "Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:",
+    "",
+    link,
+    "",
+    "Bağlantı yaklaşık 1 saat boyunca geçerlidir.",
+    "Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.",
+  ].join("\n")
+
+  const html = [
+    "<p>Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:</p>",
+    `<p><a href="${link}">Şifremi sıfırla</a></p>`,
+    "<p>Bağlantı yaklaşık 1 saat boyunca geçerlidir.</p>",
+    "<p>Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.</p>",
+  ].join("\n")
+
+  return { subject: "Şifre sıfırlama", text, html }
+}
+
+/**
  * Owner/member invitation email. Carries the acceptance link (our single-use
  * token) and, for the recipient's convenience, the same token as a short code.
  * Used by the invitations service (US2, T024).

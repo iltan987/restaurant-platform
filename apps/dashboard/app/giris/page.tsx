@@ -1,23 +1,20 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { LogIn } from "lucide-react"
+import { Mail } from "lucide-react"
+import Link from "next/link"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Button } from "@repo/ui/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/components/ui/card"
+import { Checkbox } from "@repo/ui/components/ui/checkbox"
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
+import { AuthShell } from "@/components/auth-shell"
+import { PasswordInput } from "@/components/password-input"
 import { signIn } from "@/lib/auth-client"
 
 const signInSchema = z.object({
@@ -33,6 +30,7 @@ type SignInValues = z.infer<typeof signInSchema>
  */
 export default function DashboardSignInPage() {
   const [formError, setFormError] = useState<string | null>(null)
+  const [remember, setRemember] = useState(true)
   const {
     register,
     handleSubmit,
@@ -47,6 +45,8 @@ export default function DashboardSignInPage() {
     const { error } = await signIn.email({
       email: values.email,
       password: values.password,
+      // When off, Better Auth issues a browser-session cookie (cleared on close).
+      rememberMe: remember,
     })
     if (error) {
       setFormError(
@@ -60,73 +60,93 @@ export default function DashboardSignInPage() {
   }
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <div className="mb-1 flex size-9 items-center justify-center rounded-md border border-border bg-card">
-            <LogIn className="size-4 text-muted-foreground" />
+    <AuthShell>
+      <div className="mb-7">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Tekrar hoş geldiniz
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Restoran yönetim panelinize giriş yapın.
+        </p>
+      </div>
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="flex flex-col gap-4"
+      >
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email">E-posta</Label>
+          <div className="relative">
+            <Mail className="absolute inset-y-0 left-2.5 my-auto size-4 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              autoFocus
+              placeholder="ad@restoraniniz.com"
+              className="pl-9"
+              aria-invalid={!!errors.email}
+              {...register("email")}
+            />
           </div>
-          <CardTitle>Giriş yap</CardTitle>
-          <CardDescription>Restoran panelinize erişin.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            noValidate
-            className="flex flex-col gap-4"
-          >
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">E-posta</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                autoFocus
-                aria-invalid={!!errors.email}
-                {...register("email")}
-              />
-              {errors.email ? (
-                <p className="text-xs text-destructive">
-                  {errors.email.message}
-                </p>
-              ) : null}
-            </div>
+          {errors.email ? (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          ) : null}
+        </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Parola</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={!!errors.password}
-                {...register("password")}
-              />
-              {errors.password ? (
-                <p className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
-              ) : null}
-            </div>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="password">Parola</Label>
+            <Link
+              href="/sifremi-unuttum"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Şifremi unuttum
+            </Link>
+          </div>
+          <PasswordInput
+            id="password"
+            autoComplete="current-password"
+            aria-invalid={!!errors.password}
+            {...register("password")}
+          />
+          {errors.password ? (
+            <p className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
+          ) : null}
+        </div>
 
-            {formError ? (
-              <p className="text-sm text-destructive" role="alert">
-                {formError}
-              </p>
-            ) : null}
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
+          <Checkbox
+            checked={remember}
+            onCheckedChange={(v) => setRemember(v === true)}
+          />
+          Bu cihazda beni hatırla
+        </label>
 
-            <Button type="submit" disabled={isSubmitting} className="mt-1">
-              {isSubmitting ? (
-                <>
-                  <Spinner className="size-3.5" />
-                  Giriş yapılıyor…
-                </>
-              ) : (
-                "Giriş yap"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </main>
+        {formError ? (
+          <p className="text-sm text-destructive" role="alert">
+            {formError}
+          </p>
+        ) : null}
+
+        <Button type="submit" disabled={isSubmitting} className="mt-1 h-9">
+          {isSubmitting ? (
+            <>
+              <Spinner className="size-3.5" />
+              Giriş yapılıyor…
+            </>
+          ) : (
+            "Giriş yap"
+          )}
+        </Button>
+      </form>
+
+      <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
+        Ekibe davet edildiyseniz e-postanızdaki bağlantıyı kullanın.
+      </p>
+    </AuthShell>
   )
 }
