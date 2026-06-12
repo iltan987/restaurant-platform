@@ -12,12 +12,11 @@ const TENANT_MODE = tenantMode(process.env.NEXT_PUBLIC_TENANT_MODE)
 const meSchema = z.object({ memberships: membershipSchema.array() })
 
 /**
- * The signed-in user's restaurant memberships. Sent with credentials so the
- * dashboard session cookie reaches the API (browser→API); works on any host.
+ * The signed-in user's restaurant memberships. `apiFetch` includes credentials
+ * by default, so the dashboard session cookie reaches the API (browser→API).
  */
 export async function fetchMemberships(): Promise<Membership[]> {
   const { memberships } = await apiFetch(`${API}/me/restaurants`, meSchema, {
-    credentials: "include",
     cache: "no-store",
   })
   return memberships
