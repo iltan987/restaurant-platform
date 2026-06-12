@@ -10,7 +10,6 @@ import { Skeleton } from "@repo/ui/components/ui/skeleton"
 import { PageHeader } from "@/components/console/page-header"
 import { StatTile } from "@/components/console/stat-tile"
 import { ActivityFeed } from "@/features/activity/components/activity-feed"
-import { activityQueries } from "@/features/activity/queries"
 
 import { deriveStatus, fleetStats } from "../lib/derive"
 import { restaurantsQueries } from "../queries"
@@ -126,11 +125,7 @@ export function Dashboard() {
 
         <div className="min-w-0">
           <SectionHeader title="Etkinlik" href="/etkinlik" hrefLabel="Tümü" />
-          <ActivityFeed
-            query={activityQueries.global()}
-            limit={6}
-            emptyText="Henüz etkinlik yok."
-          />
+          <ActivityFeed limit={6} emptyText="Henüz etkinlik yok." />
 
           <div className="mt-4 flex gap-2.5 rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-[13px] leading-relaxed">
             <Info className="mt-0.5 size-4 shrink-0 text-primary" />

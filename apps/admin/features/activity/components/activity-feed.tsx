@@ -7,7 +7,7 @@ import { Button } from "@repo/ui/components/ui/button"
 import { Skeleton } from "@repo/ui/components/ui/skeleton"
 
 import { describeActivity } from "../describe"
-import { type activityQueries } from "../queries"
+import { activityQueries } from "../queries"
 
 /** Deterministic "YYYY-MM-DD HH:MM" (UTC) — avoids locale/hydration drift. */
 function stamp(iso: string): string {
@@ -15,15 +15,21 @@ function stamp(iso: string): string {
 }
 
 export function ActivityFeed({
-  query,
+  slug,
   emptyText,
   limit,
 }: {
-  query: ReturnType<typeof activityQueries.global>
+  /** Restaurant slug to scope the feed; omit for the global feed. */
+  slug?: string
   emptyText: string
   /** Cap the list and hide load-more (for compact rails). */
   limit?: number
 }) {
+  // Build the query here (not via a prop) so this component is safe to render
+  // from a Server Component — a queryFn can't cross the server/client boundary.
+  const query = slug
+    ? activityQueries.byRestaurant(slug)
+    : activityQueries.global()
   const { data, isPending, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery(query)
   const all = data?.pages.flatMap((p) => p.items) ?? []
