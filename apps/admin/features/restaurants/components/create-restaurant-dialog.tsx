@@ -31,7 +31,7 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 import { cn } from "@repo/ui/lib/utils"
 
 import { ComingSoonBadge } from "@/components/console/scaffold-panel"
-import { rootDomain } from "@/lib/domain"
+import { rootDomain, TENANT_MODE, tenantDisplay } from "@/lib/domain"
 
 import { restaurantsQueries } from "../queries"
 import { useCreateRestaurant } from "../use-create-restaurant"
@@ -169,11 +169,16 @@ export function CreateRestaurantDialog({
                 autoComplete="off"
                 placeholder="restoran-adi"
                 onChange={(e) => setOverride(slugify(e.target.value))}
-                className="min-w-0 flex-1 bg-transparent px-3 text-right font-mono text-sm outline-none"
+                className={cn(
+                  "min-w-0 flex-1 bg-transparent px-3 font-mono text-sm outline-none",
+                  TENANT_MODE === "path" ? "text-left" : "text-right"
+                )}
               />
-              <span className="shrink-0 font-mono text-sm text-muted-foreground">
-                .{root}
-              </span>
+              {TENANT_MODE !== "path" && (
+                <span className="shrink-0 font-mono text-sm text-muted-foreground">
+                  .{root}
+                </span>
+              )}
               <span className="grid h-full w-10 place-items-center border-l border-border">
                 {availability === "checking" ? (
                   <Spinner className="size-3.5" />
@@ -198,7 +203,9 @@ export function CreateRestaurantDialog({
                 <>
                   <Check className="size-3" />
                   <span className="font-mono">
-                    {slug}.{root}
+                    {TENANT_MODE === "path"
+                      ? tenantDisplay(slug)
+                      : `${slug}.${root}`}
                   </span>{" "}
                   müsait
                 </>
@@ -241,7 +248,9 @@ export function CreateRestaurantDialog({
               <div>
                 <b>{name.trim()}</b> oluşturulacak;{" "}
                 <span className="font-mono">
-                  {slug}.{root}
+                  {TENANT_MODE === "path"
+                    ? tenantDisplay(slug)
+                    : `${slug}.${root}`}
                 </span>{" "}
                 ayrılır. Varsayılan bir kat ve alan ile başlar. Durum:{" "}
                 <b>Taslak</b>.

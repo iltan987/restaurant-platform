@@ -1,6 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+import { tenantMode } from "@repo/core"
+
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
+
+// "path" mode (e.g. free Vercel staging): tenants live at <host>/s/<slug> on a
+// single host instead of <slug>.<host>. Default "subdomain" is the prod target.
+const TENANT_MODE = tenantMode(process.env.NEXT_PUBLIC_TENANT_MODE)
 
 function extractSubdomain(request: NextRequest): string | null {
   const host = request.headers.get("host") ?? ""
@@ -28,6 +34,10 @@ function extractSubdomain(request: NextRequest): string | null {
 }
 
 export function proxy(request: NextRequest) {
+  // Path mode: serve /s/<slug> directly — no subdomain extraction, no rewrite,
+  // and no apex /s/ block (the tenant route is the real URL here).
+  if (TENANT_MODE === "path") return NextResponse.next()
+
   const { pathname } = request.nextUrl
   const subdomain = extractSubdomain(request)
 

@@ -15,7 +15,7 @@ import {
 import { cn } from "@repo/ui/lib/utils"
 
 import { StatusPill } from "@/components/console/status-pill"
-import { rootDomain } from "@/lib/domain"
+import { rootDomain, TENANT_MODE, tenantDisplay } from "@/lib/domain"
 import { isoDate } from "@/lib/format"
 
 import { deriveStatus, isOptimistic } from "../lib/derive"
@@ -66,7 +66,13 @@ export function FleetTable({ items }: { items: RestaurantWithCounts[] }) {
                 </TableCell>
                 <TableCell>
                   <span className="font-mono text-xs text-muted-foreground">
-                    <span className="text-foreground">{r.slug}</span>.{root}
+                    {TENANT_MODE === "path" ? (
+                      tenantDisplay(r.slug)
+                    ) : (
+                      <>
+                        <span className="text-foreground">{r.slug}</span>.{root}
+                      </>
+                    )}
                   </span>
                 </TableCell>
                 <TableCell>

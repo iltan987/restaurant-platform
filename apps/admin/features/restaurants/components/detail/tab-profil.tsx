@@ -22,7 +22,7 @@ import {
 
 import { KvList, KvRow } from "@/components/console/kv-list"
 import { Panel, PanelBody, PanelHeader } from "@/components/console/panel"
-import { rootDomain, tenantUrl } from "@/lib/domain"
+import { rootDomain, TENANT_MODE, tenantDisplay, tenantUrl } from "@/lib/domain"
 import { CURRENCY_LABELS, LANGUAGE_LABELS } from "@/lib/plan"
 
 import { useUpdateRestaurant } from "../../use-update-restaurant"
@@ -58,7 +58,9 @@ export function TabProfil({ r }: { r: RestaurantWithCounts }) {
               </KvRow>
               <KvRow label="Slug / alan adı">
                 <span className="font-mono">
-                  {r.slug}.{root}
+                  {TENANT_MODE === "path"
+                    ? tenantDisplay(r.slug)
+                    : `${r.slug}.${root}`}
                 </span>
               </KvRow>
               <KvRow label="Durum">
@@ -145,7 +147,9 @@ export function TabProfil({ r }: { r: RestaurantWithCounts }) {
               <div className="min-w-0 flex-1">
                 <div className="font-medium">Müşteri menüsü</div>
                 <div className="truncate font-mono text-xs text-muted-foreground">
-                  {r.slug}.{root}
+                  {TENANT_MODE === "path"
+                    ? tenantDisplay(r.slug)
+                    : `${r.slug}.${root}`}
                 </div>
               </div>
             </a>
