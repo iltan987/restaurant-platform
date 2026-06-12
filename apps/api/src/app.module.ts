@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
 import { APP_FILTER } from "@nestjs/core"
 
+import { ActivityModule } from "./activity/activity.module"
 import { AllergensModule } from "./allergens/allergens.module"
 import { AreasModule } from "./areas/areas.module"
 import { CategoriesModule } from "./categories/categories.module"
@@ -18,6 +19,7 @@ import { TagsModule } from "./tags/tags.module"
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    ActivityModule,
     RestaurantsModule,
     FloorsModule,
     AreasModule,

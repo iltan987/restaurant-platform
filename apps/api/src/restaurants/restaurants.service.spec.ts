@@ -3,6 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing"
 
 import { ErrorCode } from "@repo/schemas"
 
+import { ActivityService } from "../activity/activity.service"
 import { PrismaService } from "../prisma/prisma.service"
 import { RestaurantsService } from "./restaurants.service"
 
@@ -13,6 +14,7 @@ const makeRow = (
     slug: string
     status: "ACTIVE" | "INACTIVE"
     onboardingStatus: "IN_PROGRESS" | "COMPLETED" | "SKIPPED"
+    plan: "FREE" | "PRO" | "ENTERPRISE"
     createdAt: Date
     updatedAt: Date
   }> = {}
@@ -22,6 +24,9 @@ const makeRow = (
   slug: "burger-joint",
   status: "INACTIVE" as const,
   onboardingStatus: "IN_PROGRESS" as const,
+  language: "tr",
+  currency: "TRY",
+  plan: "FREE" as const,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -56,6 +61,7 @@ describe("RestaurantsService", () => {
   let mockArea: { create: jest.Mock }
   let mockTable: { count: jest.Mock }
   let mockAllergen: { createMany: jest.Mock }
+  let mockActivity: { record: jest.Mock }
   let prismaMock: {
     restaurant: typeof mockRestaurant
     floor: typeof mockFloor
@@ -80,6 +86,7 @@ describe("RestaurantsService", () => {
     mockArea = { create: jest.fn().mockResolvedValue({ id: "area-1" }) }
     mockTable = { count: jest.fn().mockResolvedValue(0) }
     mockAllergen = { createMany: jest.fn().mockResolvedValue({ count: 14 }) }
+    mockActivity = { record: jest.fn().mockResolvedValue(undefined) }
     prismaMock = {
       restaurant: mockRestaurant,
       floor: mockFloor,
@@ -101,6 +108,7 @@ describe("RestaurantsService", () => {
       providers: [
         RestaurantsService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: ActivityService, useValue: mockActivity },
       ],
     }).compile()
 
@@ -460,6 +468,11 @@ describe("RestaurantsService", () => {
         data: { plan: "PRO" },
       })
       expect(result.plan).toBe("PRO")
+      expect(mockActivity.record).toHaveBeenCalledWith({
+        type: "PLAN_CHANGED",
+        restaurantId: "cuid-1",
+        meta: { from: "FREE", to: "PRO" },
+      })
     })
 
     it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {

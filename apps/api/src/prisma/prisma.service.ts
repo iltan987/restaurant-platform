@@ -23,6 +23,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly option = prisma.option
   readonly availabilityWindow = prisma.availabilityWindow
   readonly mediaAsset = prisma.mediaAsset
+  readonly activity = prisma.activity
 
   /** Interactive transaction — bound so services can group writes atomically. */
   readonly $transaction = prisma.$transaction.bind(prisma)

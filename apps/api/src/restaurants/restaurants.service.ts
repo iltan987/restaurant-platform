@@ -14,6 +14,7 @@ import {
   type UpdateRestaurantInput,
 } from "@repo/schemas"
 
+import { ActivityService } from "../activity/activity.service"
 import { isP2002 } from "../common/prisma-error"
 import { PrismaService } from "../prisma/prisma.service"
 
@@ -71,7 +72,10 @@ const RESERVED_SLUGS = new Set([
 
 @Injectable()
 export class RestaurantsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService
+  ) {}
 
   /**
    * Live availability check for the create flow. Normalizes the raw input the
@@ -105,25 +109,31 @@ export class RestaurantsService {
       // Create the restaurant (INACTIVE / IN_PROGRESS via DB defaults) together
       // with its default floor + area so onboarding always starts non-empty,
       // and seed the standard allergen set (SC-007).
-      return await this.prisma.$transaction(async (tx) => {
-        const restaurant = await tx.restaurant.create({
+      const restaurant = await this.prisma.$transaction(async (tx) => {
+        const created = await tx.restaurant.create({
           data: { name: input.name, slug },
         })
         const floor = await tx.floor.create({
-          data: { restaurantId: restaurant.id, name: "Zemin Kat" },
+          data: { restaurantId: created.id, name: "Zemin Kat" },
         })
         await tx.area.create({
           data: { floorId: floor.id, name: "Genel" },
         })
         await tx.allergen.createMany({
           data: STANDARD_ALLERGENS.map((label) => ({
-            restaurantId: restaurant.id,
+            restaurantId: created.id,
             label,
             isStandard: true,
           })),
         })
-        return restaurant
+        return created
       })
+      await this.activity.record({
+        type: "RESTAURANT_CREATED",
+        restaurantId: restaurant.id,
+        meta: { name: restaurant.name, slug: restaurant.slug },
+      })
+      return restaurant
     } catch (err: unknown) {
       // P2002 — unique constraint violation (race between check and insert)
       if (isP2002(err)) {
@@ -179,10 +189,16 @@ export class RestaurantsService {
       }
     }
 
-    return this.prisma.restaurant.update({
+    const updated = await this.prisma.restaurant.update({
       where: { id },
       data: { status: input.status },
     })
+    await this.activity.record({
+      type: "STATUS_CHANGED",
+      restaurantId: id,
+      meta: { to: input.status },
+    })
+    return updated
   }
 
   /**
@@ -191,7 +207,7 @@ export class RestaurantsService {
    * live restaurant (FR-008).
    */
   async update(id: string, input: UpdateRestaurantInput) {
-    await this.getByIdOrThrow(id)
+    const existing = await this.getByIdOrThrow(id)
 
     const data: {
       name?: string
@@ -205,7 +221,25 @@ export class RestaurantsService {
     if (input.currency !== undefined) data.currency = input.currency
 
     try {
-      return await this.prisma.restaurant.update({ where: { id }, data })
+      const updated = await this.prisma.restaurant.update({
+        where: { id },
+        data,
+      })
+      if (data.name !== undefined && data.name !== existing.name) {
+        await this.activity.record({
+          type: "RESTAURANT_RENAMED",
+          restaurantId: id,
+          meta: { from: existing.name, to: data.name },
+        })
+      }
+      if (data.slug !== undefined && data.slug !== existing.slug) {
+        await this.activity.record({
+          type: "SLUG_CHANGED",
+          restaurantId: id,
+          meta: { from: existing.slug, to: data.slug },
+        })
+      }
+      return updated
     } catch (err: unknown) {
       if (isP2002(err)) {
         throw new ConflictException({
@@ -225,20 +259,32 @@ export class RestaurantsService {
 
   /** Change the billing tier. No payment side effects yet — just records it. */
   async setPlan(id: string, input: SetPlanInput) {
-    await this.getByIdOrThrow(id)
-    return this.prisma.restaurant.update({
+    const existing = await this.getByIdOrThrow(id)
+    const updated = await this.prisma.restaurant.update({
       where: { id },
       data: { plan: input.plan },
     })
+    await this.activity.record({
+      type: "PLAN_CHANGED",
+      restaurantId: id,
+      meta: { from: existing.plan, to: input.plan },
+    })
+    return updated
   }
 
   /** Finish / skip onboarding — never auto-activates (FR-019). */
   async setOnboarding(id: string, input: OnboardingStatusInput) {
     await this.getByIdOrThrow(id)
-    return this.prisma.restaurant.update({
+    const updated = await this.prisma.restaurant.update({
       where: { id },
       data: { onboardingStatus: input.onboardingStatus },
     })
+    await this.activity.record({
+      type: "ONBOARDING_CHANGED",
+      restaurantId: id,
+      meta: { to: input.onboardingStatus },
+    })
+    return updated
   }
 
   private async getByIdOrThrow(id: string) {

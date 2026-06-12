@@ -71,6 +71,22 @@ enum MediaType {
   VIDEO
 }
 
+// Admin activity feed. A simple, durable audit trail — one row per notable
+// domain event. Detailed/structured logging is a later concern; `meta` holds
+// the human-readable bits (names, old/new values) for now.
+enum ActivityType {
+  RESTAURANT_CREATED
+  RESTAURANT_RENAMED
+  SLUG_CHANGED
+  STATUS_CHANGED
+  PLAN_CHANGED
+  ONBOARDING_CHANGED
+  CATEGORY_CREATED
+  CATEGORY_DELETED
+  MENU_ITEM_CREATED
+  MENU_ITEM_DELETED
+}
+
 model Restaurant {
   id               String           @id @default(cuid(2))
   name             String
@@ -90,8 +106,24 @@ model Restaurant {
   menuItems        MenuItem[]
   allergens        Allergen[]
   tags             Tag[]
+  activities       Activity[]
 
   @@map("restaurants")
+}
+
+model Activity {
+  id           String       @id @default(cuid(2))
+  // Nullable so future platform-wide events can be recorded too; today every
+  // event is restaurant-scoped and deletes with its restaurant.
+  restaurantId String?
+  restaurant   Restaurant?  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  type         ActivityType
+  meta         Json?
+  createdAt    DateTime     @default(now())
+
+  @@index([restaurantId, createdAt])
+  @@index([createdAt])
+  @@map("activities")
 }
 
 model Floor {

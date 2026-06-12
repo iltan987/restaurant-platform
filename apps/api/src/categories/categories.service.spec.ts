@@ -3,6 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing"
 
 import { ErrorCode } from "@repo/schemas"
 
+import { ActivityService } from "../activity/activity.service"
 import { PrismaService } from "../prisma/prisma.service"
 import { CategoriesService } from "./categories.service"
 
@@ -46,6 +47,7 @@ describe("CategoriesService", () => {
       providers: [
         CategoriesService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: ActivityService, useValue: { record: jest.fn() } },
       ],
     }).compile()
 

@@ -10,12 +10,16 @@ import {
   type UpdateCategoryInput,
 } from "@repo/schemas"
 
+import { ActivityService } from "../activity/activity.service"
 import { isP2002 } from "../common/prisma-error"
 import { PrismaService } from "../prisma/prisma.service"
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService
+  ) {}
 
   /** All categories for a restaurant (ordered, including hidden) — by slug. */
   async findAllBySlug(slug: string) {
@@ -40,9 +44,15 @@ export class CategoriesService {
       where: { restaurantId },
     })
     try {
-      return await this.prisma.category.create({
+      const category = await this.prisma.category.create({
         data: { restaurantId, name: input.name, position },
       })
+      await this.activity.record({
+        type: "CATEGORY_CREATED",
+        restaurantId,
+        meta: { name: category.name },
+      })
+      return category
     } catch (err: unknown) {
       if (isP2002(err)) throw categoryNameTaken(input.name)
       throw err
@@ -61,7 +71,7 @@ export class CategoriesService {
 
   /** Deletes a category. Blocked while it still contains items. */
   async remove(id: string) {
-    await this.getOrThrow(id)
+    const category = await this.getOrThrow(id)
     const itemCount = await this.prisma.menuItem.count({
       where: { categoryId: id },
     })
@@ -72,6 +82,11 @@ export class CategoriesService {
       })
     }
     await this.prisma.category.delete({ where: { id } })
+    await this.activity.record({
+      type: "CATEGORY_DELETED",
+      restaurantId: category.restaurantId,
+      meta: { name: category.name },
+    })
   }
 
   /**

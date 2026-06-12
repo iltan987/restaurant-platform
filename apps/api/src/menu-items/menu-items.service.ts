@@ -6,6 +6,7 @@ import {
   type UpdateMenuItemInput,
 } from "@repo/schemas"
 
+import { ActivityService } from "../activity/activity.service"
 import { PrismaService } from "../prisma/prisma.service"
 import { S3Service } from "../storage/s3.service"
 
@@ -13,7 +14,8 @@ import { S3Service } from "../storage/s3.service"
 export class MenuItemsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly s3: S3Service
+    private readonly s3: S3Service,
+    private readonly activity: ActivityService
   ) {}
 
   /** Items within a category, ordered. */
@@ -67,7 +69,7 @@ export class MenuItemsService {
     const category = await this.getCategoryOrThrow(categoryId)
     const position = await this.prisma.menuItem.count({ where: { categoryId } })
     const { allergenIds, tagIds, inStock, ...fields } = input
-    return this.prisma.menuItem.create({
+    const item = await this.prisma.menuItem.create({
       data: {
         restaurantId: category.restaurantId,
         categoryId,
@@ -86,6 +88,12 @@ export class MenuItemsService {
         ...(tagIds ? { tags: { connect: tagIds.map((id) => ({ id })) } } : {}),
       },
     })
+    await this.activity.record({
+      type: "MENU_ITEM_CREATED",
+      restaurantId: item.restaurantId,
+      meta: { name: item.name },
+    })
+    return item
   }
 
   /** Updates scalar fields and, when provided, replaces allergen/tag sets. */
@@ -105,8 +113,13 @@ export class MenuItemsService {
   }
 
   async remove(id: string) {
-    await this.getItemOrThrow(id)
+    const item = await this.getItemOrThrow(id)
     await this.prisma.menuItem.delete({ where: { id } })
+    await this.activity.record({
+      type: "MENU_ITEM_DELETED",
+      restaurantId: item.restaurantId,
+      meta: { name: item.name },
+    })
   }
 
   /** Reassigns `position` within a category from array index, in one tx. */

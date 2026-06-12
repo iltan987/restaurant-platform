@@ -3,6 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing"
 
 import { ErrorCode } from "@repo/schemas"
 
+import { ActivityService } from "../activity/activity.service"
 import { PrismaService } from "../prisma/prisma.service"
 import { S3Service } from "../storage/s3.service"
 import { MenuItemsService } from "./menu-items.service"
@@ -52,6 +53,7 @@ describe("MenuItemsService", () => {
           provide: S3Service,
           useValue: { publicUrl: (key: string) => `http://media/${key}` },
         },
+        { provide: ActivityService, useValue: { record: jest.fn() } },
       ],
     }).compile()
 

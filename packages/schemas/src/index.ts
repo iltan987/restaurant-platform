@@ -1,3 +1,4 @@
+export * from "./activity"
 export * from "./allergen"
 export * from "./area"
 export * from "./availability"
