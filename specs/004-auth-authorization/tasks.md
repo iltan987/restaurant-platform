@@ -67,12 +67,12 @@
 - [X] T024 [US2] Implement the invitations controller endpoints with `ZodValidationPipe`: `POST /api/admin/restaurants/:id/invitations` + `GET` list + `DELETE /api/admin/invitations/:id` (guard `AdminAuthGuard`); `GET /api/invitations/:token` + `POST /api/invitations/:token/accept` (public/token). Send the combined invite email. (Depends on T023; uses T009/T010.)
 - [X] T025 [US2] Implement `GET /api/me/restaurants` (membership list + role) guarded by `DashboardAuthGuard` in `apps/api/src/members/`. (Depends on T021.)
 - [X] T026 [US2] Enforce membership-scoped authorization: a reusable helper/guard that resolves `RestaurantMember` for `(restaurantId, session.userId)` and denies (`NOT_A_MEMBER`) at the data layer; apply to dashboard restaurant-scoped routes. (Depends on T021, T009.)
-- [ ] T027 [P] [US2] Create the dashboard Better Auth client in `apps/dashboard/lib/auth-client.ts` (basePath `/api/auth/dashboard`, `credentials: include`).
-- [ ] T028 [US2] Build the dashboard sign-in page + sign-out and route protection (optimistic `getSessionCookie({ cookiePrefix: "dash" })` in `apps/dashboard/proxy.ts` + server validation). (Depends on T027.)
-- [ ] T029 [US2] Build the invitation-acceptance page in `apps/dashboard` (`features/invitations/`: `api.ts`/`queries.ts`/`use-*.ts` over `apiFetch`) — token lookup, set-password form, then sign-in. (Depends on T022, T027.)
-- [ ] T030 [P] [US2] Build the admin invite-owner UI in `apps/admin/features/invitations/` (`api.ts`/`queries.ts`/`use-*.ts` over `apiFetch`, optimistic per existing convention) — invite, list, revoke. (Depends on T022, T016.)
+- [X] T027 [P] [US2] Create the dashboard Better Auth client in `apps/dashboard/lib/auth-client.ts` (basePath `/api/auth/dashboard`, `credentials: include`).
+- [X] T028 [US2] Build the dashboard sign-in page + sign-out and route protection (optimistic `getSessionCookie({ cookiePrefix: "dash" })` in `apps/dashboard/proxy.ts` + server validation). (Depends on T027.)
+- [X] T029 [US2] Build the invitation-acceptance page in `apps/dashboard` (`features/invitations/`: `api.ts`/`queries.ts`/`use-*.ts` over `apiFetch`) — token lookup, set-password form, then sign-in. (Depends on T022, T027.)
+- [X] T030 [P] [US2] Build the admin invite-owner UI in `apps/admin/features/invitations/` (`api.ts`/`queries.ts`/`use-*.ts` over `apiFetch`, optimistic per existing convention) — invite, list, revoke. (Depends on T022, T016.)
 - [X] T031 [P] [US2] Unit test invitation service in `apps/api/src/invitations/invitations.service.spec.ts`: token single-use/hash, expiry, revoke, accept creates member + password.
-- [ ] T032 [US2] E2e test `apps/api/test/invitations.e2e-spec.ts`: full invite→accept→sign-in; reused/expired/revoked token rejected (each `ErrorCode`); member of A requesting B → denied (SC-002, SC-003, SC-005, FR-005–011).
+- [X] T032 [US2] E2e test `apps/api/test/invitations.e2e-spec.ts`: full invite→accept→sign-in; reused/expired/revoked token rejected (each `ErrorCode`); member of A requesting B → denied (SC-002, SC-003, SC-005, FR-005–011).
 
 **Checkpoint**: End-to-end owner onboarding works; dashboard is membership-scoped.
 
