@@ -28,8 +28,14 @@ export function __resetAuthMock(): void {
   signUpEmail.mockClear()
 }
 
-/** Shared sign-up spy so the seed test can assert it was/wasn't called. */
-export const signUpEmail = jest.fn(async () => ({ user: { id: "seeded" } }))
+/** Shared sign-up spy so the seed test can assert it was/wasn't called. The
+ * optional typed body lets suites that exercise sign-up (e.g. invitation accept)
+ * read the email off the call. */
+export const signUpEmail = jest.fn(
+  async (_opts?: {
+    body: { email: string; password: string; name: string }
+  }) => ({ user: { id: "seeded" } })
+)
 
 export type BetterAuthOptions = Record<string, unknown>
 
