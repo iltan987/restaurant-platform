@@ -37,7 +37,7 @@ export const DETAIL_TABS: {
   { id: "menu", label: "Menü", icon: MenuIcon },
   { id: "qr", label: "QR kodları", icon: QrCode },
   { id: "plan", label: "Plan & Faturalama", icon: CreditCard, scaffold: true },
-  { id: "devir", label: "Devir", icon: Users, scaffold: true },
+  { id: "devir", label: "Devir", icon: Users },
   { id: "etkinlik", label: "Etkinlik", icon: Activity, scaffold: true },
 ]
 
