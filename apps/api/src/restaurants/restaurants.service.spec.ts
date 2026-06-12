@@ -27,6 +27,21 @@ const makeRow = (
   ...overrides,
 })
 
+/**
+ * A row shaped like Prisma's `findMany({ include: COUNTS_INCLUDE })` result:
+ * a `_count` for the direct relations plus nested floors→areas carrying table
+ * counts. Expected flattened counts: floorCount 2, areaCount 2, tableCount 7,
+ * categoryCount 3, menuItemCount 4.
+ */
+const makeCountRow = (overrides: Parameters<typeof makeRow>[0] = {}) => ({
+  ...makeRow(overrides),
+  _count: { floors: 2, categories: 3, menuItems: 4 },
+  floors: [
+    { areas: [{ _count: { tables: 5 } }, { _count: { tables: 2 } }] },
+    { areas: [] },
+  ],
+})
+
 describe("RestaurantsService", () => {
   let service: RestaurantsService
   let mockRestaurant: {
@@ -184,8 +199,8 @@ describe("RestaurantsService", () => {
   })
 
   describe("findAll", () => {
-    it("returns a paginated envelope ordered by createdAt descending", async () => {
-      const rows = [makeRow({ id: "a" }), makeRow({ id: "b" })]
+    it("returns a paginated envelope ordered by createdAt descending, with flattened counts", async () => {
+      const rows = [makeCountRow({ id: "a" }), makeCountRow({ id: "b" })]
       mockRestaurant.findMany.mockResolvedValue(rows)
       mockRestaurant.count.mockResolvedValue(2)
 
@@ -195,9 +210,22 @@ describe("RestaurantsService", () => {
         orderBy: { createdAt: "desc" },
         skip: 0,
         take: 20,
+        include: expect.any(Object),
       })
       expect(mockRestaurant.count).toHaveBeenCalled()
-      expect(result).toEqual({ items: rows, total: 2, page: 1, pageSize: 20 })
+      expect(result).toMatchObject({ total: 2, page: 1, pageSize: 20 })
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0]).toMatchObject({
+        id: "a",
+        floorCount: 2,
+        areaCount: 2,
+        tableCount: 7,
+        categoryCount: 3,
+        menuItemCount: 4,
+      })
+      // the nested Prisma payload is flattened away
+      expect(result.items[0]).not.toHaveProperty("_count")
+      expect(result.items[0]).not.toHaveProperty("floors")
     })
 
     it("computes skip from page and pageSize", async () => {
@@ -207,18 +235,32 @@ describe("RestaurantsService", () => {
         orderBy: { createdAt: "desc" },
         skip: 20,
         take: 10,
+        include: expect.any(Object),
       })
     })
   })
 
   describe("findBySlug", () => {
-    it("returns the restaurant when found", async () => {
-      const row = makeRow()
+    it("returns the restaurant with flattened counts when found", async () => {
+      const row = makeCountRow({ id: "cuid-1" })
       mockRestaurant.findUnique.mockResolvedValue(row)
 
       const result = await service.findBySlug("burger-joint")
 
-      expect(result).toBe(row)
+      expect(mockRestaurant.findUnique).toHaveBeenCalledWith({
+        where: { slug: "burger-joint" },
+        include: expect.any(Object),
+      })
+      expect(result).toMatchObject({
+        id: "cuid-1",
+        floorCount: 2,
+        areaCount: 2,
+        tableCount: 7,
+        categoryCount: 3,
+        menuItemCount: 4,
+      })
+      expect(result).not.toHaveProperty("_count")
+      expect(result).not.toHaveProperty("floors")
     })
 
     it("throws NotFoundException(RESTAURANT_NOT_FOUND) when no record matches", async () => {
@@ -232,6 +274,47 @@ describe("RestaurantsService", () => {
       expect((err as NotFoundException).getResponse()).toMatchObject({
         code: ErrorCode.RESTAURANT_NOT_FOUND,
       })
+    })
+  })
+
+  describe("isSlugAvailable", () => {
+    it("reports an unused, valid slug as available", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const result = await service.isSlugAvailable("Yeni Restoran")
+
+      expect(result).toEqual({
+        slug: "Yeni Restoran",
+        normalized: "yeni-restoran",
+        available: true,
+      })
+      expect(mockRestaurant.findUnique).toHaveBeenCalledWith({
+        where: { slug: "yeni-restoran" },
+        select: { id: true },
+      })
+    })
+
+    it("reports a taken slug as unavailable", async () => {
+      mockRestaurant.findUnique.mockResolvedValue({ id: "cuid-1" })
+
+      const result = await service.isSlugAvailable("burger-joint")
+
+      expect(result.available).toBe(false)
+      expect(result.normalized).toBe("burger-joint")
+    })
+
+    it("rejects reserved slugs without hitting the database", async () => {
+      const result = await service.isSlugAvailable("admin")
+
+      expect(result.available).toBe(false)
+      expect(mockRestaurant.findUnique).not.toHaveBeenCalled()
+    })
+
+    it("rejects input that normalizes to an empty slug", async () => {
+      const result = await service.isSlugAvailable("!!!")
+
+      expect(result).toEqual({ slug: "!!!", normalized: "", available: false })
+      expect(mockRestaurant.findUnique).not.toHaveBeenCalled()
     })
   })
 

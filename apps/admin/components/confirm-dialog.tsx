@@ -17,8 +17,14 @@ import {
 import { Checkbox } from "@repo/ui/components/ui/checkbox"
 
 type ConfirmDialogProps = {
-  /** The element that opens the dialog (merged onto a Base UI trigger). */
-  trigger: ReactElement
+  /**
+   * The element that opens the dialog (merged onto a Base UI trigger). Omit it
+   * to drive the dialog yourself via `open` / `onOpenChange` (e.g. from a menu).
+   */
+  trigger?: ReactElement
+  /** Controlled open state. When provided, the dialog is fully controlled. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   title: string
   description: ReactNode
   /** A loud, destructive-tinted callout for the irreversible consequence. */
@@ -40,6 +46,8 @@ type ConfirmDialogProps = {
  */
 export function ConfirmDialog({
   trigger,
+  open: controlledOpen,
+  onOpenChange,
   title,
   description,
   warning,
@@ -50,17 +58,19 @@ export function ConfirmDialog({
   destructive,
   onConfirm,
 }: ConfirmDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
   const [acked, setAcked] = useState(false)
+  const open = controlledOpen ?? uncontrolledOpen
 
   function change(next: boolean) {
-    setOpen(next)
+    onOpenChange?.(next)
+    setUncontrolledOpen(next)
     if (!next) setAcked(false)
   }
 
   return (
     <AlertDialog open={open} onOpenChange={change}>
-      <AlertDialogTrigger render={trigger} />
+      {trigger ? <AlertDialogTrigger render={trigger} /> : null}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

@@ -5,15 +5,19 @@ import {
   type Restaurant,
   restaurantSchema,
   type RestaurantStatusInput,
+  type RestaurantWithCounts,
+  restaurantWithCountsSchema,
+  type SlugAvailabilityResult,
+  slugAvailabilityResultSchema,
   type UpdateRestaurantInput,
 } from "@repo/schemas"
 
 import { apiBase as API } from "@/lib/api-base"
 
-const restaurantPageSchema = paginated(restaurantSchema)
+const restaurantPageSchema = paginated(restaurantWithCountsSchema)
 
 export type RestaurantPage = {
-  items: Restaurant[]
+  items: RestaurantWithCounts[]
   total: number
   page: number
   pageSize: number
@@ -25,8 +29,10 @@ export function fetchRestaurants(page = 1): Promise<RestaurantPage> {
   })
 }
 
-export function fetchRestaurantBySlug(slug: string): Promise<Restaurant> {
-  return apiFetch(`${API}/restaurants/${slug}`, restaurantSchema, {
+export function fetchRestaurantBySlug(
+  slug: string
+): Promise<RestaurantWithCounts> {
+  return apiFetch(`${API}/restaurants/${slug}`, restaurantWithCountsSchema, {
     cache: "no-store",
   })
 }
@@ -39,6 +45,17 @@ export function createRestaurant(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   })
+}
+
+/** Live slug availability for the create flow. Server normalizes the input. */
+export function fetchSlugAvailability(
+  slug: string
+): Promise<SlugAvailabilityResult> {
+  return apiFetch(
+    `${API}/restaurants/slug-available?slug=${encodeURIComponent(slug)}`,
+    slugAvailabilityResultSchema,
+    { cache: "no-store" }
+  )
 }
 
 /** Edit name/slug. A slug change is re-uniqued server-side (SLUG_TAKEN). */

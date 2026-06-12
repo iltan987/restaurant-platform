@@ -16,9 +16,78 @@ import {
 import { isP2002 } from "../common/prisma-error"
 import { PrismaService } from "../prisma/prisma.service"
 
+/**
+ * Loads the sub-resource counts a restaurant row needs. `floors`, `categories`
+ * and `menuItems` hang off the restaurant directly so Prisma counts them in the
+ * same row. Areas/tables live one and two levels down (floor → area → table),
+ * so we pull just their counts through a nested select. Crucially this is a
+ * constant number of queries regardless of page size — no per-row round-trips.
+ */
+const COUNTS_INCLUDE = {
+  _count: { select: { floors: true, categories: true, menuItems: true } },
+  floors: {
+    select: { areas: { select: { _count: { select: { tables: true } } } } },
+  },
+} as const
+
+type RowWithCounts = {
+  _count: { floors: number; categories: number; menuItems: number }
+  floors: { areas: { _count: { tables: number } }[] }[]
+}
+
+/** Flatten the nested count payload into the flat shape the client expects. */
+function withCounts<T extends RowWithCounts>(row: T) {
+  const { _count, floors, ...rest } = row
+  let areaCount = 0
+  let tableCount = 0
+  for (const floor of floors) {
+    areaCount += floor.areas.length
+    for (const area of floor.areas) tableCount += area._count.tables
+  }
+  return {
+    ...rest,
+    floorCount: _count.floors,
+    areaCount,
+    tableCount,
+    categoryCount: _count.categories,
+    menuItemCount: _count.menuItems,
+  }
+}
+
+/**
+ * Slugs that collide with reserved subdomains / app routes and must never be
+ * handed to a tenant, regardless of DB state.
+ */
+const RESERVED_SLUGS = new Set([
+  "admin",
+  "api",
+  "app",
+  "dashboard",
+  "menu",
+  "panel",
+  "www",
+])
+
 @Injectable()
 export class RestaurantsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Live availability check for the create flow. Normalizes the raw input the
+   * same way `create` does, rejects reserved/blank slugs, then checks the
+   * unique index — a single indexed lookup.
+   */
+  async isSlugAvailable(input: string) {
+    const normalized = slugify(input)
+    if (!normalized || RESERVED_SLUGS.has(normalized)) {
+      return { slug: input, normalized, available: false }
+    }
+    const existing = await this.prisma.restaurant.findUnique({
+      where: { slug: normalized },
+      select: { id: true },
+    })
+    return { slug: input, normalized, available: existing === null }
+  }
 
   async create(input: CreateRestaurantInput) {
     const base = slugify(input.slug ?? input.name)
@@ -67,20 +136,22 @@ export class RestaurantsService {
   }
 
   async findAll(page = 1, pageSize = 20) {
-    const [items, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.restaurant.findMany({
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
+        include: COUNTS_INCLUDE,
       }),
       this.prisma.restaurant.count(),
     ])
-    return { items, total, page, pageSize }
+    return { items: rows.map(withCounts), total, page, pageSize }
   }
 
   async findBySlug(slug: string) {
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { slug },
+      include: COUNTS_INCLUDE,
     })
     if (!restaurant) {
       throw new NotFoundException({
@@ -88,7 +159,7 @@ export class RestaurantsService {
         message: `Restaurant with slug "${slug}" was not found`,
       })
     }
-    return restaurant
+    return withCounts(restaurant)
   }
 
   /** Go live / deactivate. Activating requires ≥1 table (FR-016/FR-017). */

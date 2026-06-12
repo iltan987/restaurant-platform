@@ -2,16 +2,17 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query"
 
 import { getQueryClient } from "@repo/query/get-query-client"
 
-import { RestaurantManager } from "@/features/restaurants/components/restaurant-manager"
+import { Dashboard } from "@/features/restaurants/components/dashboard"
 import { restaurantsQueries } from "@/features/restaurants/queries"
 
-export default async function Page() {
+/** Genel Bakış (dashboard) — fleet stats, attention list, recent restaurants. */
+export default async function DashboardPage() {
   const queryClient = getQueryClient()
   await queryClient.prefetchQuery(restaurantsQueries.list())
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <RestaurantManager />
+      <Dashboard />
     </HydrationBoundary>
   )
 }

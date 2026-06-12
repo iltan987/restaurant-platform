@@ -19,6 +19,8 @@ import {
   paginationQuerySchema,
   type RestaurantStatusInput,
   restaurantStatusSchema,
+  type SlugAvailabilityQuery,
+  slugAvailabilityQuerySchema,
   type UpdateRestaurantInput,
   updateRestaurantSchema,
 } from "@repo/schemas"
@@ -48,6 +50,18 @@ export class RestaurantsController {
       query.page,
       query.pageSize ?? RESTAURANTS_PAGE_SIZE
     )
+  }
+
+  /**
+   * Live slug availability for the create flow. Declared above `:slug` so the
+   * literal path isn't captured as a tenant lookup.
+   */
+  @Get("slug-available")
+  slugAvailable(
+    @Query(new ZodValidationPipe(slugAvailabilityQuerySchema))
+    query: SlugAvailabilityQuery
+  ) {
+    return this.restaurants.isSlugAvailable(query.slug)
   }
 
   /** Tenant lookup — used by the dashboard to resolve a subdomain */

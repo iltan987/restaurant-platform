@@ -33,12 +33,18 @@ const ROOT_DOMAIN = process.env.NEXT_PUBLIC_DASHBOARD_URL?.replace(
 export function RestaurantEditDialog({
   restaurant,
   trigger,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   restaurant: Restaurant
-  trigger: ReactElement
+  /** Omit to drive the dialog via `open` / `onOpenChange` (e.g. from a menu). */
+  trigger?: ReactElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }) {
   const update = useUpdateRestaurant()
-  const [open, setOpen] = useState(false)
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
+  const open = controlledOpen ?? uncontrolledOpen
   const [name, setName] = useState(restaurant.name)
   const [slug, setSlug] = useState(restaurant.slug)
 
@@ -47,7 +53,8 @@ export function RestaurantEditDialog({
   const warnLiveSlug = restaurant.status === "ACTIVE" && slugChanged
 
   function change(next: boolean) {
-    setOpen(next)
+    onOpenChange?.(next)
+    setUncontrolledOpen(next)
     if (next) {
       setName(restaurant.name)
       setSlug(restaurant.slug)
@@ -64,12 +71,12 @@ export function RestaurantEditDialog({
         ...(slugChanged ? { slug: normalized } : {}),
       },
     })
-    setOpen(false)
+    change(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={change}>
-      <DialogTrigger render={trigger} />
+      {trigger ? <DialogTrigger render={trigger} /> : null}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Restoranı düzenle</DialogTitle>

@@ -8,8 +8,8 @@ import { cn } from "@repo/ui/lib/utils"
 import { Providers } from "./providers"
 
 export const metadata: Metadata = {
-  title: "Admin",
-  description: "Restaurant platform admin",
+  title: "Yönetim Konsolu",
+  description: "Geliştirici konsolu — restoran filosu yönetimi",
 }
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })

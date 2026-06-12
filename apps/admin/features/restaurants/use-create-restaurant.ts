@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { ApiError } from "@repo/api-client"
 import { slugify } from "@repo/core"
 import { getErrorMessage } from "@repo/i18n"
-import { type Restaurant } from "@repo/schemas"
+import { type RestaurantWithCounts } from "@repo/schemas"
 
 import { createRestaurant, type RestaurantPage } from "./api"
 
@@ -21,7 +21,7 @@ export function useCreateRestaurant() {
       await queryClient.cancelQueries({ queryKey: ["restaurants"] })
       const previous = queryClient.getQueryData<RestaurantPage>(FIRST_PAGE_KEY)
 
-      const optimistic: Restaurant = {
+      const optimistic: RestaurantWithCounts = {
         id: `__optimistic__${Date.now()}`,
         name: input.name,
         slug: input.slug ?? slugify(input.name),
@@ -29,6 +29,12 @@ export function useCreateRestaurant() {
         onboardingStatus: "IN_PROGRESS",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        // The server seeds a default floor + area; counts settle on invalidate.
+        floorCount: 1,
+        areaCount: 1,
+        tableCount: 0,
+        categoryCount: 0,
+        menuItemCount: 0,
       }
       queryClient.setQueryData<RestaurantPage>(FIRST_PAGE_KEY, (old) =>
         old
