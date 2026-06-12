@@ -18,12 +18,9 @@ import {
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 
-import { useUpdateRestaurant } from "../use-update-restaurant"
+import { rootDomain } from "@/lib/domain"
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_DASHBOARD_URL?.replace(
-  /^https?:\/\//,
-  ""
-)
+import { useUpdateRestaurant } from "../use-update-restaurant"
 
 /**
  * Admin edit of a restaurant's name + slug. A slug change on a **live**
@@ -108,7 +105,7 @@ export function RestaurantEditDialog({
           <p className="text-xs text-muted-foreground">
             URL:{" "}
             <code>
-              {normalized || "<kısa-ad>"}.{ROOT_DOMAIN}
+              {normalized || "<kısa-ad>"}.{rootDomain()}
             </code>
           </p>
         </div>
