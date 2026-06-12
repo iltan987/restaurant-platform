@@ -43,6 +43,16 @@ const tr: Record<string, string> = {
   [ErrorCode.MEDIA_TYPE_NOT_ALLOWED]: "Bu dosya türü desteklenmiyor.",
   [ErrorCode.MEDIA_TOO_LARGE]: "Dosya boyutu izin verilen sınırı aşıyor.",
   [ErrorCode.MEDIA_OBJECT_NOT_FOUND]: "Yüklenen dosya bulunamadı.",
+  // Auth / membership / invitations (feature 004)
+  [ErrorCode.INVITATION_NOT_FOUND]: "Davet bulunamadı.",
+  [ErrorCode.INVITATION_EXPIRED]: "Bu davetin süresi dolmuş.",
+  [ErrorCode.INVITATION_ALREADY_USED]: "Bu davet zaten kullanılmış.",
+  [ErrorCode.INVITATION_REVOKED]: "Bu davet iptal edilmiş.",
+  [ErrorCode.INVITATION_NOT_PENDING]: "Bu davet artık beklemede değil.",
+  [ErrorCode.NOT_A_MEMBER]: "Bu restorana erişim yetkiniz yok.",
+  [ErrorCode.INSUFFICIENT_ROLE]: "Bu işlem için yetkiniz yetersiz.",
+  [ErrorCode.LAST_OWNER]:
+    "Son sahibi kaldıramaz veya yetkisini düşüremezsiniz. Önce başka bir sahip atayın.",
 }
 
 /**

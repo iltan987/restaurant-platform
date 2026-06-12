@@ -2,19 +2,35 @@ import "dotenv/config"
 import "reflect-metadata"
 
 import { NestFactory } from "@nestjs/core"
+import express from "express"
 import { z } from "zod"
 
+import { mountAuthHandlers } from "./auth/auth.mount"
 import { AppModule } from "./app.module"
 
 async function bootstrap() {
   // Backend always speaks English
   z.config(z.locales.en())
 
-  const app = await NestFactory.create(AppModule)
+  // Better Auth needs the raw request body, so Nest's global body parser is
+  // disabled and re-enabled below for every route except the auth handlers.
+  const app = await NestFactory.create(AppModule, { bodyParser: false })
+
+  // Enable CORS first so it is registered ahead of the raw auth handlers and
+  // their cross-origin responses (admin/dashboard/customer → api) carry the
+  // headers. `credentials: true` is required for session cookies.
+  app.enableCors({ origin: buildCorsOrigins(), credentials: true })
+
+  // Mount the three Better Auth handlers (raw body) before JSON parsing.
+  mountAuthHandlers(app)
+
+  // Re-enable body parsing for the rest of the API. Auth routes mounted above
+  // terminate their requests, so these never run for `/api/auth/*`.
+  const expressApp = app.getHttpAdapter().getInstance()
+  expressApp.use(express.json())
+  expressApp.use(express.urlencoded({ extended: true }))
 
   app.setGlobalPrefix("api")
-
-  app.enableCors({ origin: buildCorsOrigins() })
 
   await app.listen(process.env.PORT ?? 3000, "0.0.0.0")
 }

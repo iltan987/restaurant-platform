@@ -1,3 +1,4 @@
+
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
@@ -21,6 +22,7 @@ enum OnboardingStatus {
 
 // Billing tier. Managed by admin; no payment/invoicing wired yet — the field
 // just records which plan a restaurant is on.
+
 enum Plan {
   FREE
   PRO
@@ -46,6 +48,7 @@ enum ServingUnit {
 // visibility + magnitude (per-100g for pricey weights, per-L for sensible
 // volumes, hidden for tiny servings); HIDE suppresses it; the rest force a
 // specific magnitude. See packages/core/src/unit-price.ts.
+
 enum UnitPriceBasis {
   AUTO
   HIDE
@@ -74,6 +77,7 @@ enum MediaType {
 // Admin activity feed. A simple, durable audit trail — one row per notable
 // domain event. Detailed/structured logging is a later concern; `meta` holds
 // the human-readable bits (names, old/new values) for now.
+
 enum ActivityType {
   RESTAURANT_CREATED
   RESTAURANT_RENAMED
@@ -303,4 +307,223 @@ model MediaAsset {
 
   @@index([itemId])
   @@map("media_assets")
+}
+
+model Admin_user {
+  id             String          @id
+  name           String
+  email          String
+  emailVerified  Boolean         @default(false)
+  image          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  admin_sessions Admin_session[]
+  admin_accounts Admin_account[]
+
+  @@unique([email])
+  @@map("admin_user")
+}
+
+model Admin_session {
+  id         String     @id
+  expiresAt  DateTime
+  token      String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  ipAddress  String?
+  userAgent  String?
+  userId     String
+  admin_user Admin_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("admin_session")
+}
+
+model Admin_account {
+  id                    String     @id
+  accountId             String
+  providerId            String
+  userId                String
+  admin_user            Admin_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@index([userId])
+  @@map("admin_account")
+}
+
+model Admin_verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("admin_verification")
+}
+
+model Admin_rate_limit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("admin_rate_limit")
+}
+
+model Dash_user {
+  id            String         @id
+  name          String
+  email         String
+  emailVerified Boolean        @default(false)
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  dash_sessions Dash_session[]
+  dash_accounts Dash_account[]
+
+  @@unique([email])
+  @@map("dash_user")
+}
+
+model Dash_session {
+  id        String    @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  dash_user Dash_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("dash_session")
+}
+
+model Dash_account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  dash_user             Dash_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("dash_account")
+}
+
+model Dash_verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("dash_verification")
+}
+
+model Dash_rate_limit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("dash_rate_limit")
+}
+
+model Cust_user {
+  id            String         @id
+  name          String
+  email         String
+  emailVerified Boolean        @default(false)
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  cust_sessions Cust_session[]
+  cust_accounts Cust_account[]
+
+  @@unique([email])
+  @@map("cust_user")
+}
+
+model Cust_session {
+  id        String    @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  cust_user Cust_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("cust_session")
+}
+
+model Cust_account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  cust_user             Cust_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("cust_account")
+}
+
+model Cust_verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("cust_verification")
+}
+
+model Cust_rate_limit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("cust_rate_limit")
 }

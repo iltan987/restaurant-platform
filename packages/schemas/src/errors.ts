@@ -48,6 +48,18 @@ export const ErrorCode = {
   MEDIA_TYPE_NOT_ALLOWED: "MEDIA_TYPE_NOT_ALLOWED",
   MEDIA_TOO_LARGE: "MEDIA_TOO_LARGE",
   MEDIA_OBJECT_NOT_FOUND: "MEDIA_OBJECT_NOT_FOUND",
+
+  // ── Auth / membership / invitations (feature 004) ──────────────────────
+  // Identity, credential and throttle errors surface from Better Auth's own
+  // typed responses; these cover our schema-first membership/invitation domain.
+  INVITATION_NOT_FOUND: "INVITATION_NOT_FOUND",
+  INVITATION_EXPIRED: "INVITATION_EXPIRED",
+  INVITATION_ALREADY_USED: "INVITATION_ALREADY_USED",
+  INVITATION_REVOKED: "INVITATION_REVOKED",
+  INVITATION_NOT_PENDING: "INVITATION_NOT_PENDING",
+  NOT_A_MEMBER: "NOT_A_MEMBER",
+  INSUFFICIENT_ROLE: "INSUFFICIENT_ROLE",
+  LAST_OWNER: "LAST_OWNER",
 } as const
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]
