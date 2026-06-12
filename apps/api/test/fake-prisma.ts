@@ -109,6 +109,29 @@ const restaurantIdOfTable = (t: Table) => restaurantIdOfArea(t.areaId)
 const paginate = <T>(rows: T[], skip = 0, take = 200) =>
   rows.slice(skip, skip + take)
 
+/**
+ * Builds the `COUNTS_INCLUDE` payload the restaurants service selects for the
+ * fleet view: flat `_count` (floors/categories/menuItems) plus the nested
+ * `floors → areas → _count.tables` the service flattens into area/table counts.
+ */
+const restaurantCounts = (r: Restaurant) => {
+  const restaurantFloors = floors.filter((f) => f.restaurantId === r.id)
+  return {
+    _count: {
+      floors: restaurantFloors.length,
+      categories: categories.filter((c) => c.restaurantId === r.id).length,
+      menuItems: menuItems.filter((m) => m.restaurantId === r.id).length,
+    },
+    floors: restaurantFloors.map((f) => ({
+      areas: areas
+        .filter((a) => a.floorId === f.id)
+        .map((a) => ({
+          _count: { tables: tables.filter((t) => t.areaId === a.id).length },
+        })),
+    })),
+  }
+}
+
 const restaurant = {
   create({ data }: { data: { name: string; slug: string } }) {
     if (forceP2002 || restaurants.some((r) => r.slug === data.slug)) {
@@ -131,7 +154,11 @@ const restaurant = {
     include,
   }: {
     where: { id?: string; slug?: string }
-    include?: { categories?: { where?: { isHidden?: boolean } } }
+    include?: {
+      categories?: { where?: { isHidden?: boolean } }
+      _count?: unknown
+      floors?: unknown
+    }
   }) {
     const row =
       restaurants.find(
@@ -139,7 +166,12 @@ const restaurant = {
           (where.id !== undefined && r.id === where.id) ||
           (where.slug !== undefined && r.slug === where.slug)
       ) ?? null
-    if (!row || !include?.categories) return Promise.resolve(row)
+    if (!row) return Promise.resolve(null)
+    // Fleet-view counts include (findBySlug / findAll).
+    if (include?._count || include?.floors) {
+      return Promise.resolve({ ...row, ...restaurantCounts(row) })
+    }
+    if (!include?.categories) return Promise.resolve(row)
 
     // Public menu tree: categories (optionally non-hidden) → items, each with
     // the relation arrays the MenuService composes over. The fake has no
@@ -168,11 +200,21 @@ const restaurant = {
       }))
     return Promise.resolve({ ...row, categories: cats })
   },
-  findMany({ skip, take }: { skip?: number; take?: number } = {}) {
+  findMany({
+    skip,
+    take,
+    include,
+  }: {
+    skip?: number
+    take?: number
+    include?: { _count?: unknown; floors?: unknown }
+  } = {}) {
     const sorted = [...restaurants].sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     )
-    return Promise.resolve(paginate(sorted, skip, take))
+    const rows = paginate(sorted, skip, take)
+    if (!include?._count && !include?.floors) return Promise.resolve(rows)
+    return Promise.resolve(rows.map((r) => ({ ...r, ...restaurantCounts(r) })))
   },
   count() {
     return Promise.resolve(restaurants.length)
