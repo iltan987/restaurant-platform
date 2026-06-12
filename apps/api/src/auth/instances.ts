@@ -87,18 +87,14 @@ export const dashboardAuth = betterAuth({
     // invalidates other sessions so a leaked password can't outlive the reset.
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
-      await getEmailSender().send({
-        to: user.email,
-        ...renderPasswordResetEmail({ link: url }),
-      })
+      const message = await renderPasswordResetEmail({ link: url })
+      await getEmailSender().send({ to: user.email, ...message })
     },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      await getEmailSender().send({
-        to: user.email,
-        ...renderPasswordlessEmail({ link: url }),
-      })
+      const message = await renderPasswordlessEmail({ link: url })
+      await getEmailSender().send({ to: user.email, ...message })
     },
   },
 })
@@ -121,18 +117,14 @@ export const customerAuth = betterAuth({
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        await getEmailSender().send({
-          to: email,
-          ...renderPasswordlessEmail({ link: url }),
-        })
+        const message = await renderPasswordlessEmail({ link: url })
+        await getEmailSender().send({ to: email, ...message })
       },
     }),
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
-        await getEmailSender().send({
-          to: email,
-          ...renderPasswordlessEmail({ code: otp }),
-        })
+        const message = await renderPasswordlessEmail({ code: otp })
+        await getEmailSender().send({ to: email, ...message })
       },
     }),
   ],

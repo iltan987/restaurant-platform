@@ -1,12 +1,13 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": ["js", "json", "ts", "tsx"],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "moduleNameMapper": {
-    "^better-auth(/.*)?$": "<rootDir>/better-auth.mock.ts"
+    "^better-auth(/.*)?$": "<rootDir>/better-auth.mock.ts",
+    "^@react-email/(components|render)$": "<rootDir>/react-email.mock.ts"
   },
   "transform": {
-    "^.+\\.ts$": ["ts-jest", { "tsconfig": "tsconfig.spec.json" }]
+    "^.+\\.tsx?$": ["ts-jest", { "tsconfig": "tsconfig.spec.json" }]
   }
 }

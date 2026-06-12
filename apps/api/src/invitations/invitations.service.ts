@@ -82,10 +82,11 @@ export class InvitationsService {
 
     const link = `${process.env.DASHBOARD_URL ?? ""}/davet/${token}`
     // Fire-and-forget would risk losing the email on crash; await is fine here.
-    await getEmailSender().send({
-      to: email,
-      ...renderInvitationEmail({ restaurantName: restaurant.name, link }),
+    const message = await renderInvitationEmail({
+      restaurantName: restaurant.name,
+      link,
     })
+    await getEmailSender().send({ to: email, ...message })
 
     return invitation
   }

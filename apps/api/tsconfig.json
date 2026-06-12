@@ -3,6 +3,9 @@
   "compilerOptions": {
     "outDir": "dist",
     "types": ["node", "jest"],
+    // Email templates use react-email (JSX). Only affects .tsx files; the Nest
+    // app is plain .ts. jsxImportSource defaults to "react".
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
     }

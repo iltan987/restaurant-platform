@@ -30,9 +30,12 @@ jest.mock("../src/auth/email", () => {
   return {
     ...actual,
     getEmailSender: () => ({ send: async () => {} }),
-    renderInvitationEmail: (args: { restaurantName: string; link: string }) => {
+    renderInvitationEmail: async (args: {
+      restaurantName: string
+      link: string
+    }) => {
       mockEmail.lastLink = args.link
-      return actual.renderInvitationEmail(args)
+      return { subject: "", text: "", html: "" }
     },
   }
 })

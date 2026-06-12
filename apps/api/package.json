@@ -21,6 +21,8 @@
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.26",
     "@nestjs/platform-express": "^11.1.26",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.8",
     "@repo/core": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/schemas": "workspace:*",
@@ -28,6 +30,7 @@
     "dotenv": "catalog:",
     "express": "^5.2.1",
     "nodemailer": "catalog:",
+    "react": "catalog:",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "catalog:"
@@ -42,6 +45,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "catalog:",
     "@types/nodemailer": "catalog:",
+    "@types/react": "catalog:",
     "@types/supertest": "^7.2.0",
     "eslint": "catalog:",
     "jest": "^30.4.2",
@@ -53,15 +57,17 @@
     "moduleFileExtensions": [
       "js",
       "json",
-      "ts"
+      "ts",
+      "tsx"
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "moduleNameMapper": {
-      "^better-auth(/.*)?$": "<rootDir>/../test/better-auth.mock.ts"
+      "^better-auth(/.*)?$": "<rootDir>/../test/better-auth.mock.ts",
+      "^@react-email/(components|render)$": "<rootDir>/../test/react-email.mock.ts"
     },
     "transform": {
-      "^.+\\.ts$": [
+      "^.+\\.tsx?$": [
         "ts-jest",
         {
           "tsconfig": "tsconfig.spec.json"
