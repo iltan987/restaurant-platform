@@ -1,6 +1,13 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 1.0.0 → 1.1.0
+Bump rationale: Clarified Principle I scope (MINOR — expanded normative guidance). Added a
+  "Boundary scope" bullet exempting vendored authentication-library clients (e.g. Better
+  Auth) that ship their own end-to-end-typed client/handler from the `apiFetch` mandate;
+  all custom endpoints (incl. auth-derived membership/invitations/roles) stay bound. No
+  dependent templates required changes (no section renames or gate changes).
+
 Version change: (template, unversioned) → 1.0.0
 Bump rationale: First concrete ratification of the constitution. The file was a pure
   placeholder template; replacing every token with project-derived principles is the
@@ -53,6 +60,12 @@ crossing of that boundary MUST go through it.
 - Clients MUST consume endpoints through `apiFetch(url, schema)` from `@repo/api-client`,
   which validates the response against the shared schema. Hand-rolled fetch/parse/error
   handling at call sites is prohibited.
+- **Boundary scope**: this principle governs the application's **own domain API**. A
+  third-party authentication library that ships its own end-to-end-typed client and
+  request handler (e.g. Better Auth) is an exempt boundary — its endpoints are consumed
+  through the library's client, not `apiFetch`. Every **custom** endpoint we author,
+  including everything built on top of auth (membership, invitations, roles), remains
+  fully bound by this principle.
 - A new endpoint or a changed payload MUST update `@repo/schemas` first; adding an
   `ErrorCode` requires a corresponding Turkish mapping in `@repo/i18n`.
 
@@ -184,4 +197,4 @@ instructions in `CLAUDE.md` and direct user requests take precedence over it.
   procedure (commands, gotchas, memory rules), it governs execution; where it conflicts
   with a principle here, this constitution governs intent.
 
-**Version**: 1.0.0 | **Ratified**: 2026-06-04 | **Last Amended**: 2026-06-04
+**Version**: 1.1.0 | **Ratified**: 2026-06-04 | **Last Amended**: 2026-06-12
