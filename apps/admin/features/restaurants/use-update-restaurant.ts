@@ -4,11 +4,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { slugify } from "@repo/core"
-import { type Restaurant, type UpdateRestaurantInput } from "@repo/schemas"
+import {
+  type Restaurant,
+  type RestaurantWithCounts,
+  type UpdateRestaurantInput,
+} from "@repo/schemas"
 
 import { toastApiError } from "@/lib/toast-error"
 
 import { type RestaurantPage, updateRestaurant } from "./api"
+import { restaurantsQueries } from "./queries"
 
 export function useUpdateRestaurant() {
   const queryClient = useQueryClient()
@@ -38,7 +43,15 @@ export function useUpdateRestaurant() {
       )
       return { snapshot }
     },
-    onSuccess: () => toast.success("Restoran güncellendi."),
+    onSuccess: (restaurant: Restaurant) => {
+      // Keep the detail view (["restaurant", slug]) in sync; the list root
+      // patched in onMutate doesn't cover it. Counts are preserved from `old`.
+      queryClient.setQueryData<RestaurantWithCounts>(
+        restaurantsQueries.detail(restaurant.slug).queryKey,
+        (old) => (old ? { ...old, ...restaurant } : old)
+      )
+      toast.success("Restoran güncellendi.")
+    },
     onError: (err, _vars, context) => {
       context?.snapshot.forEach(([key, data]) =>
         queryClient.setQueryData(key, data)

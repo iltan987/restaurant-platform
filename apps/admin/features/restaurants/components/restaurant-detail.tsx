@@ -3,10 +3,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { restaurantsQueries } from "../queries"
-import { type DetailTab, DetailTabsBar } from "./detail/detail-tabs"
+import {
+  DETAIL_TABS,
+  type DetailTab,
+  DetailTabsBar,
+} from "./detail/detail-tabs"
 import { RestaurantHero } from "./detail/restaurant-hero"
 import { TabDevir } from "./detail/tab-devir"
 import { TabEtkinlik } from "./detail/tab-etkinlik"
@@ -19,7 +23,24 @@ import { TabQr } from "./detail/tab-qr"
 
 export function RestaurantDetail({ slug }: { slug: string }) {
   const { data: r } = useQuery(restaurantsQueries.detail(slug))
-  const [tab, setTab] = useState<DetailTab>("ozet")
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Active tab lives in the URL (`?tab=`) so it survives refresh, is shareable,
+  // and works with browser back/forward. Default (Özet) keeps the URL clean.
+  const param = searchParams.get("tab")
+  const tab: DetailTab = DETAIL_TABS.some((t) => t.id === param)
+    ? (param as DetailTab)
+    : "ozet"
+
+  function setTab(next: DetailTab) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (next === "ozet") params.delete("tab")
+    else params.set("tab", next)
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+  }
 
   if (!r) return null
 

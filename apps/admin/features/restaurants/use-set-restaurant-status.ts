@@ -3,11 +3,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-import { type Restaurant } from "@repo/schemas"
+import { type Restaurant, type RestaurantWithCounts } from "@repo/schemas"
 
 import { toastApiError } from "@/lib/toast-error"
 
 import { type RestaurantPage, setRestaurantStatus } from "./api"
+import { restaurantsQueries } from "./queries"
 
 export function useSetRestaurantStatus() {
   const queryClient = useQueryClient()
@@ -34,12 +35,17 @@ export function useSetRestaurantStatus() {
       )
       return { snapshot }
     },
-    onSuccess: (restaurant: Restaurant) =>
+    onSuccess: (restaurant: Restaurant) => {
+      queryClient.setQueryData<RestaurantWithCounts>(
+        restaurantsQueries.detail(restaurant.slug).queryKey,
+        (old) => (old ? { ...old, status: restaurant.status } : old)
+      )
       toast.success(
         restaurant.status === "ACTIVE"
           ? "Restoran yayına alındı."
           : "Restoran yayından kaldırıldı."
-      ),
+      )
+    },
     onError: (err, _vars, context) => {
       context?.snapshot.forEach(([key, data]) =>
         queryClient.setQueryData(key, data)
