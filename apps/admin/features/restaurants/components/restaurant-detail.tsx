@@ -49,7 +49,7 @@ export function RestaurantDetail({ slug }: { slug: string }) {
         {tab === "kat" && <TabKatPlani slug={slug} restaurantId={r.id} />}
         {tab === "menu" && <TabMenu r={r} />}
         {tab === "qr" && <TabQr r={r} />}
-        {tab === "plan" && <TabPlan />}
+        {tab === "plan" && <TabPlan r={r} />}
         {tab === "devir" && <TabDevir r={r} />}
         {tab === "etkinlik" && <TabEtkinlik r={r} />}
       </div>

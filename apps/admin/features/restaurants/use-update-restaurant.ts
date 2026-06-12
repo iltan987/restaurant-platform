@@ -23,6 +23,8 @@ export function useUpdateRestaurant() {
       const patch: Partial<Restaurant> = {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.slug !== undefined ? { slug: slugify(input.slug) } : {}),
+        ...(input.language !== undefined ? { language: input.language } : {}),
+        ...(input.currency !== undefined ? { currency: input.currency } : {}),
       }
       queryClient.setQueriesData<RestaurantPage>(root, (old) =>
         old

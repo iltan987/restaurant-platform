@@ -3,19 +3,34 @@
 import { ExternalLink, Info, Pencil } from "lucide-react"
 import { useState } from "react"
 
-import { type RestaurantWithCounts } from "@repo/schemas"
+import {
+  type Currency,
+  currencySchema,
+  type Language,
+  languageSchema,
+  type RestaurantWithCounts,
+} from "@repo/schemas"
 import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/ui/select"
 
 import { KvList, KvRow } from "@/components/console/kv-list"
 import { Panel, PanelBody, PanelHeader } from "@/components/console/panel"
-import { ComingSoonBadge } from "@/components/console/scaffold-panel"
 import { rootDomain, tenantUrl } from "@/lib/domain"
+import { CURRENCY_LABELS, LANGUAGE_LABELS } from "@/lib/plan"
 
+import { useUpdateRestaurant } from "../../use-update-restaurant"
 import { RestaurantEditDialog } from "../restaurant-edit-dialog"
 
 export function TabProfil({ r }: { r: RestaurantWithCounts }) {
   const [editOpen, setEditOpen] = useState(false)
+  const update = useUpdateRestaurant()
   const root = rootDomain()
   const url = tenantUrl(r.slug)
 
@@ -52,11 +67,51 @@ export function TabProfil({ r }: { r: RestaurantWithCounts }) {
               <KvRow label="Onboarding">
                 <Badge variant="secondary">{r.onboardingStatus}</Badge>
               </KvRow>
-              <KvRow label="Dil / Para birimi">
-                <span className="inline-flex items-center gap-2 text-muted-foreground">
-                  Türkçe · ₺
-                  <ComingSoonBadge />
-                </span>
+              <KvRow label="Dil">
+                <Select
+                  value={r.language}
+                  onValueChange={(v) => {
+                    if (v == null || v === r.language) return
+                    update.mutate({
+                      id: r.id,
+                      input: { language: v as Language },
+                    })
+                  }}
+                >
+                  <SelectTrigger size="sm" className="w-52">
+                    <SelectValue>{LANGUAGE_LABELS[r.language]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageSchema.options.map((o) => (
+                      <SelectItem key={o} value={o}>
+                        {LANGUAGE_LABELS[o]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </KvRow>
+              <KvRow label="Para birimi">
+                <Select
+                  value={r.currency}
+                  onValueChange={(v) => {
+                    if (v == null || v === r.currency) return
+                    update.mutate({
+                      id: r.id,
+                      input: { currency: v as Currency },
+                    })
+                  }}
+                >
+                  <SelectTrigger size="sm" className="w-52">
+                    <SelectValue>{CURRENCY_LABELS[r.currency]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencySchema.options.map((o) => (
+                      <SelectItem key={o} value={o}>
+                        {CURRENCY_LABELS[o]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </KvRow>
               <KvRow label="Restoran ID">
                 <span className="font-mono text-xs break-all text-muted-foreground">

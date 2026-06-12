@@ -3,12 +3,14 @@
 import { ArrowRight, Check } from "lucide-react"
 
 import { type RestaurantWithCounts } from "@repo/schemas"
+import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
 import { cn } from "@repo/ui/lib/utils"
 
 import { KvList, KvRow } from "@/components/console/kv-list"
 import { Panel, PanelBody, PanelHeader } from "@/components/console/panel"
 import { isoDate } from "@/lib/format"
+import { PLAN_LABELS } from "@/lib/plan"
 
 import { setupChecklist, setupProgress, type SetupStep } from "../../lib/derive"
 import { type DetailTab } from "./detail-tabs"
@@ -119,6 +121,9 @@ export function TabOzet({
                 <span className="font-mono">
                   {r.categoryCount} kategori · {r.menuItemCount} ürün
                 </span>
+              </KvRow>
+              <KvRow label="Plan">
+                <Badge variant="secondary">{PLAN_LABELS[r.plan]}</Badge>
               </KvRow>
               <KvRow label="Oluşturulma">
                 <span className="font-mono">{isoDate(r.createdAt)}</span>

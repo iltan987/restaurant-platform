@@ -7,6 +7,7 @@ import {
   type RestaurantStatusInput,
   type RestaurantWithCounts,
   restaurantWithCountsSchema,
+  type SetPlanInput,
   type SlugAvailabilityResult,
   slugAvailabilityResultSchema,
   type UpdateRestaurantInput,
@@ -76,6 +77,18 @@ export function setRestaurantStatus(
   input: RestaurantStatusInput
 ): Promise<Restaurant> {
   return apiFetch(`${API}/restaurants/${id}/status`, restaurantSchema, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  })
+}
+
+/** Change the billing tier (no payment side effects yet). */
+export function setRestaurantPlan(
+  id: string,
+  input: SetPlanInput
+): Promise<Restaurant> {
+  return apiFetch(`${API}/restaurants/${id}/plan`, restaurantSchema, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
