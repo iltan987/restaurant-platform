@@ -7,9 +7,5 @@ Memories for this project are checked into the repo here (`.claude/memory/`), no
 - [Prefer CLI over manual writing](prefer-cli-over-manual-writing.md) — use pnpm add / shadcn init / prisma init / nest generate, never hand-edit package.json
 - [Verify with doc-search tools](verify-with-doc-search-tools.md) — check shadcn/better-auth/zod(inkeep)/context7 docs before using a library
 - [Work in phases + commit approval](work-in-phases-commit-approval.md) — stop after each phase, suggest commit message, get approval, then auto-commit
-- [Minimal diffs, no unrelated churn](minimal-diffs-no-unrelated-churn.md) — scope diffs to the task; never reformat unrelated files
-- [Single floor hides floor UI](single-floor-hides-floor-ui.md) — dashboard hides the floor concept entirely until a 2nd floor exists
-- [Dashboard design direction](dashboard-design-direction.md) — indigo accent, light+dark, onboarding wizard shape; project name still TBD
 - [No product name](no-product-name.md) — project is unnamed; never put any product name in code/UI/commits/history
-- [QR placement card](qr-placement-card.md) — table QR is a print-ready card (print + PNG via canvas), not a bare code
 - [A11y target-size deviation](a11y-target-size-deviation.md) — shipped UI is WCAG 2.2 AA (24px) but below the spec's ≥44px goal; tracked, canvas excepted
