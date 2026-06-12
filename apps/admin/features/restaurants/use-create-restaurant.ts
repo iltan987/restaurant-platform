@@ -27,6 +27,9 @@ export function useCreateRestaurant() {
         slug: input.slug ?? slugify(input.name),
         status: "INACTIVE",
         onboardingStatus: "IN_PROGRESS",
+        language: "tr",
+        currency: "TRY",
+        plan: "FREE",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         // The server seeds a default floor + area; counts settle on invalidate.

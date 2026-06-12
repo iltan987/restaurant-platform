@@ -2,6 +2,22 @@ import { z } from "zod"
 
 import { SLUG_MAX, SLUG_REGEX } from "@repo/core"
 
+// ── Locale & billing enums (single source of truth for the allowed sets) ──
+//
+// language/currency are deliberately narrow for now — the columns exist and the
+// UI is wired, but only one option each is offered. Add members here (no DB
+// migration needed, they're string columns) to expand later. `plan` is backed
+// by a Prisma enum, so expanding it also needs a migration.
+
+export const languageSchema = z.enum(["tr"])
+export type Language = z.infer<typeof languageSchema>
+
+export const currencySchema = z.enum(["TRY"])
+export type Currency = z.infer<typeof currencySchema>
+
+export const planSchema = z.enum(["FREE", "PRO", "ENTERPRISE"])
+export type Plan = z.infer<typeof planSchema>
+
 // ── Input schemas (locale-agnostic — each app sets its own z.config locale) ──
 
 export const createRestaurantSchema = z.object({
@@ -14,9 +30,18 @@ export type CreateRestaurantInput = z.infer<typeof createRestaurantSchema>
 export const updateRestaurantSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   slug: z.string().min(1).max(SLUG_MAX).regex(SLUG_REGEX).optional(),
+  language: languageSchema.optional(),
+  currency: currencySchema.optional(),
 })
 
 export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>
+
+/** Change the billing tier (no payment side effects yet). */
+export const setPlanSchema = z.object({
+  plan: planSchema,
+})
+
+export type SetPlanInput = z.infer<typeof setPlanSchema>
 
 /** Go live / deactivate. */
 export const restaurantStatusSchema = z.object({
@@ -40,6 +65,9 @@ export const restaurantSchema = z.object({
   slug: z.string(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
   onboardingStatus: z.enum(["IN_PROGRESS", "COMPLETED", "SKIPPED"]),
+  language: languageSchema,
+  currency: currencySchema,
+  plan: planSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
 })

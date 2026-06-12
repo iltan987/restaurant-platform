@@ -19,6 +19,8 @@ import {
   paginationQuerySchema,
   type RestaurantStatusInput,
   restaurantStatusSchema,
+  type SetPlanInput,
+  setPlanSchema,
   type SlugAvailabilityQuery,
   slugAvailabilityQuerySchema,
   type UpdateRestaurantInput,
@@ -78,6 +80,15 @@ export class RestaurantsController {
     input: RestaurantStatusInput
   ) {
     return this.restaurants.setStatus(id, input)
+  }
+
+  /** Change the billing tier */
+  @Patch(":id/plan")
+  setPlan(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(setPlanSchema)) input: SetPlanInput
+  ) {
+    return this.restaurants.setPlan(id, input)
   }
 
   /** Finish / skip onboarding */

@@ -10,6 +10,7 @@ import {
   ErrorCode,
   type OnboardingStatusInput,
   type RestaurantStatusInput,
+  type SetPlanInput,
   type UpdateRestaurantInput,
 } from "@repo/schemas"
 
@@ -192,9 +193,16 @@ export class RestaurantsService {
   async update(id: string, input: UpdateRestaurantInput) {
     await this.getByIdOrThrow(id)
 
-    const data: { name?: string; slug?: string } = {}
+    const data: {
+      name?: string
+      slug?: string
+      language?: string
+      currency?: string
+    } = {}
     if (input.name !== undefined) data.name = input.name
     if (input.slug !== undefined) data.slug = slugify(input.slug)
+    if (input.language !== undefined) data.language = input.language
+    if (input.currency !== undefined) data.currency = input.currency
 
     try {
       return await this.prisma.restaurant.update({ where: { id }, data })
@@ -213,6 +221,15 @@ export class RestaurantsService {
   async remove(id: string) {
     await this.getByIdOrThrow(id)
     await this.prisma.restaurant.delete({ where: { id } })
+  }
+
+  /** Change the billing tier. No payment side effects yet — just records it. */
+  async setPlan(id: string, input: SetPlanInput) {
+    await this.getByIdOrThrow(id)
+    return this.prisma.restaurant.update({
+      where: { id },
+      data: { plan: input.plan },
+    })
   }
 
   /** Finish / skip onboarding — never auto-activates (FR-019). */

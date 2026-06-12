@@ -387,6 +387,17 @@ describe("RestaurantsService", () => {
       })
     })
 
+    it("updates the locale preferences (language / currency)", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      await service.update("cuid-1", { language: "tr", currency: "TRY" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { language: "tr", currency: "TRY" },
+      })
+    })
+
     it("throws SLUG_TAKEN on a P2002 unique-constraint violation", async () => {
       mockRestaurant.findUnique.mockResolvedValue(makeRow())
       mockRestaurant.update.mockRejectedValue({ code: "P2002" })
@@ -435,6 +446,33 @@ describe("RestaurantsService", () => {
         code: ErrorCode.RESTAURANT_NOT_FOUND,
       })
       expect(mockRestaurant.delete).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("setPlan", () => {
+    it("updates the billing tier", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(makeRow())
+
+      const result = await service.setPlan("cuid-1", { plan: "PRO" })
+
+      expect(mockRestaurant.update).toHaveBeenCalledWith({
+        where: { id: "cuid-1" },
+        data: { plan: "PRO" },
+      })
+      expect(result.plan).toBe("PRO")
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown id", async () => {
+      mockRestaurant.findUnique.mockResolvedValue(null)
+
+      const err = await service
+        .setPlan("nope", { plan: "PRO" })
+        .catch((e: unknown) => e)
+
+      expect((err as NotFoundException).getResponse()).toMatchObject({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+      })
+      expect(mockRestaurant.update).not.toHaveBeenCalled()
     })
   })
 

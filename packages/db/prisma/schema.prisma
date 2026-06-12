@@ -19,6 +19,14 @@ enum OnboardingStatus {
   SKIPPED
 }
 
+// Billing tier. Managed by admin; no payment/invoicing wired yet — the field
+// just records which plan a restaurant is on.
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
 enum TableShape {
   SQUARE
   RECT
@@ -69,6 +77,12 @@ model Restaurant {
   slug             String           @unique
   status           RestaurantStatus @default(INACTIVE)
   onboardingStatus OnboardingStatus @default(IN_PROGRESS)
+  // Locale preferences. Stored as strings (allowed set lives in @repo/schemas)
+  // so adding a language/currency later needs no migration. Only "tr"/"TRY" are
+  // offered today; downstream formatting still assumes TRY.
+  language         String           @default("tr")
+  currency         String           @default("TRY")
+  plan             Plan             @default(FREE)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   floors           Floor[]
