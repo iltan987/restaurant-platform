@@ -91,6 +91,22 @@ enum ActivityType {
   MENU_ITEM_DELETED
 }
 
+// Restaurant team roles. The OWNER ⊇ MANAGER ⊇ STAFF capability ordering and the
+// per-action permission catalog live in @repo/schemas (evaluated server-side),
+// not as DB columns.
+enum RestaurantRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
 model Restaurant {
   id               String           @id @default(cuid(2))
   name             String
@@ -111,8 +127,52 @@ model Restaurant {
   allergens        Allergen[]
   tags             Tag[]
   activities       Activity[]
+  members          RestaurantMember[]
+  invitations      RestaurantInvitation[]
 
   @@map("restaurants")
+}
+
+// A user's membership of (and role in) one restaurant — the basis for all
+// dashboard authorization. `userId` references the dashboard Better Auth
+// instance's user (`dash_user.id`); there is no FK to it (separate audience).
+// Service invariant: every restaurant keeps ≥1 OWNER at all times (FR-015).
+model RestaurantMember {
+  id           String         @id @default(cuid(2))
+  restaurantId String
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId       String
+  role         RestaurantRole
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
+  @@index([restaurantId])
+  @@map("restaurant_members")
+}
+
+// A pending/closed invitation to join a restaurant. Covers admin→owner and
+// owner→member. The raw single-use token is emailed; only its hash is stored.
+model RestaurantInvitation {
+  id              String           @id @default(cuid(2))
+  restaurantId    String
+  restaurant      Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  email           String
+  role            RestaurantRole
+  status          InvitationStatus @default(PENDING)
+  tokenHash       String
+  invitedByUserId String?
+  invitedByAdmin  Boolean          @default(false)
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([restaurantId])
+  @@index([email])
+  @@index([tokenHash])
+  @@map("restaurant_invitations")
 }
 
 model Activity {

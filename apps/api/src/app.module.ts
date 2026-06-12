@@ -8,6 +8,8 @@ import { AreasModule } from "./areas/areas.module"
 import { CategoriesModule } from "./categories/categories.module"
 import { HttpExceptionFilter } from "./common/http-exception.filter"
 import { FloorsModule } from "./floors/floors.module"
+import { InvitationsModule } from "./invitations/invitations.module"
+import { MembersModule } from "./members/members.module"
 import { MenuModule } from "./menu/menu.module"
 import { MenuItemsModule } from "./menu-items/menu-items.module"
 import { PrismaModule } from "./prisma/prisma.module"
@@ -29,6 +31,8 @@ import { TagsModule } from "./tags/tags.module"
     MenuModule,
     AllergensModule,
     TagsModule,
+    InvitationsModule,
+    MembersModule,
   ],
   providers: [
     {

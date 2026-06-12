@@ -24,6 +24,11 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly availabilityWindow = prisma.availabilityWindow
   readonly mediaAsset = prisma.mediaAsset
   readonly activity = prisma.activity
+  readonly restaurantMember = prisma.restaurantMember
+  readonly restaurantInvitation = prisma.restaurantInvitation
+  // Dashboard-audience identity table (Better Auth), read/updated by the
+  // invitation-acceptance flow to attach memberships and confirm the email.
+  readonly dashUser = prisma.dash_user
 
   /** Interactive transaction — bound so services can group writes atomically. */
   readonly $transaction = prisma.$transaction.bind(prisma)
