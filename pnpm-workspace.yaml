@@ -38,3 +38,6 @@ catalog:
   "@aws-sdk/client-s3": ^3.1066.0
   "@aws-sdk/s3-request-presigner": ^3.1066.0
   "@dnd-kit/sortable": ^10.0.0
+  better-auth: ^1.6.16
+  nodemailer: ^8.0.11
+  "@types/nodemailer": ^8.0.1

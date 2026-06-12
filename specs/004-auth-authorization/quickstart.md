@@ -13,7 +13,7 @@ A runnable guide to prove the feature end-to-end. Implementation details live in
 ```bash
 pnpm install
 # generate Better Auth tables into the existing Prisma schema, then migrate
-pnpm dlx @better-auth/cli@latest generate --config apps/api/src/auth/instances.ts --output packages/db/prisma/schema.prisma
+pnpm dlx auth@latest generate --config apps/api/src/auth/instances.ts --output packages/db/prisma/schema.prisma
 pnpm --filter @repo/db db:migrate
 pnpm --filter @repo/db db:generate
 # seed the single platform admin (idempotent)
