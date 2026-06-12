@@ -5,8 +5,8 @@ import { ApiError } from "@repo/api-client"
 import { getQueryClient } from "@repo/query/get-query-client"
 
 import { areasQueries } from "@/features/areas/queries"
+import { categoriesQueries } from "@/features/categories/queries"
 import { floorsQueries } from "@/features/floors/queries"
-import { menuQueries } from "@/features/menu/queries"
 import { RestaurantDetail } from "@/features/restaurants/components/restaurant-detail"
 import { restaurantsQueries } from "@/features/restaurants/queries"
 import { tablesQueries } from "@/features/tables/queries"
@@ -36,7 +36,7 @@ export default async function RestaurantDetailPage({
     queryClient.prefetchQuery(floorsQueries.bySlug(slug)),
     queryClient.prefetchQuery(areasQueries.bySlug(slug)),
     queryClient.prefetchQuery(tablesQueries.bySlug(slug)),
-    queryClient.prefetchQuery(menuQueries.categories(slug)),
+    queryClient.prefetchQuery(categoriesQueries.bySlug(slug)),
   ])
 
   return (
