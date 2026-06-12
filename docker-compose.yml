@@ -48,6 +48,22 @@ services:
       mc anonymous set download local/menu-media
       "
 
+  # Dev SMTP sink: catches all outgoing mail (invitations, magic links, OTP
+  # codes) — nothing is delivered. View + click links in the web inbox at
+  # http://localhost:8025. Use with EMAIL_TRANSPORT=smtp, SMTP_HOST=localhost,
+  # SMTP_PORT=1025 (no auth). The default EMAIL_TRANSPORT=console needs none of
+  # this — it just logs to the API stdout.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # web UI
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
   minio_data:
