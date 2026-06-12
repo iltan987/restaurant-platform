@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -16,10 +17,12 @@ import {
   updateTagSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { TagsService } from "./tags.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class TagsController {
   constructor(private readonly tags: TagsService) {}
 

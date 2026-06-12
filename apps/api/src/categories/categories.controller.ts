@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -19,10 +20,12 @@ import {
   updateCategorySchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { CategoriesService } from "./categories.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class CategoriesController {
   constructor(private readonly categories: CategoriesService) {}
 

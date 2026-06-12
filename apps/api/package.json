@@ -4,6 +4,7 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main",
+    "seed:admin": "nest build && node dist/auth/seed-admin",
     "lint": "eslint",
     "format": "prettier --write \"**/*.ts\"",
     "typecheck": "tsc --noEmit",
@@ -56,6 +57,9 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
+    "moduleNameMapper": {
+      "^better-auth(/.*)?$": "<rootDir>/../test/better-auth.mock.ts"
+    },
     "transform": {
       "^.+\\.ts$": [
         "ts-jest",

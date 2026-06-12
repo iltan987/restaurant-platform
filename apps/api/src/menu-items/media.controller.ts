@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -17,10 +18,12 @@ import {
   requestUploadSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { MediaService } from "./media.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class MediaController {
   constructor(private readonly media: MediaService) {}
 

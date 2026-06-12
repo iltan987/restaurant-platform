@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -21,12 +22,16 @@ import {
   updateTableSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { Public } from "../auth/public.decorator"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { TablesService } from "./tables.service"
 
 const TABLES_PAGE_SIZE = 200
 
+// Admin-only, except the single-table lookup a diner's QR resolves to (public).
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class TablesController {
   constructor(private readonly tables: TablesService) {}
 
@@ -42,6 +47,7 @@ export class TablesController {
     )
   }
 
+  @Public()
   @Get("restaurants/:slug/tables/:tableId")
   findOne(@Param("slug") slug: string, @Param("tableId") tableId: string) {
     return this.tables.findOneBySlug(slug, tableId)

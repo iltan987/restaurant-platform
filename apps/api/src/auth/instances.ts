@@ -19,8 +19,12 @@ import { googleCredentials, rootDomain, trustedOrigins } from "./env"
  * (see tasks T006).
  */
 
-/** Options shared by every instance. Per-instance config is layered on top. */
-function sharedOptions(prefix: string): BetterAuthOptions {
+/**
+ * Options shared by every instance. Per-instance config is layered on top.
+ * Exported so the admin seed (T014) can build a throwaway instance over the
+ * same `admin_*` tables with sign-up enabled.
+ */
+export function sharedOptions(prefix: string): BetterAuthOptions {
   return {
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     // Read by Better Auth from BETTER_AUTH_SECRET/BETTER_AUTH_URL too; passed

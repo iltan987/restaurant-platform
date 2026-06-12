@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -16,10 +17,12 @@ import {
   updateAllergenSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { AllergensService } from "./allergens.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class AllergensController {
   constructor(private readonly allergens: AllergensService) {}
 

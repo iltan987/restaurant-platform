@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -19,12 +20,14 @@ import {
   updateAreaSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { AreasService } from "./areas.service"
 
 const AREAS_PAGE_SIZE = 200
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class AreasController {
   constructor(private readonly areas: AreasService) {}
 

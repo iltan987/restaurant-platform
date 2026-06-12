@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -19,10 +20,12 @@ import {
   updateMenuItemSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { MenuItemsService } from "./menu-items.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class MenuItemsController {
   constructor(private readonly items: MenuItemsService) {}
 

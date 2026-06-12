@@ -6,10 +6,12 @@ import {
   type Type,
   UnauthorizedException,
 } from "@nestjs/common"
+import { Reflector } from "@nestjs/core"
 import { fromNodeHeaders } from "better-auth/node"
 import type { Request } from "express"
 
 import { adminAuth, customerAuth, dashboardAuth } from "./instances"
+import { IS_PUBLIC_KEY } from "./public.decorator"
 
 /** The `{ session, user }` Better Auth resolves for a request, attached by the
  * guard so controllers/handlers can read the authenticated identity. */
@@ -45,7 +47,16 @@ export function createAuthGuard(
 ): Type<CanActivate> {
   @Injectable()
   class AuthGuard implements CanActivate {
+    constructor(private readonly reflector: Reflector) {}
+
     async canActivate(context: ExecutionContext): Promise<boolean> {
+      // Routes marked @Public() bypass the guard even at controller scope.
+      const isPublic = this.reflector.getAllAndOverride<boolean>(
+        IS_PUBLIC_KEY,
+        [context.getHandler(), context.getClass()]
+      )
+      if (isPublic) return true
+
       const req = context.switchToHttp().getRequest<AuthenticatedRequest>()
 
       const result = await instance.api.getSession({

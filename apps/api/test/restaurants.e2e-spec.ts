@@ -6,6 +6,7 @@ import { App } from "supertest/types"
 import { ErrorCode } from "@repo/schemas"
 
 import { AppModule } from "../src/app.module"
+import { AdminAuthGuard } from "../src/auth/auth-guard.factory"
 import { PrismaService } from "../src/prisma/prisma.service"
 import { fakePrisma } from "./fake-prisma"
 
@@ -19,6 +20,8 @@ describe("Restaurants (e2e)", () => {
     })
       .overrideProvider(PrismaService)
       .useValue(fakePrisma)
+      .overrideGuard(AdminAuthGuard)
+      .useValue({ canActivate: () => true })
       .compile()
 
     app = moduleFixture.createNestApplication()

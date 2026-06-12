@@ -1,11 +1,13 @@
-import { Controller, Get, Param, Query } from "@nestjs/common"
+import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common"
 
 import { type PaginationQuery, paginationQuerySchema } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { ActivityService } from "./activity.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class ActivityController {
   constructor(private readonly activity: ActivityService) {}
 

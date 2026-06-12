@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -27,12 +28,17 @@ import {
   updateRestaurantSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { Public } from "../auth/public.decorator"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { RestaurantsService } from "./restaurants.service"
 
 const RESTAURANTS_PAGE_SIZE = 20
 
+// Fleet management is admin-only. The single tenant lookup (`GET /:slug`) is
+// @Public() — the customer/dashboard storefront resolves a subdomain with it.
 @Controller("restaurants")
+@UseGuards(AdminAuthGuard)
 export class RestaurantsController {
   constructor(private readonly restaurants: RestaurantsService) {}
 
@@ -66,7 +72,8 @@ export class RestaurantsController {
     return this.restaurants.isSlugAvailable(query.slug)
   }
 
-  /** Tenant lookup — used by the dashboard to resolve a subdomain */
+  /** Tenant lookup — used by the storefront to resolve a subdomain (public) */
+  @Public()
   @Get(":slug")
   findBySlug(@Param("slug") slug: string) {
     return this.restaurants.findBySlug(slug)

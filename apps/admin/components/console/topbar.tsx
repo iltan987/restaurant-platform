@@ -1,7 +1,8 @@
 "use client"
 
-import { Bell, Plus, Search } from "lucide-react"
+import { Bell, LogOut, Plus, Search } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 import { ThemeToggle } from "@repo/ui/components/theme-toggle"
@@ -12,6 +13,8 @@ import {
   TooltipTrigger,
 } from "@repo/ui/components/ui/tooltip"
 
+import { signOut } from "@/lib/auth-client"
+
 import { CommandPalette } from "./command-palette"
 
 /**
@@ -21,6 +24,13 @@ import { CommandPalette } from "./command-palette"
  */
 export function Topbar() {
   const [cmdOpen, setCmdOpen] = useState(false)
+  const router = useRouter()
+
+  async function handleSignOut() {
+    await signOut()
+    router.push("/sign-in")
+    router.refresh()
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -60,6 +70,22 @@ export function Topbar() {
         </Tooltip>
 
         <ThemeToggle />
+
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Çıkış yap"
+                onClick={handleSignOut}
+              >
+                <LogOut className="size-[18px]" />
+              </Button>
+            }
+          />
+          <TooltipContent>Çıkış yap</TooltipContent>
+        </Tooltip>
 
         <Button nativeButton={false} render={<Link href="/restoranlar" />}>
           <Plus className="size-4" />

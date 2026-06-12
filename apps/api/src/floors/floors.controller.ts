@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -22,12 +23,14 @@ import {
   updateFloorSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { FloorsService } from "./floors.service"
 
 const FLOORS_PAGE_SIZE = 200
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class FloorsController {
   constructor(private readonly floors: FloorsService) {}
 

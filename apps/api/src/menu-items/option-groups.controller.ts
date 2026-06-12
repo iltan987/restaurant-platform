@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common"
 
 import {
@@ -22,10 +23,12 @@ import {
   updateOptionSchema,
 } from "@repo/schemas"
 
+import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { OptionGroupsService } from "./option-groups.service"
 
 @Controller()
+@UseGuards(AdminAuthGuard)
 export class OptionGroupsController {
   constructor(private readonly groups: OptionGroupsService) {}
 

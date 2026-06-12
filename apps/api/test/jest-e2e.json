@@ -3,6 +3,9 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "moduleNameMapper": {
+    "^better-auth(/.*)?$": "<rootDir>/better-auth.mock.ts"
+  },
   "transform": {
     "^.+\\.ts$": ["ts-jest", { "tsconfig": "tsconfig.spec.json" }]
   }
