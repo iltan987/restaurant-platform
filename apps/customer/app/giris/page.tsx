@@ -10,6 +10,7 @@ import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
+import { GoogleIcon } from "@/features/auth/components/google-icon"
 import { emailOtp, signIn } from "@/lib/auth-client"
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
@@ -135,6 +136,7 @@ function SignInFlow() {
                     })
                   }
                 >
+                  <GoogleIcon className="size-[18px]" />
                   Google ile devam et
                 </Button>
               </>

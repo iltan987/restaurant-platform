@@ -16,6 +16,8 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { emailOtp, signIn, signOut, useSession } from "@/lib/auth-client"
 
+import { GoogleIcon } from "./google-icon"
+
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
 /**
@@ -179,6 +181,7 @@ export function AccountButton() {
                             })
                           }
                         >
+                          <GoogleIcon className="size-[18px]" />
                           Google ile devam et
                         </Button>
                       </>
