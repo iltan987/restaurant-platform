@@ -16,6 +16,8 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { emailOtp, signIn, signOut, useSession } from "@/lib/auth-client"
 
+const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+
 /**
  * Optional diner account control, floating over the menu cover. Signed-out: opens
  * a bottom-sheet to sign in with a one-time email code (the same code is also in
@@ -158,6 +160,29 @@ export function AccountButton() {
                       {pending ? <Spinner className="size-4" /> : null}
                       Giriş bağlantısı gönder
                     </Button>
+
+                    {GOOGLE_ENABLED ? (
+                      <>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="h-px flex-1 bg-border" /> veya
+                          <span className="h-px flex-1 bg-border" />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-11"
+                          onClick={() =>
+                            signIn.social({
+                              provider: "google",
+                              // Return to this exact table menu after Google.
+                              callbackURL: window.location.href,
+                            })
+                          }
+                        >
+                          Google ile devam et
+                        </Button>
+                      </>
+                    ) : null}
                   </form>
                 ) : (
                   <form onSubmit={verify} className="flex flex-col gap-4">
