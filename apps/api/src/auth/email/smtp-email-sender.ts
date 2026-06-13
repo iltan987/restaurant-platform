@@ -25,12 +25,6 @@ export class SmtpEmailSender implements EmailSender {
       port: config.port,
       // Implicit TLS on 465; STARTTLS otherwise.
       secure: config.port === 465,
-      // Force IPv4: many hosts (e.g. Render) have no IPv6 egress, but providers
-      // like Gmail resolve to an IPv6 address first → `connect ENETUNREACH`.
-      family: 4,
-      // Fail fast instead of hanging the request if the connection can't open.
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
       auth:
         config.user && config.pass
           ? { user: config.user, pass: config.pass }
