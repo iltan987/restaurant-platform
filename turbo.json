@@ -16,6 +16,7 @@
     "GOOGLE_*",
     "EMAIL_*",
     "SMTP_*",
+    "RESEND_*",
     "S3_*",
     "MEDIA_PUBLIC_BASE_URL"
   ],
