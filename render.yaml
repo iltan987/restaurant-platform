@@ -1,0 +1,79 @@
+# Render Blueprint for the NestJS API (the persistent backend).
+# The three Next.js apps stay on Vercel; only the API runs here.
+#
+# Create the service: Render Dashboard → New → Blueprint → connect this repo.
+# Render reads this file, then prompts for the `sync: false` secrets below.
+# After the first deploy, set BETTER_AUTH_URL / *_URL to the real hosts (see
+# the deploy notes), and point the Vercel apps' NEXT_PUBLIC_API_URL at this API.
+services:
+  - type: web
+    name: restaurant-platform-api
+    runtime: node
+    region: frankfurt # closest Render region to Turkey
+    plan: starter # always-on (free spins down → cold starts); preDeploy needs paid
+    branch: master
+    # Monorepo: install once at the root, build only the api + its workspace deps.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=api
+    # Apply pending Prisma migrations to the prod DB before traffic cuts over.
+    preDeployCommand: pnpm --filter @repo/db exec prisma migrate deploy
+    # main.ts listens on process.env.PORT (Render injects it) at 0.0.0.0.
+    startCommand: node apps/api/dist/main.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24.15.0"
+      - key: NODE_ENV
+        value: production
+      # --- Database (copy the connection string from your Postgres provider) ---
+      - key: DATABASE_URL
+        sync: false
+      # --- Better Auth ---
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      # Set to this service's public URL once known (e.g. https://restaurant-platform-api.onrender.com)
+      - key: BETTER_AUTH_URL
+        sync: false
+      # --- App origins (CORS + auth trustedOrigins) — the Vercel app URLs ---
+      - key: ADMIN_URL
+        sync: false
+      - key: DASHBOARD_URL
+        sync: false
+      - key: CUSTOMER_URL
+        sync: false
+      # --- Platform admin bootstrap ---
+      - key: ADMIN_BOOTSTRAP_EMAIL
+        sync: false
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false
+      # --- Google OAuth (customer storefront) ---
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # --- Email (Gmail SMTP) ---
+      - key: EMAIL_TRANSPORT
+        value: smtp
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: no-reply@example.com
+      # --- Object storage (Cloudflare R2) ---
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        value: restaurant-platform
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: MEDIA_PUBLIC_BASE_URL
+        sync: false

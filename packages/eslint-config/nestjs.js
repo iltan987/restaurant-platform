@@ -16,11 +16,4 @@ export const nestJsConfig = [
       parserOptions: { projectService: true },
     },
   },
-  {
-    // Build/config scripts (e.g. scripts/bundle.mjs) run in Node, not Nest.
-    files: ["**/*.{js,cjs,mjs}"],
-    languageOptions: {
-      globals: { ...globals.node },
-    },
-  },
 ]

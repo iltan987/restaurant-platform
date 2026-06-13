@@ -16,6 +16,7 @@ import { PrismaModule } from "./prisma/prisma.module"
 import { RestaurantsModule } from "./restaurants/restaurants.module"
 import { TablesModule } from "./tables/tables.module"
 import { TagsModule } from "./tags/tags.module"
+import { HealthController } from "./health.controller"
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TagsModule } from "./tags/tags.module"
     InvitationsModule,
     MembersModule,
   ],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_FILTER,
