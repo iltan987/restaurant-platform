@@ -1,13 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "NODE_ENV",
-    "PORT",
-    "ALLOWED_DEV_ORIGIN",
-    "API_ORIGIN",
-    "API_INTERNAL_URL"
-  ],
+  "globalEnv": ["NODE_ENV", "PORT", "ALLOWED_DEV_ORIGIN", "API_INTERNAL_URL"],
   "globalPassThroughEnv": [
     "DATABASE_URL",
     "POSTGRES_URL",

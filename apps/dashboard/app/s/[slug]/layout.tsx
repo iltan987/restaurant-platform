@@ -2,20 +2,18 @@
 
 import { useEffect } from "react"
 
-import { tenantMode } from "@repo/core"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { useSession } from "@/lib/auth-client"
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
-const TENANT_MODE = tenantMode(process.env.NEXT_PUBLIC_TENANT_MODE)
 
-/** Apex sign-in URL. In subdomain mode the tenant lives on a different host, so
- * we send the user to the apex; in path mode it's the same host. */
+/** Apex sign-in URL. The tenant lives on a `<slug>.<root>` subdomain, so we send
+ * the user to the apex host to sign in. */
 function signInHref(): string {
   const protocol =
     typeof window !== "undefined" ? window.location.protocol : "http:"
-  return TENANT_MODE === "path" ? "/giris" : `${protocol}//${ROOT_DOMAIN}/giris`
+  return `${protocol}//${ROOT_DOMAIN}/giris`
 }
 
 /**

@@ -31,7 +31,7 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 import { cn } from "@repo/ui/lib/utils"
 
 import { ComingSoonBadge } from "@/components/console/scaffold-panel"
-import { rootDomain, TENANT_MODE, tenantDisplay } from "@/lib/domain"
+import { rootDomain } from "@/lib/domain"
 
 import { restaurantsQueries } from "../queries"
 import { useCreateRestaurant } from "../use-create-restaurant"
@@ -170,15 +170,12 @@ export function CreateRestaurantDialog({
                 placeholder="restoran-adi"
                 onChange={(e) => setOverride(slugify(e.target.value))}
                 className={cn(
-                  "min-w-0 flex-1 bg-transparent px-3 font-mono text-sm outline-none",
-                  TENANT_MODE === "path" ? "text-left" : "text-right"
+                  "min-w-0 flex-1 bg-transparent px-3 text-right font-mono text-sm outline-none"
                 )}
               />
-              {TENANT_MODE !== "path" && (
-                <span className="shrink-0 font-mono text-sm text-muted-foreground">
-                  .{root}
-                </span>
-              )}
+              <span className="shrink-0 font-mono text-sm text-muted-foreground">
+                .{root}
+              </span>
               <span className="grid h-full w-10 place-items-center border-l border-border">
                 {availability === "checking" ? (
                   <Spinner className="size-3.5" />
@@ -202,12 +199,7 @@ export function CreateRestaurantDialog({
               {availability === "ok" ? (
                 <>
                   <Check className="size-3" />
-                  <span className="font-mono">
-                    {TENANT_MODE === "path"
-                      ? tenantDisplay(slug)
-                      : `${slug}.${root}`}
-                  </span>{" "}
-                  müsait
+                  <span className="font-mono">{`${slug}.${root}`}</span> müsait
                 </>
               ) : availability === "taken" ? (
                 <>
@@ -247,13 +239,8 @@ export function CreateRestaurantDialog({
               <Info className="mt-0.5 size-4 shrink-0 text-primary" />
               <div>
                 <b>{name.trim()}</b> oluşturulacak;{" "}
-                <span className="font-mono">
-                  {TENANT_MODE === "path"
-                    ? tenantDisplay(slug)
-                    : `${slug}.${root}`}
-                </span>{" "}
-                ayrılır. Varsayılan bir kat ve alan ile başlar. Durum:{" "}
-                <b>Taslak</b>.
+                <span className="font-mono">{`${slug}.${root}`}</span> ayrılır.
+                Varsayılan bir kat ve alan ile başlar. Durum: <b>Taslak</b>.
               </div>
             </div>
           ) : null}

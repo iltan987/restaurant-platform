@@ -1,13 +1,12 @@
 import { z } from "zod"
 
 import { apiFetch } from "@repo/api-client"
-import { tenantLocation, tenantMode } from "@repo/core"
+import { tenantHost } from "@repo/core"
 import { type Membership, membershipSchema } from "@repo/schemas"
 
 import { apiBase as API } from "./api-base"
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
-const TENANT_MODE = tenantMode(process.env.NEXT_PUBLIC_TENANT_MODE)
 
 const meSchema = z.object({ memberships: membershipSchema.array() })
 
@@ -22,10 +21,10 @@ export async function fetchMemberships(): Promise<Membership[]> {
   return memberships
 }
 
-/** Absolute URL to a restaurant's dashboard (honours subdomain/path tenancy). */
+/** Absolute URL to a restaurant's dashboard at `<slug>.<root>`. */
 export function restaurantHref(slug: string): string {
-  const { host, path } = tenantLocation(ROOT_DOMAIN, slug, TENANT_MODE)
+  const host = tenantHost(ROOT_DOMAIN, slug)
   const protocol =
     typeof window !== "undefined" ? window.location.protocol : "http:"
-  return `${protocol}//${host}${path || "/"}`
+  return `${protocol}//${host}/`
 }

@@ -1,36 +1,9 @@
-import { isLocalHost, tenantLocation, tenantMode } from "./tenant-url"
+import { isLocalHost, tenantHost } from "./tenant-url"
 
-describe("tenantMode", () => {
-  it('returns "path" only for the exact string "path"', () => {
-    expect(tenantMode("path")).toBe("path")
-  })
-
-  it('defaults to "subdomain" for anything else', () => {
-    expect(tenantMode(undefined)).toBe("subdomain")
-    expect(tenantMode("")).toBe("subdomain")
-    expect(tenantMode("subdomain")).toBe("subdomain")
-    expect(tenantMode("PATH")).toBe("subdomain")
-    expect(tenantMode("paths")).toBe("subdomain")
-  })
-})
-
-describe("tenantLocation", () => {
-  it("prepends the slug as a subdomain in subdomain mode", () => {
-    expect(tenantLocation("localhost:3002", "acme", "subdomain")).toEqual({
-      host: "acme.localhost:3002",
-      path: "",
-    })
-    expect(tenantLocation("menu.example.com", "acme", "subdomain")).toEqual({
-      host: "acme.menu.example.com",
-      path: "",
-    })
-  })
-
-  it("keeps the host and uses /s/<slug> in path mode", () => {
-    expect(tenantLocation("customer-x.vercel.app", "acme", "path")).toEqual({
-      host: "customer-x.vercel.app",
-      path: "/s/acme",
-    })
+describe("tenantHost", () => {
+  it("prepends the slug as a subdomain", () => {
+    expect(tenantHost("localhost:3002", "acme")).toBe("acme.localhost:3002")
+    expect(tenantHost("ica2.xyz", "acme")).toBe("acme.ica2.xyz")
   })
 })
 

@@ -18,7 +18,7 @@ import {
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 
-import { rootDomain, TENANT_MODE, tenantDisplay } from "@/lib/domain"
+import { rootDomain } from "@/lib/domain"
 
 import { useUpdateRestaurant } from "../use-update-restaurant"
 
@@ -103,12 +103,7 @@ export function RestaurantEditDialog({
             onChange={(e) => setSlug(e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            URL:{" "}
-            <code>
-              {TENANT_MODE === "path"
-                ? tenantDisplay(normalized || "<kısa-ad>")
-                : `${normalized || "<kısa-ad>"}.${rootDomain()}`}
-            </code>
+            URL: <code>{`${normalized || "<kısa-ad>"}.${rootDomain()}`}</code>
           </p>
         </div>
 

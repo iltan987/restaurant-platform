@@ -16,16 +16,10 @@ if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not set")
  * the apex intermediate iframe and gated on `NEXT_PUBLIC_ONE_TAP_ENABLED`. */
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""
 
-// `NEXT_PUBLIC_API_URL` is absolute in dev (http://localhost:3000/api) and
-// relative ("/api") in prod, where each app proxies /api to the API on its own
-// origin so the session cookie is first-party (persists in every browser).
-// Absolute → its origin; relative → the app's own origin (browser only — no
-// server-side requests are issued from this client).
-const baseURL = apiUrl.startsWith("http")
-  ? new URL(apiUrl).origin
-  : typeof window !== "undefined"
-    ? window.location.origin
-    : undefined
+// `NEXT_PUBLIC_API_URL` is absolute (dev: http://localhost:3000/api, prod:
+// https://api.<root>/api). The API shares the apps' parent domain, so its
+// session cookie is first-party to every `<slug>.<root>` host — no proxy needed.
+const baseURL = new URL(apiUrl).origin
 
 export const authClient = createAuthClient({
   baseURL,

@@ -15,7 +15,7 @@ import {
 } from "@repo/ui/components/ui/command"
 
 import { restaurantsQueries } from "@/features/restaurants/queries"
-import { rootDomain, TENANT_MODE, tenantDisplay } from "@/lib/domain"
+import { rootDomain } from "@/lib/domain"
 
 const PAGES = [
   { href: "/", label: "Genel Bakış", icon: LayoutGrid },
@@ -79,9 +79,7 @@ export function CommandPalette({
                   <Store />
                   <span className="flex-1">{r.name}</span>
                   <span className="font-mono text-xs text-muted-foreground">
-                    {TENANT_MODE === "path"
-                      ? tenantDisplay(r.slug)
-                      : `${r.slug}.${root}`}
+                    {`${r.slug}.${root}`}
                   </span>
                 </CommandItem>
               ))}

@@ -1,35 +1,17 @@
 /**
- * Multi-tenant URL shape. Two deployment modes:
- * - "subdomain" (default): tenants are served at `<slug>.<host>` (prod / local
- *   wildcard DNS). This is the production target.
- * - "path": tenants are served at `<host>/s/<slug>` on a single host. Used for
- *   free staging (e.g. Vercel) where wildcard subdomains aren't available.
+ * Multi-tenant URL shape. Tenants are always served at `<slug>.<host>` via
+ * wildcard DNS (the production target).
  *
- * These helpers are pure — callers read `NEXT_PUBLIC_TENANT_MODE` themselves and
- * pass the resolved mode/host in (this package is precompiled, so Next can't
- * inline `process.env.NEXT_PUBLIC_*` inside it).
+ * Pure helper — callers read the bare host from their own env (this package is
+ * precompiled, so Next can't inline `process.env.NEXT_PUBLIC_*` inside it).
  */
-export type TenantMode = "subdomain" | "path"
-
-/** Normalize a raw env value to a TenantMode. Anything but "path" → "subdomain". */
-export function tenantMode(raw: string | undefined): TenantMode {
-  return raw === "path" ? "path" : "subdomain"
-}
 
 /**
- * Where a tenant's storefront resolves, given a bare host (e.g. "localhost:3002"
- * or "x.vercel.app"), a slug, and the mode:
- * - subdomain → `{ host: "<slug>.<host>", path: "" }`
- * - path      → `{ host, path: "/s/<slug>" }`
+ * The host a tenant's storefront resolves to: `<slug>.<host>`, given a bare host
+ * (e.g. "localhost:3002" or "ica2.xyz").
  */
-export function tenantLocation(
-  host: string,
-  slug: string,
-  mode: TenantMode
-): { host: string; path: string } {
-  return mode === "path"
-    ? { host, path: `/s/${slug}` }
-    : { host: `${slug}.${host}`, path: "" }
+export function tenantHost(host: string, slug: string): string {
+  return `${slug}.${host}`
 }
 
 /**

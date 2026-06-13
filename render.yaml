@@ -42,6 +42,11 @@ services:
         sync: false
       - key: CUSTOMER_URL
         sync: false
+      # Registrable root domain (e.g. ica2.xyz). Enables the cross-subdomain
+      # session cookie shared across api/admin/panel/menu hosts — THE var that
+      # makes auth first-party, replacing the old per-app reverse proxy.
+      - key: ROOT_DOMAIN
+        sync: false
       # --- Platform admin bootstrap ---
       - key: ADMIN_BOOTSTRAP_EMAIL
         sync: false
@@ -52,19 +57,22 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
-      # --- Email (Gmail SMTP) ---
+      # --- Email (Resend over SMTP — IPv4-reachable; Gmail SMTP is IPv6-only
+      # from Render and fails with ENETUNREACH). Verify ROOT_DOMAIN in Resend. ---
       - key: EMAIL_TRANSPORT
         value: smtp
       - key: SMTP_HOST
-        value: smtp.gmail.com
+        value: smtp.resend.com
       - key: SMTP_PORT
-        value: "587"
+        value: "465"
       - key: SMTP_USER
-        sync: false
+        value: resend
+      # The Resend API key (re_...).
       - key: SMTP_PASS
         sync: false
+      # no-reply@<your verified root domain>, e.g. no-reply@ica2.xyz
       - key: EMAIL_FROM
-        value: no-reply@example.com
+        sync: false
       # --- Object storage (Cloudflare R2) ---
       - key: S3_ENDPOINT
         sync: false

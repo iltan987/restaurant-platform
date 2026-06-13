@@ -6,7 +6,7 @@ import { type RestaurantWithCounts } from "@repo/schemas"
 import { cn } from "@repo/ui/lib/utils"
 
 import { StatusPill } from "@/components/console/status-pill"
-import { rootDomain, TENANT_MODE, tenantDisplay } from "@/lib/domain"
+import { rootDomain } from "@/lib/domain"
 
 import { deriveStatus, isOptimistic } from "../lib/derive"
 import { RestaurantLogo } from "./restaurant-logo"
@@ -42,13 +42,7 @@ export function FleetCard({ r }: { r: RestaurantWithCounts }) {
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{r.name}</div>
           <div className="truncate font-mono text-xs text-muted-foreground">
-            {TENANT_MODE === "path" ? (
-              tenantDisplay(r.slug)
-            ) : (
-              <>
-                <span className="text-foreground/80">{r.slug}</span>.{root}
-              </>
-            )}
+            <span className="text-foreground/80">{r.slug}</span>.{root}
           </div>
         </div>
         <StatusPill status={deriveStatus(r)} />

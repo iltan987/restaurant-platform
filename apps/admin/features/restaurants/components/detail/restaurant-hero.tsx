@@ -25,7 +25,7 @@ import {
 
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { StatusPill } from "@/components/console/status-pill"
-import { rootDomain, TENANT_MODE, tenantDisplay, tenantUrl } from "@/lib/domain"
+import { rootDomain, tenantUrl } from "@/lib/domain"
 
 import { deriveStatus } from "../../lib/derive"
 import { useDeleteRestaurant } from "../../use-delete-restaurant"
@@ -46,7 +46,7 @@ export function RestaurantHero({ r }: { r: RestaurantWithCounts }) {
 
   function copySlug() {
     navigator.clipboard
-      ?.writeText(tenantDisplay(r.slug))
+      ?.writeText(`${r.slug}.${root}`)
       .then(() => toast.success("Alan adı kopyalandı."))
       .catch(() => {})
   }
@@ -64,14 +64,8 @@ export function RestaurantHero({ r }: { r: RestaurantWithCounts }) {
         <div className="mt-3 flex items-center gap-1 rounded-md border border-border bg-card py-1 pr-1 pl-3 text-sm shadow-xs">
           <Globe className="size-3.5 text-muted-foreground" />
           <span className="ml-1.5 font-mono">
-            {TENANT_MODE === "path" ? (
-              tenantDisplay(r.slug)
-            ) : (
-              <>
-                {r.slug}
-                <span className="text-muted-foreground">.{root}</span>
-              </>
-            )}
+            {r.slug}
+            <span className="text-muted-foreground">.{root}</span>
           </span>
           <Button
             variant="ghost"

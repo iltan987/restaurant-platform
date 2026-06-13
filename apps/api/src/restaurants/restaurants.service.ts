@@ -58,15 +58,23 @@ function withCounts<T extends RowWithCounts>(row: T) {
 
 /**
  * Slugs that collide with reserved subdomains / app routes and must never be
- * handed to a tenant, regardless of DB state.
+ * handed to a tenant, regardless of DB state. The customer storefront is served
+ * from the apex wildcard (`<slug>.<root>`), so a tenant slug shares the namespace
+ * with every infra subdomain — these must stay carved out.
  */
 const RESERVED_SLUGS = new Set([
   "admin",
   "api",
   "app",
+  "assets",
+  "auth",
+  "cdn",
   "dashboard",
+  "mail",
   "menu",
   "panel",
+  "static",
+  "status",
   "www",
 ])
 

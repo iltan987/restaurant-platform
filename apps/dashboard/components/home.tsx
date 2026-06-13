@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query"
 import { ArrowRight, LogOut, Store } from "lucide-react"
 import Link from "next/link"
 
-import { tenantMode } from "@repo/core"
 import { Button } from "@repo/ui/components/ui/button"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
@@ -12,7 +11,6 @@ import { signOut, useSession } from "@/lib/auth-client"
 import { fetchMemberships, restaurantHref } from "@/lib/me"
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
-const TENANT_MODE = tenantMode(process.env.NEXT_PUBLIC_TENANT_MODE)
 
 const roleLabel: Record<string, string> = {
   OWNER: "Sahip",
@@ -42,10 +40,7 @@ export function Home() {
   }
 
   if (!session) {
-    const address =
-      TENANT_MODE === "path"
-        ? `${ROOT_DOMAIN}/s/<kısa-ad>`
-        : `<kısa-ad>.${ROOT_DOMAIN}`
+    const address = `<kısa-ad>.${ROOT_DOMAIN}`
     return (
       <Center>
         <div className="flex max-w-sm flex-col items-center gap-4 text-center">
