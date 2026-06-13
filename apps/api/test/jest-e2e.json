@@ -5,6 +5,7 @@
   "testRegex": ".e2e-spec.ts$",
   "moduleNameMapper": {
     "^better-auth(/.*)?$": "<rootDir>/better-auth.mock.ts",
+    "^@better-auth/passkey$": "<rootDir>/better-auth.mock.ts",
     "^@react-email/(components|render)$": "<rootDir>/react-email.mock.ts"
   },
   "transform": {

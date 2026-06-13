@@ -37,7 +37,19 @@ catalog:
   "@dnd-kit/utilities": ^3.2.2
   "@aws-sdk/client-s3": ^3.1066.0
   "@aws-sdk/s3-request-presigner": ^3.1066.0
+  "@better-auth/passkey": ^1.6.18
   "@dnd-kit/sortable": ^10.0.0
-  better-auth: ^1.6.16
+  better-auth: ^1.6.18
   nodemailer: ^8.0.11
   "@types/nodemailer": ^8.0.1
+
+minimumReleaseAgeExclude:
+  - "@better-auth/core@1.6.18"
+  - "@better-auth/drizzle-adapter@1.6.18"
+  - "@better-auth/kysely-adapter@1.6.18"
+  - "@better-auth/memory-adapter@1.6.18"
+  - "@better-auth/mongo-adapter@1.6.18"
+  - "@better-auth/passkey@1.6.18"
+  - "@better-auth/prisma-adapter@1.6.18"
+  - "@better-auth/telemetry@1.6.18"
+  - better-auth@1.6.18

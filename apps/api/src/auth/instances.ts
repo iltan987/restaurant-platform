@@ -1,3 +1,4 @@
+import { passkey } from "@better-auth/passkey"
 import { betterAuth, type BetterAuthOptions } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { emailOTP } from "better-auth/plugins"
@@ -9,7 +10,12 @@ import {
   renderPasswordlessEmail,
   renderPasswordResetEmail,
 } from "./email"
-import { googleCredentials, rootDomain, trustedOrigins } from "./env"
+import {
+  googleCredentials,
+  passkeyRpId,
+  rootDomain,
+  trustedOrigins,
+} from "./env"
 
 /**
  * Three isolated Better Auth instances on the one API (research D3). Distinct
@@ -104,6 +110,17 @@ export const dashboardAuth = betterAuth({
       await getEmailSender().send({ to: user.email, ...message })
     },
   },
+  // Passkeys (WebAuthn): register while signed in, then sign in passwordless.
+  // `rpID` is the app root domain so a passkey works across the apex sign-in
+  // and `<slug>.<root>` workspaces; `origin` is left unset so Better Auth uses
+  // the request Origin (any tenant subdomain). Table mapped per audience.
+  plugins: [
+    passkey({
+      rpID: passkeyRpId(process.env.DASHBOARD_URL),
+      rpName: "Restoran Yönetim Paneli",
+      schema: { passkey: { modelName: "dash_passkey" } },
+    }),
+  ],
 })
 
 /**

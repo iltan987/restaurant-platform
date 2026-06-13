@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Mail } from "lucide-react"
+import { KeyRound, Mail } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -54,6 +54,16 @@ export default function DashboardSignInPage() {
           ? "Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin."
           : "E-posta veya parola hatalı."
       )
+      return
+    }
+    window.location.assign("/")
+  }
+
+  async function onPasskey() {
+    setFormError(null)
+    const { error } = await signIn.passkey()
+    if (error) {
+      setFormError("Geçiş anahtarıyla giriş yapılamadı. Tekrar deneyin.")
       return
     }
     window.location.assign("/")
@@ -143,6 +153,20 @@ export default function DashboardSignInPage() {
           )}
         </Button>
       </form>
+
+      <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" /> veya
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="h-9 w-full"
+        onClick={onPasskey}
+      >
+        <KeyRound className="size-4" />
+        Geçiş anahtarıyla giriş yap
+      </Button>
 
       <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
         Ekibe davet edildiyseniz e-postanızdaki bağlantıyı kullanın.

@@ -36,6 +36,28 @@ export const trustedOrigins: string[] = [
   ...(rootDomain ? [`https://${rootDomain}`, `https://*.${rootDomain}`] : []),
 ]
 
+/**
+ * WebAuthn Relying Party ID for passkeys — the registrable domain a passkey is
+ * bound to. Must be a parent of every origin the passkey is used on, so we use
+ * the **app root domain**, not the API host (Better Auth would otherwise default
+ * to the API hostname, which breaks when the API lives on `api.<root>`).
+ *
+ * Prod: `ROOT_DOMAIN` (e.g. `example.com`) → works across `<slug>.example.com`.
+ * Dev: the given app URL's host (e.g. `192.168.1.41.nip.io`), else `localhost`.
+ * WebAuthn needs a secure context, so real testing is on `localhost`/HTTPS.
+ */
+export function passkeyRpId(appUrl: string | undefined): string {
+  if (rootDomain) return rootDomain
+  if (appUrl) {
+    try {
+      return new URL(appUrl).hostname
+    } catch {
+      /* fall through */
+    }
+  }
+  return "localhost"
+}
+
 /** Google OAuth credentials for the customer storefront, if configured. */
 export const googleCredentials =
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

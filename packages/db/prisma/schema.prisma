@@ -94,6 +94,7 @@ enum ActivityType {
 // Restaurant team roles. The OWNER ⊇ MANAGER ⊇ STAFF capability ordering and the
 // per-action permission catalog live in @repo/schemas (evaluated server-side),
 // not as DB columns.
+
 enum RestaurantRole {
   OWNER
   MANAGER
@@ -108,19 +109,19 @@ enum InvitationStatus {
 }
 
 model Restaurant {
-  id               String           @id @default(cuid(2))
+  id               String                 @id @default(cuid(2))
   name             String
-  slug             String           @unique
-  status           RestaurantStatus @default(INACTIVE)
-  onboardingStatus OnboardingStatus @default(IN_PROGRESS)
+  slug             String                 @unique
+  status           RestaurantStatus       @default(INACTIVE)
+  onboardingStatus OnboardingStatus       @default(IN_PROGRESS)
   // Locale preferences. Stored as strings (allowed set lives in @repo/schemas)
   // so adding a language/currency later needs no migration. Only "tr"/"TRY" are
   // offered today; downstream formatting still assumes TRY.
-  language         String           @default("tr")
-  currency         String           @default("TRY")
-  plan             Plan             @default(FREE)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  language         String                 @default("tr")
+  currency         String                 @default("TRY")
+  plan             Plan                   @default(FREE)
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
   floors           Floor[]
   categories       Category[]
   menuItems        MenuItem[]
@@ -137,6 +138,7 @@ model Restaurant {
 // dashboard authorization. `userId` references the dashboard Better Auth
 // instance's user (`dash_user.id`); there is no FK to it (separate audience).
 // Service invariant: every restaurant keeps ≥1 OWNER at all times (FR-015).
+
 model RestaurantMember {
   id           String         @id @default(cuid(2))
   restaurantId String
@@ -154,6 +156,7 @@ model RestaurantMember {
 
 // A pending/closed invitation to join a restaurant. Covers admin→owner and
 // owner→member. The raw single-use token is emailed; only its hash is stored.
+
 model RestaurantInvitation {
   id              String           @id @default(cuid(2))
   restaurantId    String
@@ -453,6 +456,8 @@ model Dash_user {
   dash_sessions Dash_session[]
   dash_accounts Dash_account[]
 
+  dash_passkeys Dash_passkey[]
+
   @@unique([email])
   @@map("dash_user")
 }
@@ -586,4 +591,23 @@ model Cust_rate_limit {
 
   @@unique([key])
   @@map("cust_rate_limit")
+}
+
+model Dash_passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  dash_user    Dash_user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+  aaguid       String?
+
+  @@index([userId])
+  @@index([credentialID])
+  @@map("dash_passkey")
 }

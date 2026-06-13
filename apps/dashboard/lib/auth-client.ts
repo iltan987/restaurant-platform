@@ -1,3 +1,4 @@
+import { passkeyClient } from "@better-auth/passkey/client"
 import { createAuthClient } from "better-auth/react"
 
 /**
@@ -16,6 +17,7 @@ if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not set")
 export const authClient = createAuthClient({
   baseURL: new URL(apiUrl).origin,
   basePath: "/api/auth/dashboard",
+  plugins: [passkeyClient()],
   fetchOptions: { credentials: "include" },
 })
 
@@ -25,4 +27,5 @@ export const {
   useSession,
   requestPasswordReset,
   resetPassword,
+  passkey,
 } = authClient

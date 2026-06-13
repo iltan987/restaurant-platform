@@ -17,6 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
     "@aws-sdk/s3-request-presigner": "catalog:",
+    "@better-auth/passkey": "catalog:",
     "@nestjs/common": "^11.1.26",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.26",
@@ -64,6 +65,7 @@
     "testRegex": ".*\\.spec\\.ts$",
     "moduleNameMapper": {
       "^better-auth(/.*)?$": "<rootDir>/../test/better-auth.mock.ts",
+      "^@better-auth/passkey$": "<rootDir>/../test/better-auth.mock.ts",
       "^@react-email/(components|render)$": "<rootDir>/../test/react-email.mock.ts"
     },
     "transform": {

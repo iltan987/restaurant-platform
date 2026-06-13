@@ -11,6 +11,7 @@ import { Separator } from "@repo/ui/components/ui/separator"
 import { cn } from "@repo/ui/lib/utils"
 
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { PasskeysDialog } from "@/features/account/components/passkeys-dialog"
 import { AreasStep } from "@/features/areas/components/areas-step"
 import { FloorsStep } from "@/features/floors/components/floors-step"
 import { MembersSection } from "@/features/members/components/members-section"
@@ -77,6 +78,7 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
                 })
               }
             />
+            <PasskeysDialog />
             <ThemeToggle />
             {isActive ? (
               <Button
