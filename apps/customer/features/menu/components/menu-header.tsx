@@ -4,6 +4,8 @@ import { MoonIcon, SearchIcon, SunIcon, SunMoonIcon } from "lucide-react"
 
 import { useTheme } from "@repo/ui/components/theme-provider"
 
+import { AccountButton } from "@/features/auth/components/account-button"
+
 /**
  * Restaurant identity header: a warm cover band, a serif monogram logo, the
  * name, an "open" status line, and the search entry that opens the overlay.
@@ -25,6 +27,7 @@ export function MenuHeader({
         <span className="absolute top-2.5 left-3 rounded-full bg-[oklch(0.3_0.04_45/0.28)] px-[7px] py-[3px] font-mono text-[9.5px] tracking-wide text-white/80 uppercase backdrop-blur-[2px]">
           qr · masa menüsü
         </span>
+        <AccountButton />
         <ThemeToggle />
         <div className="flex w-full translate-y-[26px] items-center gap-3.5 px-[18px]">
           <span
