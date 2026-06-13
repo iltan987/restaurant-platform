@@ -14,8 +14,9 @@ services:
     branch: master
     # Monorepo: install once at the root, build only the api + its workspace deps.
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=api
-    # Apply pending Prisma migrations to the prod DB before traffic cuts over.
-    preDeployCommand: pnpm --filter @repo/db exec prisma migrate deploy
+    # Before traffic cuts over: apply pending Prisma migrations, then seed the
+    # single platform admin (idempotent — creates it only if missing).
+    preDeployCommand: pnpm --filter @repo/db exec prisma migrate deploy && node apps/api/dist/auth/seed-admin.js
     # main.ts listens on process.env.PORT (Render injects it) at 0.0.0.0.
     startCommand: node apps/api/dist/main.js
     healthCheckPath: /api/health
