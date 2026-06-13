@@ -39,7 +39,14 @@ export function sharedOptions(prefix: string): BetterAuthOptions {
     trustedOrigins,
     // Isolated identity tables per audience.
     user: { modelName: `${prefix}_user` },
-    session: { modelName: `${prefix}_session` },
+    // Bounded, rolling sessions for every audience: expire after 30 days,
+    // refreshed at most once a day (FR-022–024). `rememberMe: false` on sign-in
+    // overrides this to a browser-session cookie regardless of `expiresIn`.
+    session: {
+      modelName: `${prefix}_session`,
+      expiresIn: 60 * 60 * 24 * 30,
+      updateAge: 60 * 60 * 24,
+    },
     account: { modelName: `${prefix}_account` },
     verification: { modelName: `${prefix}_verification` },
     // Window-based throttling (decays — never a permanent lockout, D8). Each

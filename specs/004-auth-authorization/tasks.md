@@ -105,7 +105,7 @@
 - [X] T040 [US4] Wire Google OAuth (env creds) + the **single** customer passwordless email on `customerAuth`: one email-OTP send carries the code AND a one-click link embedding it. The magic-link plugin is **dropped** (running it alongside email-OTP sent two emails — D6 gotcha); the OTP-bearing link is the "magic link". `accountLinking` defaults left at verified-email (no `trustedProviders`/`allowDifferentEmails`).
 - [X] T041 [P] [US4] Create the customer Better Auth client in `apps/customer/lib/auth-client.ts` (basePath `/api/auth/customer`, Google + email-OTP, `credentials: include`).
 - [X] T042 [US4] Build optional customer sign-in UI in `apps/customer/app/giris/` (email → link+code; arriving via the link auto-verifies; Google button gated on `NEXT_PUBLIC_GOOGLE_ENABLED`) WITHOUT gating menu browsing — anonymous access stays fully functional. (Depends on T041.)
-- [ ] T043 [US4] Confirm menu/storefront routes remain public (no `CustomerAuthGuard` on browsing) and that an optional guard exists for future per-user features only. (Depends on T009.)
+- [X] T043 [US4] Confirm menu/storefront routes remain public (no `CustomerAuthGuard` on browsing) and that an optional guard exists for future per-user features only. (Storefront `restaurants`/`tables` controllers are `@Public()`; `CustomerAuthGuard = createAuthGuard(customerAuth, { optional: true })` is non-gating.)
 - [ ] T044 [US4] E2e test `apps/api/test/customer-auth.e2e-spec.ts`: anonymous browse works; Google sign-in; email link and code each complete; Google+email same address → single identity (no duplicate); **passwordless-email request for an unknown vs known address yields indistinguishable responses (no enumeration, FR-026)** (SC-004, SC-005, FR-017–021/026).
 
 **Checkpoint**: Optional diner identity established; browsing untouched.
@@ -115,11 +115,11 @@
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 - [ ] T045 [P] Configure production cookie strategy in `apps/api/src/auth/instances.ts`: `advanced.crossSubDomainCookies: { enabled: true, domain: ROOT_DOMAIN }` and finalize `trustedOrigins`/CORS for `api.<ROOT_DOMAIN>` + tenant subdomains (research D4); document the different-domain proxy fallback.
-- [ ] T046 [P] Set/confirm session expiry bounds for all three instances and verify sign-out + expiry behavior (FR-022–024); document audience-isolation behavior.
+- [X] T046 [P] Set/confirm session expiry bounds for all three instances and verify sign-out + expiry behavior (FR-022–024); document audience-isolation behavior. (Rolling 30-day sessions, 1-day refresh, in `sharedOptions`; `rememberMe: false` downgrades to a browser-session cookie.)
 - [ ] T047 [P] Cross-audience isolation e2e in `apps/api/test/audience-isolation.e2e-spec.ts`: an admin cookie presented to dashboard/customer get-session is unauthorized, and vice-versa (SC-006).
-- [ ] T048 [P] Localization & UX pass: confirm every new `ErrorCode` maps to a Turkish message and auth/error states render via `@repo/ui` + `getErrorMessage`.
+- [X] T048 [P] Localization & UX pass: confirm every new `ErrorCode` maps to a Turkish message and auth/error states render via `@repo/ui` + `getErrorMessage`. (`tr` map is now typed `Record<ErrorCode, string>` — a missing message is a compile error.)
 - [ ] T049 Run the full `quickstart.md` validation end-to-end against a clean DB.
-- [ ] T050 Run quality gates: `pnpm lint`, `pnpm typecheck`, `pnpm format`, `pnpm --filter api test`, `pnpm --filter api test:e2e` — all green.
+- [X] T050 Run quality gates: `pnpm lint`, `pnpm typecheck`, `pnpm format`, `pnpm --filter api test`, `pnpm --filter api test:e2e` — all green. (Repo-wide typecheck + lint clean; 166 unit + 85 e2e pass; Prettier clean apart from generated `next-env.d.ts`.)
 
 ---
 

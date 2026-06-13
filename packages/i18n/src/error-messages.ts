@@ -1,7 +1,11 @@
 import { ErrorCode } from "@repo/schemas"
 
-/** Maps API error codes to Turkish user-facing messages. */
-const tr: Record<string, string> = {
+/**
+ * Maps API error codes to Turkish user-facing messages. Typed as a total
+ * `Record<ErrorCode, …>` so adding a code to `@repo/schemas` without a message
+ * here becomes a compile error — the localisation can't silently drift.
+ */
+const tr: Record<ErrorCode, string> = {
   // Generic fallbacks (from the global exception filter)
   [ErrorCode.NOT_FOUND]: "Kayıt bulunamadı.",
   [ErrorCode.CONFLICT]: "Çakışma hatası.",
@@ -61,5 +65,5 @@ const tr: Record<string, string> = {
  * argument) when EN support lands.
  */
 export function getErrorMessage(code: string | undefined): string {
-  return (code && tr[code]) ?? "Bir hata oluştu."
+  return (code && tr[code as ErrorCode]) ?? "Bir hata oluştu."
 }
