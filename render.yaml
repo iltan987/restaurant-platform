@@ -10,13 +10,13 @@ services:
     name: restaurant-platform-api
     runtime: node
     region: frankfurt # closest Render region to Turkey
-    plan: starter # always-on (free spins down → cold starts); preDeploy needs paid
+    plan: free # spins down after ~15min idle → cold starts; upgrade to starter for always-on
     branch: master
-    # Monorepo: install once at the root, build only the api + its workspace deps.
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=api
-    # Before traffic cuts over: apply pending Prisma migrations, then seed the
-    # single platform admin (idempotent — creates it only if missing).
-    preDeployCommand: pnpm --filter @repo/db exec prisma migrate deploy && node apps/api/dist/auth/seed-admin.js
+    # Monorepo: install at the root, build the api + its workspace deps, then
+    # apply Prisma migrations and seed the platform admin (both idempotent).
+    # On free there's no preDeploy, so these run in the build (env vars are
+    # available there). Move them to preDeployCommand if you upgrade to a paid plan.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec turbo run build --filter=api && pnpm --filter @repo/db exec prisma migrate deploy && node apps/api/dist/auth/seed-admin.js
     # main.ts listens on process.env.PORT (Render injects it) at 0.0.0.0.
     startCommand: node apps/api/dist/main.js
     healthCheckPath: /api/health
