@@ -67,3 +67,4 @@ export const magicLink = (options: unknown) => ({ id: "magic-link", options })
 export const emailOTP = (options: unknown) => ({ id: "email-otp", options })
 // `@better-auth/passkey` (scoped package, ESM) is mapped here too.
 export const passkey = (options: unknown) => ({ id: "passkey", options })
+export const oneTap = (options?: unknown) => ({ id: "one-tap", options })

@@ -1,7 +1,7 @@
 import { passkey } from "@better-auth/passkey"
 import { betterAuth, type BetterAuthOptions } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { emailOTP } from "better-auth/plugins"
+import { emailOTP, oneTap } from "better-auth/plugins"
 
 import { prisma } from "@repo/db"
 
@@ -157,6 +157,10 @@ export const customerAuth = betterAuth({
       rpName: "Menü",
       schema: { passkey: { modelName: "cust_passkey" } },
     }),
+    // Google One Tap — verifies the GSI ID token. Only meaningful with Google
+    // configured; the client renders it via an apex intermediate iframe since
+    // GSI forbids wildcard JS origins on tenant subdomains (see one-tap page).
+    ...(googleCredentials ? [oneTap()] : []),
   ],
 })
 

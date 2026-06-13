@@ -1,5 +1,5 @@
 import { passkeyClient } from "@better-auth/passkey/client"
-import { emailOTPClient } from "better-auth/client/plugins"
+import { emailOTPClient, oneTapClient } from "better-auth/client/plugins"
 import { createAuthClient } from "better-auth/react"
 
 /**
@@ -12,11 +12,20 @@ import { createAuthClient } from "better-auth/react"
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not set")
 
+/** Google client ID for One Tap (safe to expose). One Tap is rendered only via
+ * the apex intermediate iframe and gated on `NEXT_PUBLIC_ONE_TAP_ENABLED`. */
+const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""
+
 export const authClient = createAuthClient({
   baseURL: new URL(apiUrl).origin,
   basePath: "/api/auth/customer",
-  plugins: [emailOTPClient(), passkeyClient()],
+  plugins: [
+    emailOTPClient(),
+    passkeyClient(),
+    oneTapClient({ clientId: googleClientId }),
+  ],
   fetchOptions: { credentials: "include" },
 })
 
-export const { signIn, signOut, useSession, emailOtp, passkey } = authClient
+export const { signIn, signOut, useSession, emailOtp, passkey, oneTap } =
+  authClient

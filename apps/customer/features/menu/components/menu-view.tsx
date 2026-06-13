@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { type MenuTreeItem } from "@repo/schemas"
 
+import { OneTapFrame } from "@/features/auth/components/one-tap-frame"
+
 import { menuQueries } from "../queries"
 import { CategoryBar } from "./category-bar"
 import { ItemCard } from "./item-card"
@@ -85,6 +87,7 @@ export function MenuView({
 
   return (
     <div className="menu-scope relative min-h-svh">
+      <OneTapFrame />
       <MenuHeader
         name={restaurant.name}
         tableLabel={tableLabel}
