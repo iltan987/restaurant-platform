@@ -1,10 +1,10 @@
 {
   "name": "api",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && node scripts/bundle.mjs",
     "dev": "nest start --watch",
     "start": "node dist/main",
-    "seed:admin": "nest build && node dist/auth/seed-admin",
+    "seed:admin": "pnpm build && node dist/auth/seed-admin",
     "lint": "eslint",
     "format": "prettier --write \"**/*.ts\"",
     "typecheck": "tsc --noEmit",
@@ -48,6 +48,7 @@
     "@types/nodemailer": "catalog:",
     "@types/react": "catalog:",
     "@types/supertest": "^7.2.0",
+    "esbuild": "^0.28.1",
     "eslint": "catalog:",
     "jest": "^30.4.2",
     "supertest": "^7.2.2",
