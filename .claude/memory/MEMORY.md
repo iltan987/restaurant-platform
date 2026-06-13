@@ -9,3 +9,4 @@ Memories for this project are checked into the repo here (`.claude/memory/`), no
 - [Work in phases + commit approval](work-in-phases-commit-approval.md) — stop after each phase, suggest commit message, get approval, then auto-commit
 - [No product name](no-product-name.md) — project is unnamed; never put any product name in code/UI/commits/history
 - [A11y target-size deviation](a11y-target-size-deviation.md) — shipped UI is WCAG 2.2 AA (24px) but below the spec's ≥44px goal; tracked, canvas excepted
+- [Backend on Render](backend-on-render.md) — NestJS API deploys to Render (persistent), only the Next apps are on Vercel; why + env wiring
