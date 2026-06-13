@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Check, LogOut, Mail, User } from "lucide-react"
+import { ArrowLeft, Check, Fingerprint, LogOut, Mail, User } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@repo/ui/components/ui/button"
@@ -12,9 +12,16 @@ import {
 } from "@repo/ui/components/ui/drawer"
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
+import { toast } from "@repo/ui/components/ui/sonner"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
-import { emailOtp, signIn, signOut, useSession } from "@/lib/auth-client"
+import {
+  emailOtp,
+  passkey,
+  signIn,
+  signOut,
+  useSession,
+} from "@/lib/auth-client"
 
 import { GoogleIcon } from "./google-icon"
 
@@ -75,6 +82,32 @@ export function AccountButton() {
     reset()
   }
 
+  async function onPasskeySignIn() {
+    setError(null)
+    setPending(true)
+    const res = await signIn.passkey()
+    setPending(false)
+    if (res?.error) {
+      setError("Geçiş anahtarıyla giriş yapılamadı.")
+      return
+    }
+    setOpen(false)
+    reset()
+  }
+
+  async function onAddPasskey() {
+    setPending(true)
+    const res = await passkey.addPasskey({})
+    setPending(false)
+    if (res?.error) {
+      toast.error("Geçiş anahtarı eklenemedi.")
+      return
+    }
+    toast.success(
+      "Geçiş anahtarı eklendi. Bir dahaki sefere tek dokunuşla girin."
+    )
+  }
+
   return (
     <>
       <button
@@ -110,6 +143,15 @@ export function AccountButton() {
                 <Button
                   variant="outline"
                   className="h-10"
+                  disabled={pending}
+                  onClick={onAddPasskey}
+                >
+                  <Fingerprint className="size-4" />
+                  Bu cihaza geçiş anahtarı ekle
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-10 text-muted-foreground"
                   onClick={async () => {
                     await signOut()
                     setOpen(false)
@@ -163,29 +205,37 @@ export function AccountButton() {
                       Giriş bağlantısı gönder
                     </Button>
 
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="h-px flex-1 bg-border" /> veya
+                      <span className="h-px flex-1 bg-border" />
+                    </div>
                     {GOOGLE_ENABLED ? (
-                      <>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="h-px flex-1 bg-border" /> veya
-                          <span className="h-px flex-1 bg-border" />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-11"
-                          onClick={() =>
-                            signIn.social({
-                              provider: "google",
-                              // Return to this exact table menu after Google.
-                              callbackURL: window.location.href,
-                            })
-                          }
-                        >
-                          <GoogleIcon className="size-[18px]" />
-                          Google ile devam et
-                        </Button>
-                      </>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11"
+                        onClick={() =>
+                          signIn.social({
+                            provider: "google",
+                            // Return to this exact table menu after Google.
+                            callbackURL: window.location.href,
+                          })
+                        }
+                      >
+                        <GoogleIcon className="size-[18px]" />
+                        Google ile devam et
+                      </Button>
                     ) : null}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11"
+                      disabled={pending}
+                      onClick={onPasskeySignIn}
+                    >
+                      <Fingerprint className="size-4" />
+                      Geçiş anahtarıyla giriş yap
+                    </Button>
                   </form>
                 ) : (
                   <form onSubmit={verify} className="flex flex-col gap-4">

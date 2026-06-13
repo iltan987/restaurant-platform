@@ -11,6 +11,7 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@better-auth/passkey": "catalog:",
     "@repo/api-client": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/query": "workspace:*",

@@ -1,3 +1,4 @@
+import { passkeyClient } from "@better-auth/passkey/client"
 import { emailOTPClient } from "better-auth/client/plugins"
 import { createAuthClient } from "better-auth/react"
 
@@ -14,8 +15,8 @@ if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not set")
 export const authClient = createAuthClient({
   baseURL: new URL(apiUrl).origin,
   basePath: "/api/auth/customer",
-  plugins: [emailOTPClient()],
+  plugins: [emailOTPClient(), passkeyClient()],
   fetchOptions: { credentials: "include" },
 })
 
-export const { signIn, signOut, useSession, emailOtp } = authClient
+export const { signIn, signOut, useSession, emailOtp, passkey } = authClient

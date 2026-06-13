@@ -151,6 +151,12 @@ export const customerAuth = betterAuth({
         await getEmailSender().send({ to: email, ...message })
       },
     }),
+    // Optional passkeys for returning diners (register while signed in).
+    passkey({
+      rpID: passkeyRpId(process.env.CUSTOMER_URL),
+      rpName: "Menü",
+      schema: { passkey: { modelName: "cust_passkey" } },
+    }),
   ],
 })
 
