@@ -9,6 +9,7 @@ import { AreasModule } from "./areas/areas.module"
 import { AuthzModule } from "./auth/authz.module"
 import { CategoriesModule } from "./categories/categories.module"
 import { HttpExceptionFilter } from "./common/http-exception.filter"
+import { env } from "./config/env"
 import { FloorsModule } from "./floors/floors.module"
 import { InvitationsModule } from "./invitations/invitations.module"
 import { MembersModule } from "./members/members.module"
@@ -22,15 +23,16 @@ import { HealthController } from "./health.controller"
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // `validate` runs the env schema at boot — fail fast with a readable error.
+    ConfigModule.forRoot({ isGlobal: true, validate: () => env }),
     // Structured logging. Verbosity via LOG_LEVEL (default "info"; "debug" for
     // verbose local). Pretty single-line output in dev; raw JSON in prod (Render
     // captures stdout). Each request gets an auto log line with a request id.
     LoggerModule.forRoot({
       pinoHttp: {
-        level: process.env.LOG_LEVEL ?? "info",
+        level: env.LOG_LEVEL,
         autoLogging: true,
-        ...(process.env.NODE_ENV !== "production"
+        ...(env.NODE_ENV !== "production"
           ? {
               transport: {
                 target: "pino-pretty",

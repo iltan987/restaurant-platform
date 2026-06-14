@@ -5,6 +5,7 @@ import { emailOTP } from "better-auth/plugins"
 
 import { prisma } from "@repo/db"
 
+import { env } from "../config/env"
 import {
   getEmailSender,
   renderPasswordlessEmail,
@@ -40,8 +41,8 @@ export function sharedOptions(prefix: string): BetterAuthOptions {
     // Read by Better Auth from BETTER_AUTH_SECRET/BETTER_AUTH_URL too; passed
     // explicitly so the source of truth is obvious. Lenient (may be undefined
     // during schema generation) — Better Auth enforces a real secret in prod.
-    secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL,
+    secret: env.BETTER_AUTH_SECRET,
+    baseURL: env.BETTER_AUTH_URL,
     trustedOrigins,
     // Isolated identity tables per audience.
     user: { modelName: `${prefix}_user` },
@@ -126,7 +127,7 @@ export const dashboardAuth = betterAuth({
   // the request Origin (any tenant subdomain). Table mapped per audience.
   plugins: [
     passkey({
-      rpID: passkeyRpId(process.env.DASHBOARD_URL),
+      rpID: passkeyRpId(env.DASHBOARD_URL),
       rpName: "Restoran Yönetim Paneli",
       schema: { passkey: { modelName: "dash_passkey" } },
     }),
@@ -153,7 +154,7 @@ export const customerAuth = betterAuth({
   plugins: [
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
-        const base = process.env.CUSTOMER_URL ?? ""
+        const base = env.CUSTOMER_URL ?? ""
         const link = base
           ? `${base}/giris?email=${encodeURIComponent(email)}&otp=${otp}`
           : undefined
@@ -163,7 +164,7 @@ export const customerAuth = betterAuth({
     }),
     // Optional passkeys for returning diners (register while signed in).
     passkey({
-      rpID: passkeyRpId(process.env.CUSTOMER_URL),
+      rpID: passkeyRpId(env.CUSTOMER_URL),
       rpName: "Menü",
       schema: { passkey: { modelName: "cust_passkey" } },
     }),

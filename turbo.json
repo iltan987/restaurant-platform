@@ -19,7 +19,8 @@
     "RESEND_*",
     "S3_*",
     "MEDIA_PUBLIC_BASE_URL",
-    "LOG_LEVEL"
+    "LOG_LEVEL",
+    "SKIP_ENV_VALIDATION"
   ],
   "tasks": {
     "db:generate": {

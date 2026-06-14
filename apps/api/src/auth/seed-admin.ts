@@ -4,6 +4,7 @@ import { betterAuth } from "better-auth"
 
 import { prisma } from "@repo/db"
 
+import { env } from "../config/env"
 import { sharedOptions } from "./instances"
 
 /**
@@ -19,8 +20,8 @@ import { sharedOptions } from "./instances"
  *   already present, `"skipped"` when bootstrap env vars are absent.
  */
 export async function seedAdmin(): Promise<"created" | "exists" | "skipped"> {
-  const email = process.env.ADMIN_BOOTSTRAP_EMAIL
-  const password = process.env.ADMIN_BOOTSTRAP_PASSWORD
+  const email = env.ADMIN_BOOTSTRAP_EMAIL
+  const password = env.ADMIN_BOOTSTRAP_PASSWORD
   if (!email || !password) return "skipped"
 
   const normalizedEmail = email.trim().toLowerCase()
@@ -50,8 +51,8 @@ export async function seedAdmin(): Promise<"created" | "exists" | "skipped"> {
 async function main() {
   const result = await seedAdmin()
   const messages = {
-    created: `Admin created for ${process.env.ADMIN_BOOTSTRAP_EMAIL}.`,
-    exists: `Admin already exists for ${process.env.ADMIN_BOOTSTRAP_EMAIL} — no action.`,
+    created: `Admin created for ${env.ADMIN_BOOTSTRAP_EMAIL}.`,
+    exists: `Admin already exists for ${env.ADMIN_BOOTSTRAP_EMAIL} — no action.`,
     skipped:
       "ADMIN_BOOTSTRAP_EMAIL / ADMIN_BOOTSTRAP_PASSWORD not set — nothing to seed.",
   }

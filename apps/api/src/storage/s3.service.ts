@@ -6,7 +6,8 @@ import {
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { Injectable } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
+
+import { env } from "../config/env"
 
 export interface HeadResult {
   contentLength: number
@@ -22,16 +23,17 @@ export interface HeadResult {
 export class S3Service {
   private _client?: S3Client
 
-  constructor(private readonly config: ConfigService) {}
-
   private get client(): S3Client {
     if (!this._client) {
       this._client = new S3Client({
-        endpoint: this.config.getOrThrow("S3_ENDPOINT"),
-        region: this.config.getOrThrow("S3_REGION"),
+        endpoint: required("S3_ENDPOINT", env.S3_ENDPOINT),
+        region: required("S3_REGION", env.S3_REGION),
         credentials: {
-          accessKeyId: this.config.getOrThrow("S3_ACCESS_KEY_ID"),
-          secretAccessKey: this.config.getOrThrow("S3_SECRET_ACCESS_KEY"),
+          accessKeyId: required("S3_ACCESS_KEY_ID", env.S3_ACCESS_KEY_ID),
+          secretAccessKey: required(
+            "S3_SECRET_ACCESS_KEY",
+            env.S3_SECRET_ACCESS_KEY
+          ),
         },
         forcePathStyle: true,
       })
@@ -40,7 +42,7 @@ export class S3Service {
   }
 
   private get bucket(): string {
-    return this.config.getOrThrow("S3_BUCKET")
+    return required("S3_BUCKET", env.S3_BUCKET)
   }
 
   /** A presigned PUT URL; content-type is signed so the browser must honor it. */
@@ -84,8 +86,15 @@ export class S3Service {
 
   /** Public URL an object is served from (MinIO bucket dev / R2 domain prod). */
   publicUrl(key: string): string {
-    return `${this.config.getOrThrow<string>("MEDIA_PUBLIC_BASE_URL")}/${key}`
+    return `${required("MEDIA_PUBLIC_BASE_URL", env.MEDIA_PUBLIC_BASE_URL)}/${key}`
   }
+}
+
+/** Storage vars are optional in the schema (prod-required) so the app boots
+ * without media configured; this throws only when media is actually exercised. */
+function required(name: string, value: string | undefined): string {
+  if (!value) throw new Error(`${name} is not set (required for media storage)`)
+  return value
 }
 
 function isNotFound(err: unknown): boolean {

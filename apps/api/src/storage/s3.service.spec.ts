@@ -12,30 +12,33 @@ jest.mock("@aws-sdk/s3-request-presigner", () => ({
 }))
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
-import { ConfigService } from "@nestjs/config"
 
 import { S3Service } from "./s3.service"
 
 const getSignedUrlMock = getSignedUrl as jest.Mock
 
-const config = {
-  getOrThrow: (key: string) =>
-    ({
-      S3_ENDPOINT: "http://localhost:9000",
-      S3_REGION: "us-east-1",
-      S3_BUCKET: "menu-media",
-      S3_ACCESS_KEY_ID: "x",
-      S3_SECRET_ACCESS_KEY: "y",
-      MEDIA_PUBLIC_BASE_URL: "http://localhost:9000/menu-media",
-    })[key],
-} as unknown as ConfigService
+// S3Service reads the validated `env` (a live `process.env` view under test).
+const S3_ENV = {
+  S3_ENDPOINT: "http://localhost:9000",
+  S3_REGION: "us-east-1",
+  S3_BUCKET: "menu-media",
+  S3_ACCESS_KEY_ID: "x",
+  S3_SECRET_ACCESS_KEY: "y",
+  MEDIA_PUBLIC_BASE_URL: "http://localhost:9000/menu-media",
+}
 
 describe("S3Service", () => {
   let service: S3Service
+  const ORIGINAL_ENV = { ...process.env }
+
+  beforeAll(() => Object.assign(process.env, S3_ENV))
+  afterAll(() => {
+    process.env = ORIGINAL_ENV
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
-    service = new S3Service(config)
+    service = new S3Service()
   })
 
   it("presigns a PUT URL", async () => {

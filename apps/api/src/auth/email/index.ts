@@ -1,5 +1,6 @@
 import { Logger } from "@nestjs/common"
 
+import { env } from "../../config/env"
 import { ConsoleEmailSender } from "./console-email-sender"
 import type { EmailSender } from "./email.types"
 import { ResendEmailSender } from "./resend-email-sender"
@@ -23,36 +24,31 @@ let sender: EmailSender | undefined
 export function getEmailSender(): EmailSender {
   if (sender) return sender
 
-  const transport = process.env.EMAIL_TRANSPORT ?? "console"
-
-  if (transport === "resend") {
-    const apiKey = process.env.RESEND_API_KEY
-    const from = process.env.EMAIL_FROM
-    if (!apiKey || !from) {
-      throw new Error(
-        "EMAIL_TRANSPORT=resend requires RESEND_API_KEY and EMAIL_FROM to be set."
-      )
-    }
-    sender = new ResendEmailSender(apiKey, from)
-  } else if (transport === "smtp") {
-    const host = process.env.SMTP_HOST
-    const from = process.env.EMAIL_FROM
-    if (!host || !from) {
-      throw new Error(
-        "EMAIL_TRANSPORT=smtp requires SMTP_HOST and EMAIL_FROM to be set."
-      )
-    }
+  // The env schema's refine already guarantees the dependent vars are present
+  // for the chosen transport at boot; the guards below are backstops (e.g. the
+  // schema-gen CLI runs with SKIP_ENV_VALIDATION) that fall back to console.
+  if (
+    env.EMAIL_TRANSPORT === "resend" &&
+    env.RESEND_API_KEY &&
+    env.EMAIL_FROM
+  ) {
+    sender = new ResendEmailSender(env.RESEND_API_KEY, env.EMAIL_FROM)
+  } else if (
+    env.EMAIL_TRANSPORT === "smtp" &&
+    env.SMTP_HOST &&
+    env.EMAIL_FROM
+  ) {
     sender = new SmtpEmailSender({
-      host,
-      port: Number(process.env.SMTP_PORT ?? 587),
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-      from,
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASS,
+      from: env.EMAIL_FROM,
     })
   } else {
-    if (transport !== "console") {
+    if (env.EMAIL_TRANSPORT && env.EMAIL_TRANSPORT !== "console") {
       new Logger("Email").warn(
-        `Unknown EMAIL_TRANSPORT "${transport}"; falling back to console.`
+        `EMAIL_TRANSPORT="${env.EMAIL_TRANSPORT}" is missing its config; falling back to console.`
       )
     }
     sender = new ConsoleEmailSender()

@@ -7,6 +7,7 @@ import { Logger } from "nestjs-pino"
 import { z } from "zod"
 
 import { mountAuthHandlers } from "./auth/auth.mount"
+import { env } from "./config/env"
 import { AppModule } from "./app.module"
 
 async function bootstrap() {
@@ -40,7 +41,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix("api")
 
-  await app.listen(process.env.PORT ?? 3000, "0.0.0.0")
+  await app.listen(env.PORT, "0.0.0.0")
 }
 
 /**
@@ -68,9 +69,9 @@ function buildCorsOrigins(): RegExp[] {
     origins.push(new RegExp(`^https?:\\/\\/[a-z0-9-]+\\.${escapedHost}$`))
   }
 
-  apex(process.env.ADMIN_URL)
-  apexAndSubdomains(process.env.DASHBOARD_URL)
-  apexAndSubdomains(process.env.CUSTOMER_URL)
+  apex(env.ADMIN_URL)
+  apexAndSubdomains(env.DASHBOARD_URL)
+  apexAndSubdomains(env.CUSTOMER_URL)
 
   return origins
 }

@@ -11,6 +11,7 @@ import { ErrorCode, type RestaurantRole } from "@repo/schemas"
 
 import { getEmailSender, renderInvitationEmail } from "../auth/email"
 import { sharedOptions } from "../auth/instances"
+import { env } from "../config/env"
 import { PrismaService } from "../prisma/prisma.service"
 
 /** Invitation lifetime — bounded so a leaked link eventually dies (FR-006). */
@@ -80,7 +81,7 @@ export class InvitationsService {
       },
     })
 
-    const link = `${process.env.DASHBOARD_URL ?? ""}/davet/${token}`
+    const link = `${env.DASHBOARD_URL ?? ""}/davet/${token}`
     // Fire-and-forget would risk losing the email on crash; await is fine here.
     const message = await renderInvitationEmail({
       restaurantName: restaurant.name,
