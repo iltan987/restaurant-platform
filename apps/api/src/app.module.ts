@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
 import { APP_FILTER } from "@nestjs/core"
+import { LoggerModule } from "nestjs-pino"
 
 import { ActivityModule } from "./activity/activity.module"
 import { AllergensModule } from "./allergens/allergens.module"
@@ -21,6 +22,23 @@ import { HealthController } from "./health.controller"
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    // Structured logging. Verbosity via LOG_LEVEL (default "info"; "debug" for
+    // verbose local). Pretty single-line output in dev; raw JSON in prod (Render
+    // captures stdout). Each request gets an auto log line with a request id.
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.LOG_LEVEL ?? "info",
+        autoLogging: true,
+        ...(process.env.NODE_ENV !== "production"
+          ? {
+              transport: {
+                target: "pino-pretty",
+                options: { singleLine: true },
+              },
+            }
+          : {}),
+      },
+    }),
     PrismaModule,
     ActivityModule,
     RestaurantsModule,

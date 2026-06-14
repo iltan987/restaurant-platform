@@ -136,7 +136,7 @@ export class RestaurantsService {
         })
         return created
       })
-      await this.activity.record({
+      this.activity.record({
         type: "RESTAURANT_CREATED",
         restaurantId: restaurant.id,
         meta: { name: restaurant.name, slug: restaurant.slug },
@@ -201,7 +201,7 @@ export class RestaurantsService {
       where: { id },
       data: { status: input.status },
     })
-    await this.activity.record({
+    this.activity.record({
       type: "STATUS_CHANGED",
       restaurantId: id,
       meta: { to: input.status },
@@ -234,14 +234,14 @@ export class RestaurantsService {
         data,
       })
       if (data.name !== undefined && data.name !== existing.name) {
-        await this.activity.record({
+        this.activity.record({
           type: "RESTAURANT_RENAMED",
           restaurantId: id,
           meta: { from: existing.name, to: data.name },
         })
       }
       if (data.slug !== undefined && data.slug !== existing.slug) {
-        await this.activity.record({
+        this.activity.record({
           type: "SLUG_CHANGED",
           restaurantId: id,
           meta: { from: existing.slug, to: data.slug },
@@ -272,7 +272,7 @@ export class RestaurantsService {
       where: { id },
       data: { plan: input.plan },
     })
-    await this.activity.record({
+    this.activity.record({
       type: "PLAN_CHANGED",
       restaurantId: id,
       meta: { from: existing.plan, to: input.plan },
@@ -287,7 +287,7 @@ export class RestaurantsService {
       where: { id },
       data: { onboardingStatus: input.onboardingStatus },
     })
-    await this.activity.record({
+    this.activity.record({
       type: "ONBOARDING_CHANGED",
       restaurantId: id,
       meta: { to: input.onboardingStatus },

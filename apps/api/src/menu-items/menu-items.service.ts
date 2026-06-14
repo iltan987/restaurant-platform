@@ -88,7 +88,7 @@ export class MenuItemsService {
         ...(tagIds ? { tags: { connect: tagIds.map((id) => ({ id })) } } : {}),
       },
     })
-    await this.activity.record({
+    this.activity.record({
       type: "MENU_ITEM_CREATED",
       restaurantId: item.restaurantId,
       meta: { name: item.name },
@@ -115,7 +115,7 @@ export class MenuItemsService {
   async remove(id: string) {
     const item = await this.getItemOrThrow(id)
     await this.prisma.menuItem.delete({ where: { id } })
-    await this.activity.record({
+    this.activity.record({
       type: "MENU_ITEM_DELETED",
       restaurantId: item.restaurantId,
       meta: { name: item.name },

@@ -47,7 +47,7 @@ export class CategoriesService {
       const category = await this.prisma.category.create({
         data: { restaurantId, name: input.name, position },
       })
-      await this.activity.record({
+      this.activity.record({
         type: "CATEGORY_CREATED",
         restaurantId,
         meta: { name: category.name },

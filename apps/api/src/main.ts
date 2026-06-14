@@ -3,6 +3,7 @@ import "reflect-metadata"
 
 import { NestFactory } from "@nestjs/core"
 import express from "express"
+import { Logger } from "nestjs-pino"
 import { z } from "zod"
 
 import { mountAuthHandlers } from "./auth/auth.mount"
@@ -14,7 +15,14 @@ async function bootstrap() {
 
   // Better Auth needs the raw request body, so Nest's global body parser is
   // disabled and re-enabled below for every route except the auth handlers.
-  const app = await NestFactory.create(AppModule, { bodyParser: false })
+  // `bufferLogs` holds startup logs until the pino logger is installed below.
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+    bufferLogs: true,
+  })
+
+  // Route Nest's own logs through pino (structured, level-controlled).
+  app.useLogger(app.get(Logger))
 
   // Enable CORS first so it is registered ahead of the raw auth handlers and
   // their cross-origin responses (admin/dashboard/customer → api) carry the

@@ -29,8 +29,8 @@ describe("ActivityService", () => {
   })
 
   describe("record", () => {
-    it("writes one row with type, restaurantId and meta", async () => {
-      await service.record({
+    it("writes one row with type, restaurantId and meta", () => {
+      service.record({
         type: "PLAN_CHANGED",
         restaurantId: "r1",
         meta: { from: "FREE", to: "PRO" },
@@ -45,8 +45,8 @@ describe("ActivityService", () => {
       })
     })
 
-    it("defaults restaurantId to null and meta to undefined", async () => {
-      await service.record({ type: "RESTAURANT_CREATED" })
+    it("defaults restaurantId to null and meta to undefined", () => {
+      service.record({ type: "RESTAURANT_CREATED" })
 
       expect(mockActivity.create).toHaveBeenCalledWith({
         data: {
@@ -57,12 +57,14 @@ describe("ActivityService", () => {
       })
     })
 
-    it("is best-effort — a DB failure never propagates to the caller", async () => {
+    it("is fire-and-forget — returns void and a DB failure never throws", async () => {
       mockActivity.create.mockRejectedValue(new Error("db down"))
 
-      await expect(
+      expect(
         service.record({ type: "STATUS_CHANGED", restaurantId: "r1" })
-      ).resolves.toBeUndefined()
+      ).toBeUndefined()
+      // Let the swallowed rejection's .catch microtask settle.
+      await Promise.resolve()
     })
   })
 

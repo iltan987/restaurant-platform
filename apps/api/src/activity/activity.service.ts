@@ -13,25 +13,28 @@ export class ActivityService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Best-effort audit write. Logging must never break the caller's primary
-   * mutation, so a failure here is swallowed (and logged) rather than thrown.
+   * Best-effort audit write — fire-and-forget. The INSERT is intentionally NOT
+   * awaited, so the caller's response never waits on (nor breaks from) the audit
+   * trail; a failure is swallowed and logged rather than thrown. Callers may
+   * still `await` this safely (it resolves immediately). The API runs as a
+   * persistent process (Render), so the write completes after the response.
    */
-  async record(input: {
+  record(input: {
     type: ActivityType
     restaurantId?: string | null
     meta?: Record<string, string>
-  }) {
-    try {
-      await this.prisma.activity.create({
+  }): void {
+    void this.prisma.activity
+      .create({
         data: {
           type: input.type,
           restaurantId: input.restaurantId ?? null,
           meta: input.meta ?? undefined,
         },
       })
-    } catch (err) {
-      this.logger.warn(`Failed to record activity ${input.type}: ${err}`)
-    }
+      .catch((err) => {
+        this.logger.warn(`Failed to record activity ${input.type}: ${err}`)
+      })
   }
 
   /** Global feed, newest first. */
