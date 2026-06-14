@@ -14,7 +14,7 @@ export function SignedInToast() {
   useEffect(() => {
     const url = new URL(window.location.href)
     if (!url.searchParams.has("signedin")) return
-    toast.success("Giriş yapıldı")
+    toast.success("Hoş geldiniz!")
     url.searchParams.delete("signedin")
     window.history.replaceState({}, "", url.pathname + url.search + url.hash)
   }, [])

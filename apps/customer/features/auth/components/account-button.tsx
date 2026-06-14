@@ -87,7 +87,7 @@ export function AccountButton() {
   // the browser to surface any registered passkey in the email field's autofill
   // (no button — useless for first-time diners). New diners see nothing extra.
   usePasskeyAutofill(open && !session && step === "email", () => {
-    toast.success("Giriş yapıldı")
+    toast.success("Hoş geldiniz!")
     setOpen(false)
     reset()
   })
@@ -96,10 +96,12 @@ export function AccountButton() {
     e.preventDefault()
     setError(null)
     setPending(true)
-    const { error: err } = await emailOtp.sendVerificationOtp({
-      email,
-      type: "sign-in",
-    })
+    const { error: err } = await emailOtp.sendVerificationOtp(
+      { email, type: "sign-in" },
+      // Carry this exact table/menu path so the email's one-click link returns
+      // the diner here (the cross-origin Referer is origin-only).
+      { headers: { "x-diner-path": window.location.pathname } }
+    )
     setPending(false)
     if (err) {
       setError("Kod gönderilemedi. Lütfen tekrar deneyin.")
@@ -119,7 +121,7 @@ export function AccountButton() {
       setError("Kod geçersiz veya süresi dolmuş olabilir.")
       return
     }
-    toast.success("Giriş yapıldı")
+    toast.success("Hoş geldiniz!")
     setOpen(false)
     reset()
   }
@@ -294,7 +296,7 @@ export function AccountButton() {
                         {passkeySupported ? (
                           <PasskeySignInButton
                             onSuccess={() => {
-                              toast.success("Giriş yapıldı")
+                              toast.success("Hoş geldiniz!")
                               setOpen(false)
                               reset()
                             }}

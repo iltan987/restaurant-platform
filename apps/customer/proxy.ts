@@ -38,6 +38,12 @@ export function proxy(request: NextRequest) {
   const subdomain = extractSubdomain(request)
 
   if (subdomain) {
+    // `/giris` is a top-level, tenant-agnostic route (the OTP magic link lands
+    // here, then redirects back into the tenant). Serve it as-is instead of
+    // rewriting it into the non-existent `/s/<slug>/giris`.
+    if (pathname === "/giris" || pathname.startsWith("/giris/")) {
+      return NextResponse.next()
+    }
     // Rewrite to the internal tenant route — the browser URL stays as the subdomain
     const url = request.nextUrl.clone()
     url.pathname = `/s/${subdomain}${pathname === "/" ? "" : pathname}`

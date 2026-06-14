@@ -145,6 +145,57 @@ export const dashboardAuth = betterAuth({
  * "magic link"), either of which completes sign-in. Running the magic-link and
  * OTP plugins side by side would each send their own email — the D6 gotcha.
  */
+/**
+ * Build the diner OTP "one-click link" against the **tenant the request came
+ * from** (its `<slug>.<root>` subdomain, where the customer app actually lives),
+ * preserving the in-app path (`x-diner-path`, sent by the client) so it returns
+ * to the exact table. Cross-origin requests strip the path from `Referer`, hence
+ * the explicit header.
+ *
+ * The customer app is **subdomain-only** — the apex (`CUSTOMER_URL`) is not a
+ * routed page (reserved for a future marketing site), so it's used solely to
+ * recognize our own hosts, never as a link base. If the tenant can't be
+ * determined we return undefined and the email goes out **code-only** (never a
+ * dead apex link).
+ */
+function customerMagicLink(
+  ctx: { headers?: Headers } | undefined,
+  email: string,
+  otp: string
+): string | undefined {
+  const rootHost = env.CUSTOMER_URL ? new URL(env.CUSTOMER_URL).host : undefined
+  const origin = ctx?.headers?.get("origin") || undefined
+  if (!rootHost || !origin) return undefined
+
+  let base: string | undefined
+  let next: string | undefined
+  try {
+    const o = new URL(origin)
+    // Trust only our own hosts: the root or one of its `<slug>.<root>` tenants.
+    if (o.host === rootHost || o.host.endsWith(`.${rootHost}`)) {
+      base = `${o.protocol}//${o.host}`
+      const path = ctx?.headers?.get("x-diner-path") || undefined
+      // Keep a same-app relative path (the table); never `/giris` (loop) or "/".
+      if (
+        path &&
+        path.startsWith("/") &&
+        !path.startsWith("//") &&
+        !path.startsWith("/giris") &&
+        path !== "/"
+      ) {
+        next = path
+      }
+    }
+  } catch {
+    /* untrusted/garbage origin → code-only */
+  }
+
+  if (!base) return undefined
+  const params = new URLSearchParams({ email, otp })
+  if (next) params.set("next", next)
+  return `${base}/giris?${params.toString()}`
+}
+
 export const customerAuth = betterAuth({
   ...sharedOptions("cust"),
   basePath: "/api/auth/customer",
@@ -153,11 +204,8 @@ export const customerAuth = betterAuth({
     : {}),
   plugins: [
     emailOTP({
-      sendVerificationOTP: async ({ email, otp }) => {
-        const base = env.CUSTOMER_URL ?? ""
-        const link = base
-          ? `${base}/giris?email=${encodeURIComponent(email)}&otp=${otp}`
-          : undefined
+      sendVerificationOTP: async ({ email, otp }, ctx) => {
+        const link = customerMagicLink(ctx, email, otp)
         const message = await renderPasswordlessEmail({ link, code: otp })
         await getEmailSender().send({ to: email, ...message })
       },

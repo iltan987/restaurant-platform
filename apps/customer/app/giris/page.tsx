@@ -33,6 +33,17 @@ function SignInFlow() {
     ? "Google ile giriş tamamlanamadı. Lütfen tekrar deneyin veya e-posta ile girin."
     : null
 
+  // Where to land after sign-in: the `next` path the magic link carried (the
+  // diner's table), sanitized to a same-app relative path; else the menu root.
+  const nextParam = params.get("next")
+  const signedInTarget = (() => {
+    const safe =
+      nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+        ? nextParam
+        : "/"
+    return `${safe}${safe.includes("?") ? "&" : "?"}signedin=1`
+  })()
+
   const [step, setStep] = useState<Step>(
     linkEmail && linkOtp ? "verifying" : "email"
   )
@@ -60,16 +71,16 @@ function SignInFlow() {
         setStep("code")
         return
       }
-      window.location.assign("/?signedin=1")
+      window.location.assign(signedInTarget)
     })()
-  }, [linkEmail, linkOtp])
+  }, [linkEmail, linkOtp, signedInTarget])
 
   const passkeySupported = useWebauthnSupported()
 
   // Surface a returning diner's passkey in the email field's autofill; a pick
   // signs them in and lands on the menu. Matches the account drawer's behavior.
   usePasskeyAutofill(step === "email", () =>
-    window.location.assign("/?signedin=1")
+    window.location.assign(signedInTarget)
   )
 
   async function sendCode(e?: React.SyntheticEvent) {
@@ -100,7 +111,7 @@ function SignInFlow() {
       setStep("code")
       return
     }
-    window.location.assign("/?signedin=1")
+    window.location.assign(signedInTarget)
   }
 
   return (
@@ -185,7 +196,7 @@ function SignInFlow() {
                 ) : null}
                 {passkeySupported ? (
                   <PasskeySignInButton
-                    onSuccess={() => window.location.assign("/?signedin=1")}
+                    onSuccess={() => window.location.assign(signedInTarget)}
                   />
                 ) : null}
               </>
