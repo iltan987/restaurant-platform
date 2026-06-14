@@ -1,6 +1,6 @@
 "use client"
 
-import { MoonIcon, SearchIcon, SunIcon, SunMoonIcon } from "lucide-react"
+import { MoonIcon, SearchIcon, SunIcon } from "lucide-react"
 
 import { useTheme } from "@repo/ui/components/theme-provider"
 
@@ -76,31 +76,26 @@ export function MenuHeader({
 }
 
 /**
- * Theme control floating over the cover: cycles Auto → Light → Dark and shows
- * the current mode's icon. `theme` is the diner's choice ("system" follows the
- * device); next-themes resolves it in an effect, so it's undefined on the server
- * and first client render (icon = auto), correcting post-hydration — no mismatch.
+ * Light/dark toggle floating over the cover. The icon is driven purely by the
+ * `.dark` class next-themes writes on <html> from its pre-paint blocking script,
+ * so the correct icon shows on the very first paint — no hydration flash (the
+ * old version read `theme`, undefined until hydration, so it flashed sun→moon).
+ * Clicking flips the *resolved* theme; before the diner ever picks, the app
+ * follows the device (defaultTheme="system").
  */
 function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-  const mode = theme === "light" || theme === "dark" ? theme : "system"
-
-  const next =
-    mode === "system" ? "light" : mode === "light" ? "dark" : "system"
-  const label =
-    mode === "light" ? "aydınlık" : mode === "dark" ? "karanlık" : "otomatik"
-  const Icon =
-    mode === "light" ? SunIcon : mode === "dark" ? MoonIcon : SunMoonIcon
+  const { resolvedTheme, setTheme } = useTheme()
 
   return (
     <button
       type="button"
-      onClick={() => setTheme(next)}
-      aria-label={`Tema: ${label} — değiştirmek için dokunun`}
-      title={`Tema: ${label}`}
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      aria-label="Temayı değiştir"
+      title="Temayı değiştir"
       className="absolute top-[9px] right-[11px] z-[3] grid size-9 place-items-center rounded-full border border-white/[0.22] bg-[oklch(0.28_0.03_45/0.34)] text-white/[0.95] shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] dark:border-white/[0.16] dark:bg-white/[0.12]"
     >
-      <Icon className="size-[18px]" />
+      <SunIcon className="size-[18px] dark:hidden" />
+      <MoonIcon className="hidden size-[18px] dark:block" />
     </button>
   )
 }

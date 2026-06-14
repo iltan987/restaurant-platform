@@ -53,7 +53,7 @@ const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
  * so the session cookie rides along on any tenant subdomain without a redirect.
  */
 export function AccountButton() {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const { data: passkeys } = useListPasskeys()
   const [open, setOpen] = useState(false)
 
@@ -164,9 +164,13 @@ export function AccountButton() {
         className="absolute top-[9px] right-[52px] z-[3] grid size-9 place-items-center rounded-full border shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] data-[in=false]:border-white/[0.22] data-[in=false]:bg-[oklch(0.28_0.03_45/0.34)] data-[in=false]:text-white/[0.95] data-[in=true]:border-white/40 data-[in=true]:bg-primary data-[in=true]:text-primary-foreground dark:data-[in=false]:border-white/[0.16] dark:data-[in=false]:bg-white/[0.12]"
         data-in={session ? "true" : "false"}
       >
-        {/* Signed in: show the account initial (a persistent at-a-glance cue);
-            signed out: the generic person icon. */}
-        {session ? (
+        {/* Session is a client-only fetch, unknown on first paint — show a
+            neutral loading dot rather than wrongly asserting the signed-out
+            "person" (which then flashed to the initial for signed-in diners).
+            Resolved: signed in → account initial; signed out → person. */}
+        {isPending ? (
+          <span className="size-2 animate-pulse rounded-full bg-white/70" />
+        ) : session ? (
           <span className="text-[13px] leading-none font-semibold">
             {session.user.email.trim().charAt(0).toLocaleUpperCase("tr") || (
               <User className="size-[18px]" />
