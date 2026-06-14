@@ -4,9 +4,11 @@ import { apiFetch } from "@repo/api-client"
 import { tenantHost } from "@repo/core"
 import { type Membership, membershipSchema } from "@repo/schemas"
 
+import { env } from "@/env"
+
 import { apiBase as API } from "./api-base"
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
+const ROOT_DOMAIN = env.NEXT_PUBLIC_ROOT_DOMAIN
 
 const meSchema = z.object({ memberships: membershipSchema.array() })
 

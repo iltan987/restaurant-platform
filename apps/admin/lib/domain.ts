@@ -1,6 +1,8 @@
 import { tenantHost } from "@repo/core"
 
-const CUSTOMER_URL = process.env.NEXT_PUBLIC_CUSTOMER_URL
+import { env } from "@/env"
+
+const CUSTOMER_URL = env.NEXT_PUBLIC_CUSTOMER_URL
 
 /**
  * Bare host the diner-facing menu is served under (e.g. "localhost:3002"), for
@@ -8,21 +10,14 @@ const CUSTOMER_URL = process.env.NEXT_PUBLIC_CUSTOMER_URL
  * not the tenant dashboard.
  */
 export function rootDomain(): string {
-  return (
-    CUSTOMER_URL?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "localhost"
-  )
+  return CUSTOMER_URL.replace(/^https?:\/\//, "").replace(/\/$/, "")
 }
 
 /** Absolute customer-menu URL for a tenant: `<slug>.<root>`. */
 export function tenantUrl(slug: string): string {
-  if (!CUSTOMER_URL) return "#"
-  try {
-    const url = new URL(CUSTOMER_URL)
-    url.host = tenantHost(url.host, slug)
-    return url.toString().replace(/\/$/, "")
-  } catch {
-    return "#"
-  }
+  const url = new URL(CUSTOMER_URL)
+  url.host = tenantHost(url.host, slug)
+  return url.toString().replace(/\/$/, "")
 }
 
 /**
@@ -31,6 +26,5 @@ export function tenantUrl(slug: string): string {
  * `<slug>.<root>/t/<id>` → `/s/<slug>/t/<id>`.
  */
 export function tableMenuUrl(slug: string, tableId: string): string {
-  const base = tenantUrl(slug)
-  return base === "#" ? "#" : `${base}/t/${tableId}`
+  return `${tenantUrl(slug)}/t/${tableId}`
 }

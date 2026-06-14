@@ -17,9 +17,10 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 import { AuthShell } from "@/components/auth-shell"
 import { GoogleButton } from "@/components/google-button"
 import { PasswordInput } from "@/components/password-input"
+import { env } from "@/env"
 import { signIn } from "@/lib/auth-client"
 
-const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
 // Better Auth redirects a failed OAuth flow to `errorCallbackURL?error=<code>`
 // (instead of its bare built-in error page). Map the codes a dashboard Google

@@ -9,13 +9,13 @@
  *   refreshes time out. Falls back to the public URL when no internal one is set.
  *
  * `API_INTERNAL_URL` has no `NEXT_PUBLIC_` prefix on purpose — it must never be
- * inlined into the client bundle.
+ * inlined into the client bundle. It's only read inside the `typeof window`
+ * branch so the server-only var is never accessed (and t3-env never throws) on
+ * the client.
  */
-const publicUrl = process.env.NEXT_PUBLIC_API_URL
+import { env } from "@/env"
 
 export const apiBase =
   typeof window === "undefined"
-    ? (process.env.API_INTERNAL_URL ?? publicUrl)
-    : publicUrl
-
-if (!apiBase) throw new Error("NEXT_PUBLIC_API_URL is not set")
+    ? (env.API_INTERNAL_URL ?? env.NEXT_PUBLIC_API_URL)
+    : env.NEXT_PUBLIC_API_URL

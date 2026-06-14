@@ -7,10 +7,11 @@ import Link from "next/link"
 import { Button } from "@repo/ui/components/ui/button"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
+import { env } from "@/env"
 import { signOut, useSession } from "@/lib/auth-client"
 import { fetchMemberships, restaurantHref } from "@/lib/me"
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
+const ROOT_DOMAIN = env.NEXT_PUBLIC_ROOT_DOMAIN
 
 const roleLabel: Record<string, string> = {
   OWNER: "Sahip",

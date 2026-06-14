@@ -21,6 +21,7 @@
     "@repo/query": "workspace:*",
     "@repo/schemas": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-query": "catalog:",
     "better-auth": "catalog:",
     "lucide-react": "catalog:",

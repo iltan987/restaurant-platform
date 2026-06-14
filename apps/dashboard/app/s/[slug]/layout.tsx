@@ -4,9 +4,10 @@ import { useEffect } from "react"
 
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
+import { env } from "@/env"
 import { useSession } from "@/lib/auth-client"
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
+const ROOT_DOMAIN = env.NEXT_PUBLIC_ROOT_DOMAIN
 
 /** Apex sign-in URL. The tenant lives on a `<slug>.<root>` subdomain, so we send
  * the user to the apex host to sign in. */

@@ -1,5 +1,7 @@
 import { createAuthClient } from "better-auth/react"
 
+import { env } from "@/env"
+
 /**
  * Browser client for the API's **admin** Better Auth instance.
  *
@@ -8,13 +10,11 @@ import { createAuthClient } from "better-auth/react"
  * the client at the API **origin** to avoid a doubled `/api`. Cookies are
  * included so the `pa.*` session cookie rides along with every request.
  */
-const apiUrl = process.env.NEXT_PUBLIC_API_URL
-if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not set")
 
 // `NEXT_PUBLIC_API_URL` is absolute (dev: http://localhost:3000/api, prod:
 // https://api.<root>/api). The API shares the apps' parent domain, so its
 // session cookie is first-party to every host under it — no proxy needed.
-const baseURL = new URL(apiUrl).origin
+const baseURL = new URL(env.NEXT_PUBLIC_API_URL).origin
 
 export const authClient = createAuthClient({
   baseURL,

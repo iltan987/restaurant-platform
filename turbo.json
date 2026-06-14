@@ -20,7 +20,8 @@
     "S3_*",
     "MEDIA_PUBLIC_BASE_URL",
     "LOG_LEVEL",
-    "SKIP_ENV_VALIDATION"
+    "SKIP_ENV_VALIDATION",
+    "npm_lifecycle_event"
   ],
   "tasks": {
     "db:generate": {

@@ -15,6 +15,7 @@ import { Label } from "@repo/ui/components/ui/label"
 import { toast } from "@repo/ui/components/ui/sonner"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
+import { env } from "@/env"
 import {
   emailOtp,
   passkey,
@@ -25,7 +26,7 @@ import {
 
 import { GoogleButton } from "./google-button"
 
-const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
 /**
  * Optional diner account control, floating over the menu cover. Signed-out: opens

@@ -10,10 +10,11 @@ import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
+import { env } from "@/env"
 import { GoogleButton } from "@/features/auth/components/google-button"
 import { emailOtp, signIn } from "@/lib/auth-client"
 
-const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
 type Step = "email" | "code" | "verifying"
 

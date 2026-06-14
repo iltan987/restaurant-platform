@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? "localhost:3001"
+import { env } from "@/env"
+
+const ROOT_DOMAIN = env.NEXT_PUBLIC_ROOT_DOMAIN
 
 function extractSubdomain(request: NextRequest): string | null {
   const host = request.headers.get("host") ?? ""

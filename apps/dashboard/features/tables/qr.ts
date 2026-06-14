@@ -1,8 +1,8 @@
 import { isLocalHost } from "@repo/core"
 
-const CUSTOMER_ROOT = process.env.NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN
-if (!CUSTOMER_ROOT)
-  throw new Error("NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN is not set")
+import { env } from "@/env"
+
+const CUSTOMER_ROOT = env.NEXT_PUBLIC_CUSTOMER_ROOT_DOMAIN
 
 // Dev hosts aren't served over TLS, so their QR links must use http (localhost,
 // LAN IPv4, nip.io / sslip.io, mDNS .local). A real domain gets https.
