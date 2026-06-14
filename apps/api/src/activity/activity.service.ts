@@ -24,17 +24,23 @@ export class ActivityService {
     restaurantId?: string | null
     meta?: Record<string, string>
   }): void {
-    void this.prisma.activity
-      .create({
-        data: {
-          type: input.type,
-          restaurantId: input.restaurantId ?? null,
-          meta: input.meta ?? undefined,
-        },
-      })
-      .catch((err) => {
-        this.logger.warn(`Failed to record activity ${input.type}: ${err}`)
-      })
+    // Guard BOTH a synchronous throw (try) and an async rejection (.catch) so a
+    // broken/absent activity store can never surface in the caller's response.
+    try {
+      void this.prisma.activity
+        .create({
+          data: {
+            type: input.type,
+            restaurantId: input.restaurantId ?? null,
+            meta: input.meta ?? undefined,
+          },
+        })
+        .catch((err) => {
+          this.logger.warn(`Failed to record activity ${input.type}: ${err}`)
+        })
+    } catch (err) {
+      this.logger.warn(`Failed to record activity ${input.type}: ${err}`)
+    }
   }
 
   /** Global feed, newest first. */
