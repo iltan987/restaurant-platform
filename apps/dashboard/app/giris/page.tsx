@@ -3,10 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { KeyRound, Mail } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { useTheme } from "@repo/ui/components/theme-provider"
 import { Button } from "@repo/ui/components/ui/button"
 import { Checkbox } from "@repo/ui/components/ui/checkbox"
 import { Input } from "@repo/ui/components/ui/input"
@@ -14,12 +15,10 @@ import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { AuthShell } from "@/components/auth-shell"
-import { GoogleButton } from "@/components/google-button"
 import { PasswordInput } from "@/components/password-input"
 import { oneTap, signIn } from "@/lib/auth-client"
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
-const ONE_TAP_ENABLED = process.env.NEXT_PUBLIC_ONE_TAP_ENABLED === "true"
 
 const signInSchema = z.object({
   email: z.email(),
@@ -35,6 +34,8 @@ type SignInValues = z.infer<typeof signInSchema>
 export default function DashboardSignInPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
+  const googleRef = useRef<HTMLDivElement>(null)
+  const { resolvedTheme } = useTheme()
   const {
     register,
     handleSubmit,
@@ -73,14 +74,33 @@ export default function DashboardSignInPage() {
     window.location.assign("/")
   }
 
-  // Google One Tap: a zero-click prompt for owners already signed in to Google.
-  // Native here (no iframe) because /giris is a single, authorizable apex origin.
+  // Google sign-in via GSI **button mode** (not the auto-prompt): renders
+  // Google's own account-aware button into our container. We use button mode
+  // because the auto-prompt card is pinned top-right by FedCM (unmovable,
+  // unstyleable) and would overlap this right-hand form. The button respects
+  // the active theme and shows localized ("Google ile devam et") text. Success
+  // hard-redirects to the apex chooser ("/") — the oneTap default.
   useEffect(() => {
-    if (!ONE_TAP_ENABLED) return
+    if (!GOOGLE_ENABLED || !resolvedTheme) return
+    const container = googleRef.current
+    if (!container) return
+    container.innerHTML = "" // avoid stacking a second button on theme change
     void oneTap({
-      fetchOptions: { onSuccess: () => window.location.assign("/") },
+      button: {
+        container,
+        config: {
+          type: "standard",
+          theme: resolvedTheme === "dark" ? "filled_black" : "outline",
+          size: "large",
+          text: "continue_with",
+          shape: "rectangular",
+          locale: "tr",
+          width: Math.min(container.clientWidth || 320, 400),
+        },
+      },
+      callbackURL: "/",
     })
-  }, [])
+  }, [resolvedTheme])
 
   // Passkey conditional UI: surface a registered passkey in the email field's
   // autofill (no extra button). New owners just see the normal form.
@@ -114,12 +134,8 @@ export default function DashboardSignInPage() {
           fallback below the divider. */}
       <div className="flex flex-col gap-3">
         {GOOGLE_ENABLED ? (
-          <GoogleButton
-            label="Google ile devam et"
-            onClick={() =>
-              signIn.social({ provider: "google", callbackURL: "/" })
-            }
-          />
+          // GSI renders its own button here (see the button-mode effect above).
+          <div ref={googleRef} className="flex min-h-10 justify-center" />
         ) : null}
         <Button
           type="button"
