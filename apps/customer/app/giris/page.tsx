@@ -12,6 +12,10 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { env } from "@/env"
 import { GoogleButton } from "@/features/auth/components/google-button"
+import {
+  PasskeySignInButton,
+  useWebauthnSupported,
+} from "@/features/auth/components/passkey-sign-in-button"
 import { usePasskeyAutofill } from "@/features/auth/use-passkey-autofill"
 import { emailOtp, signIn } from "@/lib/auth-client"
 
@@ -46,9 +50,13 @@ function SignInFlow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const passkeySupported = useWebauthnSupported()
+
   // Surface a returning diner's passkey in the email field's autofill; a pick
   // signs them in and lands on the menu. Matches the account drawer's behavior.
-  usePasskeyAutofill(step === "email", () => window.location.assign("/"))
+  usePasskeyAutofill(step === "email", () =>
+    window.location.assign("/?signedin=1")
+  )
 
   async function sendCode(e?: React.SyntheticEvent) {
     e?.preventDefault()
@@ -78,7 +86,7 @@ function SignInFlow() {
       setStep("code")
       return
     }
-    window.location.assign("/")
+    window.location.assign("/?signedin=1")
   }
 
   return (
@@ -141,24 +149,31 @@ function SignInFlow() {
               Giriş bağlantısı gönder
             </Button>
 
-            {GOOGLE_ENABLED ? (
+            {GOOGLE_ENABLED || passkeySupported ? (
               <>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="h-px flex-1 bg-border" /> veya
                   <span className="h-px flex-1 bg-border" />
                 </div>
-                <GoogleButton
-                  label="Google ile devam et"
-                  onClick={() =>
-                    signIn.social({
-                      provider: "google",
-                      callbackURL: `${window.location.origin}/`,
-                      // Failures return to this page as `?error=` (see above),
-                      // not Better Auth's built-in error page.
-                      errorCallbackURL: `${window.location.origin}/giris`,
-                    })
-                  }
-                />
+                {GOOGLE_ENABLED ? (
+                  <GoogleButton
+                    label="Google ile devam et"
+                    onClick={() =>
+                      signIn.social({
+                        provider: "google",
+                        callbackURL: `${window.location.origin}/?signedin=1`,
+                        // Failures return to this page as `?error=` (see above),
+                        // not Better Auth's built-in error page.
+                        errorCallbackURL: `${window.location.origin}/giris`,
+                      })
+                    }
+                  />
+                ) : null}
+                {passkeySupported ? (
+                  <PasskeySignInButton
+                    onSuccess={() => window.location.assign("/?signedin=1")}
+                  />
+                ) : null}
               </>
             ) : null}
           </form>

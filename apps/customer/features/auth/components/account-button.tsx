@@ -37,6 +37,10 @@ import { passkeyAddErrorMessage } from "../passkey-errors"
 import { markPasskeyOnboarded } from "../passkey-onboarded"
 import { usePasskeyAutofill } from "../use-passkey-autofill"
 import { GoogleButton } from "./google-button"
+import {
+  PasskeySignInButton,
+  useWebauthnSupported,
+} from "./passkey-sign-in-button"
 
 const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
@@ -59,6 +63,7 @@ export function AccountButton() {
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const passkeySupported = useWebauthnSupported()
 
   function reset() {
     setStep("email")
@@ -82,6 +87,7 @@ export function AccountButton() {
   // the browser to surface any registered passkey in the email field's autofill
   // (no button — useless for first-time diners). New diners see nothing extra.
   usePasskeyAutofill(open && !session && step === "email", () => {
+    toast.success("Giriş yapıldı")
     setOpen(false)
     reset()
   })
@@ -113,6 +119,7 @@ export function AccountButton() {
       setError("Kod geçersiz veya süresi dolmuş olabilir.")
       return
     }
+    toast.success("Giriş yapıldı")
     setOpen(false)
     reset()
   }
@@ -152,9 +159,20 @@ export function AccountButton() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={session ? "Hesabınız" : "Giriş yap"}
-        className="absolute top-[9px] right-[52px] z-[3] grid size-9 place-items-center rounded-full border border-white/[0.22] bg-[oklch(0.28_0.03_45/0.34)] text-white/[0.95] shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] dark:border-white/[0.16] dark:bg-white/[0.12]"
+        className="absolute top-[9px] right-[52px] z-[3] grid size-9 place-items-center rounded-full border shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] data-[in=false]:border-white/[0.22] data-[in=false]:bg-[oklch(0.28_0.03_45/0.34)] data-[in=false]:text-white/[0.95] data-[in=true]:border-white/40 data-[in=true]:bg-primary data-[in=true]:text-primary-foreground dark:data-[in=false]:border-white/[0.16] dark:data-[in=false]:bg-white/[0.12]"
+        data-in={session ? "true" : "false"}
       >
-        <User className="size-[18px]" />
+        {/* Signed in: show the account initial (a persistent at-a-glance cue);
+            signed out: the generic person icon. */}
+        {session ? (
+          <span className="text-[13px] leading-none font-semibold">
+            {session.user.email.trim().charAt(0).toLocaleUpperCase("tr") || (
+              <User className="size-[18px]" />
+            )}
+          </span>
+        ) : (
+          <User className="size-[18px]" />
+        )}
       </button>
 
       <Drawer
@@ -253,21 +271,35 @@ export function AccountButton() {
 
                 {step === "email" ? (
                   <div className="flex flex-col gap-4">
-                    {GOOGLE_ENABLED ? (
+                    {GOOGLE_ENABLED || passkeySupported ? (
                       <>
-                        <GoogleButton
-                          label="Google ile devam et"
-                          onClick={() =>
-                            signIn.social({
-                              provider: "google",
-                              // Return to this exact table menu after Google;
-                              // failures come back as `?error=` (toasted above)
-                              // instead of Better Auth's built-in error page.
-                              callbackURL: window.location.href,
-                              errorCallbackURL: window.location.href,
-                            })
-                          }
-                        />
+                        {GOOGLE_ENABLED ? (
+                          <GoogleButton
+                            label="Google ile devam et"
+                            onClick={() => {
+                              // Return to this exact table menu after Google
+                              // (with a success flag for the toast); failures
+                              // come back as `?error=` (toasted above) instead of
+                              // Better Auth's built-in error page.
+                              const back = new URL(window.location.href)
+                              back.searchParams.set("signedin", "1")
+                              signIn.social({
+                                provider: "google",
+                                callbackURL: back.toString(),
+                                errorCallbackURL: window.location.href,
+                              })
+                            }}
+                          />
+                        ) : null}
+                        {passkeySupported ? (
+                          <PasskeySignInButton
+                            onSuccess={() => {
+                              toast.success("Giriş yapıldı")
+                              setOpen(false)
+                              reset()
+                            }}
+                          />
+                        ) : null}
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span className="h-px flex-1 bg-border" /> veya
                           <span className="h-px flex-1 bg-border" />
