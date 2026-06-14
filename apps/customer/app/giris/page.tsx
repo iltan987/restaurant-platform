@@ -41,14 +41,28 @@ function SignInFlow() {
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
-  // Auto-verify when arriving from the email's one-click link (?email&otp).
+  // Auto-verify once when arriving from the email's one-click link (?email&otp).
+  // The sign-in is inlined (rather than via `verify`) so the effect's only deps
+  // are the params, and every setState runs after the await — the canonical
+  // fetch-on-mount shape. The `tried` ref guards against re-runs.
   const tried = useRef(false)
   useEffect(() => {
-    if (tried.current) return
+    if (tried.current || !linkEmail || !linkOtp) return
     tried.current = true
-    if (linkEmail && linkOtp) void verify(linkEmail, linkOtp)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    void (async () => {
+      const { error: err } = await signIn.emailOtp({
+        email: linkEmail,
+        otp: linkOtp,
+      })
+      if (err) {
+        setError("Kod geçersiz veya süresinin dolmuş olabilir.")
+        setEmail(linkEmail)
+        setStep("code")
+        return
+      }
+      window.location.assign("/?signedin=1")
+    })()
+  }, [linkEmail, linkOtp])
 
   const passkeySupported = useWebauthnSupported()
 

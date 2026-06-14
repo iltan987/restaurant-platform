@@ -10,6 +10,7 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react"
+import Image from "next/image"
 import { useRef, useState } from "react"
 
 import {
@@ -75,13 +76,20 @@ function Gallery({ item }: { item: MenuTreeItem }) {
       >
         {media.map((m) =>
           m.type === "PHOTO" ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // `Image fill` is absolutely positioned, so it can't be a flex slide
+            // itself — wrap it in the snap slide and let it fill that.
+            <div
               key={m.id}
-              src={m.url}
-              alt=""
-              className="size-full shrink-0 basis-full snap-center snap-always object-cover dark:brightness-[0.82] dark:saturate-[0.9]"
-            />
+              className="relative shrink-0 basis-full snap-center snap-always"
+            >
+              <Image
+                src={m.url}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover dark:brightness-[0.82] dark:saturate-[0.9]"
+              />
+            </div>
           ) : (
             <video
               key={m.id}

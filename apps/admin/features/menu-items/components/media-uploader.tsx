@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { FilmIcon, ImagePlusIcon, StarIcon, Trash2Icon } from "lucide-react"
+import Image from "next/image"
 import { useRef } from "react"
 
 import { MEDIA_LIMITS } from "@repo/core"
@@ -57,8 +58,13 @@ export function MediaUploader({
             className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
           >
             {m.type === "PHOTO" ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={m.url} alt="" className="size-full object-cover" />
+              <Image
+                src={m.url}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 25vw, 160px"
+                className="object-cover"
+              />
             ) : (
               <div className="grid size-full place-items-center text-muted-foreground">
                 <FilmIcon className="size-6" />

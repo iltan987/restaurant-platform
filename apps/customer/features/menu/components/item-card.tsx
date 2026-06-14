@@ -8,6 +8,7 @@ import {
   UtensilsCrossedIcon,
   XIcon,
 } from "lucide-react"
+import Image from "next/image"
 import { type ReactNode } from "react"
 
 import { type MenuTreeItem } from "@repo/schemas"
@@ -75,12 +76,13 @@ export function Thumbnail({
       {cover ? (
         <>
           {cover.type === "PHOTO" ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={cover.url}
               alt=""
+              fill
+              sizes="92px"
               className={cn(
-                "size-full object-cover dark:brightness-[0.82] dark:saturate-[0.9]",
+                "object-cover dark:brightness-[0.82] dark:saturate-[0.9]",
                 dimmed && "brightness-[1.02] grayscale-[0.85]"
               )}
             />
