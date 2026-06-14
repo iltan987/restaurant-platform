@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowLeft, Check, Fingerprint, LogOut, Mail, User } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@repo/ui/components/ui/button"
 import {
@@ -29,10 +29,11 @@ const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
 /**
  * Optional diner account control, floating over the menu cover. Signed-out: opens
- * a bottom-sheet to sign in with a one-time email code (the same code is also in
- * a one-click link). Signed-in: shows the account + sign-out. Never blocks menu
- * browsing. Sign-in is a browser→API XHR, so the session cookie rides along on
- * any tenant subdomain without a redirect.
+ * a bottom-sheet to continue with Google or a one-time email code (the same code
+ * is also in a one-click link); a previously-registered passkey is offered
+ * inline via the email field's autofill (conditional UI). Signed-in: shows the
+ * account + sign-out. Never blocks menu browsing. Sign-in is a browser→API XHR,
+ * so the session cookie rides along on any tenant subdomain without a redirect.
  */
 export function AccountButton() {
   const { data: session } = useSession()
@@ -50,6 +51,27 @@ export function AccountButton() {
     setError(null)
     setPending(false)
   }
+
+  // Passkey conditional UI: while the sign-in sheet is open and signed-out, ask
+  // the browser to surface any registered passkey in the email field's autofill
+  // (no button — useless for first-time diners). New diners see nothing extra.
+  useEffect(() => {
+    if (!open || session || step !== "email") return
+    if (typeof PublicKeyCredential === "undefined") return
+    if (!PublicKeyCredential.isConditionalMediationAvailable) return
+    let cancelled = false
+    void PublicKeyCredential.isConditionalMediationAvailable().then((ok) => {
+      if (!ok || cancelled) return
+      void signIn.passkey({ autoFill: true }).then((res) => {
+        if (cancelled || res?.error) return
+        setOpen(false)
+        reset()
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [open, session, step])
 
   async function sendCode(e: React.SyntheticEvent) {
     e.preventDefault()
@@ -76,19 +98,6 @@ export function AccountButton() {
     setPending(false)
     if (err) {
       setError("Kod geçersiz veya süresi dolmuş olabilir.")
-      return
-    }
-    setOpen(false)
-    reset()
-  }
-
-  async function onPasskeySignIn() {
-    setError(null)
-    setPending(true)
-    const res = await signIn.passkey()
-    setPending(false)
-    if (res?.error) {
-      setError("Geçiş anahtarıyla giriş yapılamadı.")
       return
     }
     setOpen(false)
@@ -173,65 +182,60 @@ export function AccountButton() {
                 </div>
 
                 {step === "email" ? (
-                  <form onSubmit={sendCode} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="acc-email">E-posta</Label>
-                      <div className="relative">
-                        <Mail className="absolute inset-y-0 left-2.5 my-auto size-4 text-muted-foreground" />
-                        <Input
-                          id="acc-email"
-                          type="email"
-                          inputMode="email"
-                          autoComplete="email"
-                          required
-                          placeholder="siz@ornek.com"
-                          className="h-11 pl-9"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    {error ? (
-                      <p className="text-sm text-destructive" role="alert">
-                        {error}
-                      </p>
-                    ) : null}
-                    <Button
-                      type="submit"
-                      disabled={pending || !email}
-                      className="h-11"
-                    >
-                      {pending ? <Spinner className="size-4" /> : null}
-                      Giriş bağlantısı gönder
-                    </Button>
-
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="h-px flex-1 bg-border" /> veya
-                      <span className="h-px flex-1 bg-border" />
-                    </div>
+                  <div className="flex flex-col gap-4">
                     {GOOGLE_ENABLED ? (
-                      <GoogleButton
-                        label="Google ile devam et"
-                        onClick={() =>
-                          signIn.social({
-                            provider: "google",
-                            // Return to this exact table menu after Google.
-                            callbackURL: window.location.href,
-                          })
-                        }
-                      />
+                      <>
+                        <GoogleButton
+                          label="Google ile devam et"
+                          onClick={() =>
+                            signIn.social({
+                              provider: "google",
+                              // Return to this exact table menu after Google.
+                              callbackURL: window.location.href,
+                            })
+                          }
+                        />
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="h-px flex-1 bg-border" /> veya
+                          <span className="h-px flex-1 bg-border" />
+                        </div>
+                      </>
                     ) : null}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-11"
-                      disabled={pending}
-                      onClick={onPasskeySignIn}
-                    >
-                      <Fingerprint className="size-4" />
-                      Geçiş anahtarıyla giriş yap
-                    </Button>
-                  </form>
+                    <form onSubmit={sendCode} className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="acc-email">E-posta</Label>
+                        <div className="relative">
+                          <Mail className="absolute inset-y-0 left-2.5 my-auto size-4 text-muted-foreground" />
+                          <Input
+                            id="acc-email"
+                            type="email"
+                            inputMode="email"
+                            // `webauthn` (last) opts the field into passkey
+                            // conditional UI; see the effect above.
+                            autoComplete="email webauthn"
+                            required
+                            placeholder="siz@ornek.com"
+                            className="h-11 pl-9"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      {error ? (
+                        <p className="text-sm text-destructive" role="alert">
+                          {error}
+                        </p>
+                      ) : null}
+                      <Button
+                        type="submit"
+                        disabled={pending || !email}
+                        className="h-11"
+                      >
+                        {pending ? <Spinner className="size-4" /> : null}
+                        Giriş bağlantısı gönder
+                      </Button>
+                    </form>
+                  </div>
                 ) : (
                   <form onSubmit={verify} className="flex flex-col gap-4">
                     <p className="text-sm text-muted-foreground">
