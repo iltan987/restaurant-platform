@@ -4,6 +4,9 @@ node_modules/
 # Turborepo
 .turbo/
 
+# Neon CLI/skill local init marker
+.neon
+
 # Environment variables
 .env
 .env*.local
