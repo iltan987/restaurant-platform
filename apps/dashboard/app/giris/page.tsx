@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { KeyRound, Mail } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -14,8 +14,12 @@ import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { AuthShell } from "@/components/auth-shell"
+import { GoogleButton } from "@/components/google-button"
 import { PasswordInput } from "@/components/password-input"
-import { signIn } from "@/lib/auth-client"
+import { oneTap, signIn } from "@/lib/auth-client"
+
+const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+const ONE_TAP_ENABLED = process.env.NEXT_PUBLIC_ONE_TAP_ENABLED === "true"
 
 const signInSchema = z.object({
   email: z.email(),
@@ -69,6 +73,32 @@ export default function DashboardSignInPage() {
     window.location.assign("/")
   }
 
+  // Google One Tap: a zero-click prompt for owners already signed in to Google.
+  // Native here (no iframe) because /giris is a single, authorizable apex origin.
+  useEffect(() => {
+    if (!ONE_TAP_ENABLED) return
+    void oneTap({
+      fetchOptions: { onSuccess: () => window.location.assign("/") },
+    })
+  }, [])
+
+  // Passkey conditional UI: surface a registered passkey in the email field's
+  // autofill (no extra button). New owners just see the normal form.
+  useEffect(() => {
+    if (typeof PublicKeyCredential === "undefined") return
+    if (!PublicKeyCredential.isConditionalMediationAvailable) return
+    let cancelled = false
+    void PublicKeyCredential.isConditionalMediationAvailable().then((ok) => {
+      if (!ok || cancelled) return
+      void signIn.passkey({ autoFill: true }).then((res) => {
+        if (!cancelled && !res?.error) window.location.assign("/")
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <AuthShell>
       <div className="mb-7">
@@ -78,6 +108,33 @@ export default function DashboardSignInPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Restoran yönetim panelinize giriş yapın.
         </p>
+      </div>
+
+      {/* Passwordless options first — Google + passkey lead, password is the
+          fallback below the divider. */}
+      <div className="flex flex-col gap-3">
+        {GOOGLE_ENABLED ? (
+          <GoogleButton
+            label="Google ile devam et"
+            onClick={() =>
+              signIn.social({ provider: "google", callbackURL: "/" })
+            }
+          />
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          className="h-9 w-full"
+          onClick={onPasskey}
+        >
+          <KeyRound className="size-4" />
+          Geçiş anahtarıyla giriş yap
+        </Button>
+      </div>
+
+      <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" /> veya
+        <span className="h-px flex-1 bg-border" />
       </div>
 
       <form
@@ -92,8 +149,8 @@ export default function DashboardSignInPage() {
             <Input
               id="email"
               type="email"
-              autoComplete="email"
-              autoFocus
+              // `webauthn` (last) opts the field into passkey conditional UI.
+              autoComplete="email webauthn"
               placeholder="ad@restoraniniz.com"
               className="pl-9"
               aria-invalid={!!errors.email}
@@ -153,20 +210,6 @@ export default function DashboardSignInPage() {
           )}
         </Button>
       </form>
-
-      <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="h-px flex-1 bg-border" /> veya
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="h-9 w-full"
-        onClick={onPasskey}
-      >
-        <KeyRound className="size-4" />
-        Geçiş anahtarıyla giriş yap
-      </Button>
 
       <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
         Ekibe davet edildiyseniz e-postanızdaki bağlantıyı kullanın.
