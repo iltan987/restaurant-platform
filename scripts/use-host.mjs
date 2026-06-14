@@ -167,7 +167,10 @@ async function main() {
     }
   }
   console.log(`\nHost set to ${label} (${touched} file(s) changed).`)
-  console.log("Restart the dev server for changes to take effect.")
+  console.log(
+    "Restart ALL dev servers — the NestJS API reads .env only at boot, so a\n" +
+      "stale process keeps the old host and breaks Google OAuth (state_mismatch)."
+  )
 }
 
 main().catch((err) => {
