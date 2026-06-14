@@ -23,7 +23,7 @@ import {
   useSession,
 } from "@/lib/auth-client"
 
-import { GoogleIcon } from "./google-icon"
+import { GoogleButton } from "./google-button"
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
@@ -210,10 +210,8 @@ export function AccountButton() {
                       <span className="h-px flex-1 bg-border" />
                     </div>
                     {GOOGLE_ENABLED ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-11"
+                      <GoogleButton
+                        label="Google ile devam et"
                         onClick={() =>
                           signIn.social({
                             provider: "google",
@@ -221,10 +219,7 @@ export function AccountButton() {
                             callbackURL: window.location.href,
                           })
                         }
-                      >
-                        <GoogleIcon className="size-[18px]" />
-                        Google ile devam et
-                      </Button>
+                      />
                     ) : null}
                     <Button
                       type="button"

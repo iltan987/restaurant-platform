@@ -10,7 +10,7 @@ import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
-import { GoogleIcon } from "@/features/auth/components/google-icon"
+import { GoogleButton } from "@/features/auth/components/google-button"
 import { emailOtp, signIn } from "@/lib/auth-client"
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
@@ -125,20 +125,15 @@ function SignInFlow() {
                   <span className="h-px flex-1 bg-border" /> veya
                   <span className="h-px flex-1 bg-border" />
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-10"
+                <GoogleButton
+                  label="Google ile devam et"
                   onClick={() =>
                     signIn.social({
                       provider: "google",
                       callbackURL: `${window.location.origin}/`,
                     })
                   }
-                >
-                  <GoogleIcon className="size-[18px]" />
-                  Google ile devam et
-                </Button>
+                />
               </>
             ) : null}
           </form>
