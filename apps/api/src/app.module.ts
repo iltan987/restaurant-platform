@@ -31,7 +31,9 @@ import { HealthController } from "./health.controller"
     LoggerModule.forRoot({
       pinoHttp: {
         level: env.LOG_LEVEL,
-        autoLogging: true,
+        // Skip the platform liveness probe (Render hits /api/health every ~5s)
+        // so it doesn't drown the request log.
+        autoLogging: { ignore: (req) => req.url === "/api/health" },
         ...(env.NODE_ENV !== "production"
           ? {
               transport: {
