@@ -52,6 +52,17 @@ export function AccountButton() {
     setPending(false)
   }
 
+  // A failed Google sign-in returns to the menu as `?error=` (see
+  // errorCallbackURL below); the drawer is likely closed by then, so surface it
+  // as a toast and strip the param.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has("error")) return
+    toast.error("Google ile giriş tamamlanamadı. Lütfen tekrar deneyin.")
+    url.searchParams.delete("error")
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash)
+  }, [])
+
   // Passkey conditional UI: while the sign-in sheet is open and signed-out, ask
   // the browser to surface any registered passkey in the email field's autofill
   // (no button — useless for first-time diners). New diners see nothing extra.
@@ -190,8 +201,11 @@ export function AccountButton() {
                           onClick={() =>
                             signIn.social({
                               provider: "google",
-                              // Return to this exact table menu after Google.
+                              // Return to this exact table menu after Google;
+                              // failures come back as `?error=` (toasted above)
+                              // instead of Better Auth's built-in error page.
                               callbackURL: window.location.href,
+                              errorCallbackURL: window.location.href,
                             })
                           }
                         />

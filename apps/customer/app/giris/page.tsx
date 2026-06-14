@@ -21,6 +21,11 @@ function SignInFlow() {
   const params = useSearchParams()
   const linkEmail = params.get("email") ?? ""
   const linkOtp = params.get("otp")
+  // A failed Google sign-in returns here as `?error=<code>` (see
+  // errorCallbackURL below) instead of Better Auth's bare error page.
+  const googleError = params.get("error")
+    ? "Google ile giriş tamamlanamadı. Lütfen tekrar deneyin veya e-posta ile girin."
+    : null
 
   const [step, setStep] = useState<Step>(
     linkEmail && linkOtp ? "verifying" : "email"
@@ -82,6 +87,15 @@ function SignInFlow() {
           </p>
         </div>
 
+        {googleError ? (
+          <p
+            role="alert"
+            className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive"
+          >
+            {googleError}
+          </p>
+        ) : null}
+
         {step === "verifying" ? (
           <div className="flex flex-col items-center gap-3 py-10 text-sm text-muted-foreground">
             <Spinner className="size-6 text-primary" />
@@ -131,6 +145,9 @@ function SignInFlow() {
                     signIn.social({
                       provider: "google",
                       callbackURL: `${window.location.origin}/`,
+                      // Failures return to this page as `?error=` (see above),
+                      // not Better Auth's built-in error page.
+                      errorCallbackURL: `${window.location.origin}/giris`,
                     })
                   }
                 />
