@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { RocketIcon, Undo2Icon } from "lucide-react"
+import { LogOut, RocketIcon, Undo2Icon } from "lucide-react"
 
 import { type Restaurant } from "@repo/schemas"
 import { ThemeToggle } from "@repo/ui/components/theme-toggle"
@@ -18,6 +18,7 @@ import { MembersSection } from "@/features/members/components/members-section"
 import { RestaurantSwitcher } from "@/features/members/components/restaurant-switcher"
 import { TablesStep } from "@/features/tables/components/tables-step"
 import { tablesQueries } from "@/features/tables/queries"
+import { signOut } from "@/lib/auth-client"
 
 import { useSetOnboarding } from "../use-set-onboarding"
 import { useSetStatus } from "../use-set-status"
@@ -80,6 +81,17 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
             />
             <PasskeysDialog />
             <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Çıkış yap"
+              onClick={async () => {
+                await signOut()
+                window.location.reload()
+              }}
+            >
+              <LogOut className="size-4" />
+            </Button>
             {isActive ? (
               <Button
                 variant="outline"
