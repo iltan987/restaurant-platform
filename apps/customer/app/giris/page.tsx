@@ -12,6 +12,7 @@ import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { env } from "@/env"
 import { GoogleButton } from "@/features/auth/components/google-button"
+import { usePasskeyAutofill } from "@/features/auth/use-passkey-autofill"
 import { emailOtp, signIn } from "@/lib/auth-client"
 
 const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
@@ -44,6 +45,10 @@ function SignInFlow() {
     if (linkEmail && linkOtp) void verify(linkEmail, linkOtp)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Surface a returning diner's passkey in the email field's autofill; a pick
+  // signs them in and lands on the menu. Matches the account drawer's behavior.
+  usePasskeyAutofill(step === "email", () => window.location.assign("/"))
 
   async function sendCode(e?: React.SyntheticEvent) {
     e?.preventDefault()
@@ -111,7 +116,9 @@ function SignInFlow() {
                 <Input
                   id="email"
                   type="email"
-                  autoComplete="email"
+                  // `webauthn` (last) opts the field into passkey conditional UI;
+                  // see usePasskeyAutofill above.
+                  autoComplete="email webauthn"
                   inputMode="email"
                   autoFocus
                   required

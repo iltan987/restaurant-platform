@@ -1,6 +1,14 @@
 "use client"
 
-import { ArrowLeft, Check, Fingerprint, LogOut, Mail, User } from "lucide-react"
+import {
+  ArrowLeft,
+  Check,
+  Fingerprint,
+  LogOut,
+  Mail,
+  Trash2,
+  User,
+} from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { Button } from "@repo/ui/components/ui/button"
@@ -21,9 +29,13 @@ import {
   passkey,
   signIn,
   signOut,
+  useListPasskeys,
   useSession,
 } from "@/lib/auth-client"
 
+import { passkeyAddErrorMessage } from "../passkey-errors"
+import { markPasskeyOnboarded } from "../passkey-onboarded"
+import { usePasskeyAutofill } from "../use-passkey-autofill"
 import { GoogleButton } from "./google-button"
 
 const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
@@ -38,6 +50,7 @@ const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
  */
 export function AccountButton() {
   const { data: session } = useSession()
+  const { data: passkeys } = useListPasskeys()
   const [open, setOpen] = useState(false)
 
   const [step, setStep] = useState<"email" | "code">("email")
@@ -45,6 +58,7 @@ export function AccountButton() {
   const [code, setCode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [removingId, setRemovingId] = useState<string | null>(null)
 
   function reset() {
     setStep("email")
@@ -67,23 +81,10 @@ export function AccountButton() {
   // Passkey conditional UI: while the sign-in sheet is open and signed-out, ask
   // the browser to surface any registered passkey in the email field's autofill
   // (no button — useless for first-time diners). New diners see nothing extra.
-  useEffect(() => {
-    if (!open || session || step !== "email") return
-    if (typeof PublicKeyCredential === "undefined") return
-    if (!PublicKeyCredential.isConditionalMediationAvailable) return
-    let cancelled = false
-    void PublicKeyCredential.isConditionalMediationAvailable().then((ok) => {
-      if (!ok || cancelled) return
-      void signIn.passkey({ autoFill: true }).then((res) => {
-        if (cancelled || res?.error) return
-        setOpen(false)
-        reset()
-      })
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [open, session, step])
+  usePasskeyAutofill(open && !session && step === "email", () => {
+    setOpen(false)
+    reset()
+  })
 
   async function sendCode(e: React.SyntheticEvent) {
     e.preventDefault()
@@ -121,12 +122,28 @@ export function AccountButton() {
     const res = await passkey.addPasskey({})
     setPending(false)
     if (res?.error) {
-      toast.error("Geçiş anahtarı eklenemedi.")
+      // Surface the real reason (e.g. already-registered) instead of a blank
+      // failure, and log the exact code for debugging.
+      console.error("addPasskey failed", res.error)
+      const code = "code" in res.error ? res.error.code : undefined
+      toast.error(passkeyAddErrorMessage(code))
       return
     }
+    if (session) markPasskeyOnboarded(session.user.id)
     toast.success(
       "Geçiş anahtarı eklendi. Bir dahaki sefere tek dokunuşla girin."
     )
+  }
+
+  async function onRemovePasskey(id: string) {
+    setRemovingId(id)
+    const res = await passkey.deletePasskey({ id })
+    setRemovingId(null)
+    if (res?.error) {
+      toast.error("Geçiş anahtarı kaldırılamadı.")
+      return
+    }
+    toast.success("Geçiş anahtarı kaldırıldı.")
   }
 
   return (
@@ -161,15 +178,56 @@ export function AccountButton() {
                   <Mail className="size-4 text-muted-foreground" />
                   <span className="truncate">{session.user.email}</span>
                 </div>
-                <Button
-                  variant="outline"
-                  className="h-10"
-                  disabled={pending}
-                  onClick={onAddPasskey}
-                >
-                  <Fingerprint className="size-4" />
-                  Bu cihaza geçiş anahtarı ekle
-                </Button>
+                <div className="flex flex-col gap-2.5 text-left">
+                  {passkeys && passkeys.length > 0 ? (
+                    <>
+                      <p className="px-1 text-xs font-medium text-muted-foreground">
+                        Geçiş anahtarları
+                      </p>
+                      <ul className="flex flex-col gap-2">
+                        {passkeys.map((pk) => (
+                          <li
+                            key={pk.id}
+                            className="flex items-center gap-2.5 rounded-xl border bg-muted/40 px-3.5 py-2.5 text-sm"
+                          >
+                            <Fingerprint className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="flex-1 truncate">
+                              {pk.name || "Geçiş anahtarı"}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label="Geçiş anahtarını kaldır"
+                              disabled={removingId === pk.id}
+                              onClick={() => onRemovePasskey(pk.id)}
+                              className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50"
+                            >
+                              {removingId === pk.id ? (
+                                <Spinner className="size-4" />
+                              ) : (
+                                <Trash2 className="size-4" />
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : null}
+                  <Button
+                    variant="outline"
+                    className="h-10"
+                    disabled={pending}
+                    onClick={onAddPasskey}
+                  >
+                    {pending ? (
+                      <Spinner className="size-4" />
+                    ) : (
+                      <Fingerprint className="size-4" />
+                    )}
+                    {passkeys && passkeys.length > 0
+                      ? "Başka bir geçiş anahtarı ekle"
+                      : "Bu cihaza geçiş anahtarı ekle"}
+                  </Button>
+                </div>
                 <Button
                   variant="ghost"
                   className="h-10 text-muted-foreground"

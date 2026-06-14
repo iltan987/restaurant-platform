@@ -26,3 +26,7 @@ export const authClient = createAuthClient({
 })
 
 export const { signIn, signOut, useSession, emailOtp, passkey } = authClient
+
+// Passkey list hook (from the passkey plugin's `listPasskeys` atom) — drives the
+// "you already have a passkey" UI and gates the post-sign-in onboarding prompt.
+export const useListPasskeys = authClient.useListPasskeys
