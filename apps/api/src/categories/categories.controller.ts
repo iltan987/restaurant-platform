@@ -20,21 +20,25 @@ import {
   updateCategorySchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byCategory, byRestaurantId, bySlug } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { CategoriesService } from "./categories.service"
 
 @Controller()
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class CategoriesController {
   constructor(private readonly categories: CategoriesService) {}
 
   @Get("restaurants/:slug/categories")
+  @RequirePermission("restaurant:view", bySlug())
   findAll(@Param("slug") slug: string) {
     return this.categories.findAllBySlug(slug)
   }
 
   @Post("restaurants/:id/categories")
+  @RequirePermission("menu:manage", byRestaurantId())
   create(
     @Param("id") restaurantId: string,
     @Body(new ZodValidationPipe(createCategorySchema))
@@ -44,6 +48,7 @@ export class CategoriesController {
   }
 
   @Put("restaurants/:id/categories/order")
+  @RequirePermission("menu:manage", byRestaurantId())
   reorder(
     @Param("id") restaurantId: string,
     @Body(new ZodValidationPipe(reorderSchema)) input: ReorderInput
@@ -52,6 +57,7 @@ export class CategoriesController {
   }
 
   @Patch("categories/:id")
+  @RequirePermission("menu:manage", byCategory())
   update(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(updateCategorySchema))
@@ -61,6 +67,7 @@ export class CategoriesController {
   }
 
   @Delete("categories/:id")
+  @RequirePermission("menu:manage", byCategory())
   @HttpCode(204)
   remove(@Param("id") id: string) {
     return this.categories.remove(id)

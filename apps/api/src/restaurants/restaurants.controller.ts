@@ -28,17 +28,21 @@ import {
   updateRestaurantSchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { Public } from "../auth/public.decorator"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byRestaurantId } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { RestaurantsService } from "./restaurants.service"
 
 const RESTAURANTS_PAGE_SIZE = 20
 
-// Fleet management is admin-only. The single tenant lookup (`GET /:slug`) is
-// @Public() — the customer/dashboard storefront resolves a subdomain with it.
+// Dual-audience: fleet management (create/list/delete/plan) is admin-only —
+// those routes carry no @RequirePermission, so the guard admits admins only.
+// An OWNER manages their own restaurant's profile/onboarding/status
+// (restaurant:manage). The tenant lookup (`GET /:slug`) is @Public().
 @Controller("restaurants")
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class RestaurantsController {
   constructor(private readonly restaurants: RestaurantsService) {}
 
@@ -79,8 +83,9 @@ export class RestaurantsController {
     return this.restaurants.findBySlug(slug)
   }
 
-  /** Go live / deactivate */
+  /** Go live / deactivate — owner or admin. */
   @Patch(":id/status")
+  @RequirePermission("restaurant:manage", byRestaurantId())
   setStatus(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(restaurantStatusSchema))
@@ -89,7 +94,7 @@ export class RestaurantsController {
     return this.restaurants.setStatus(id, input)
   }
 
-  /** Change the billing tier */
+  /** Change the billing tier — admin-only (no @RequirePermission). */
   @Patch(":id/plan")
   setPlan(
     @Param("id") id: string,
@@ -98,8 +103,9 @@ export class RestaurantsController {
     return this.restaurants.setPlan(id, input)
   }
 
-  /** Finish / skip onboarding */
+  /** Finish / skip onboarding — owner or admin. */
   @Patch(":id/onboarding")
+  @RequirePermission("restaurant:manage", byRestaurantId())
   setOnboarding(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(onboardingStatusSchema))
@@ -108,8 +114,9 @@ export class RestaurantsController {
     return this.restaurants.setOnboarding(id, input)
   }
 
-  /** Admin edit name/slug */
+  /** Edit name/slug/profile — owner or admin. */
   @Patch(":id")
+  @RequirePermission("restaurant:manage", byRestaurantId())
   update(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(updateRestaurantSchema))
@@ -118,7 +125,7 @@ export class RestaurantsController {
     return this.restaurants.update(id, input)
   }
 
-  /** Admin delete (cascades floors → areas → tables) */
+  /** Admin delete (cascades floors → areas → tables) — admin-only. */
   @Delete(":id")
   @HttpCode(204)
   remove(@Param("id") id: string) {

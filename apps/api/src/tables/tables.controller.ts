@@ -22,20 +22,24 @@ import {
   updateTableSchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
 import { Public } from "../auth/public.decorator"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byArea, bySlug, byTable } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { TablesService } from "./tables.service"
 
 const TABLES_PAGE_SIZE = 200
 
-// Admin-only, except the single-table lookup a diner's QR resolves to (public).
+// Admin or restaurant staff, except the single-table lookup a diner's QR
+// resolves to (public).
 @Controller()
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class TablesController {
   constructor(private readonly tables: TablesService) {}
 
   @Get("restaurants/:slug/tables")
+  @RequirePermission("restaurant:view", bySlug())
   findAll(
     @Param("slug") slug: string,
     @Query(new ZodValidationPipe(paginationQuerySchema)) query: PaginationQuery
@@ -54,6 +58,7 @@ export class TablesController {
   }
 
   @Post("areas/:id/tables")
+  @RequirePermission("tables:manage", byArea())
   create(
     @Param("id") areaId: string,
     @Body(new ZodValidationPipe(createTableSchema)) input: CreateTableInput
@@ -62,6 +67,7 @@ export class TablesController {
   }
 
   @Post("areas/:id/tables/bulk")
+  @RequirePermission("tables:manage", byArea())
   bulkCreate(
     @Param("id") areaId: string,
     @Body(new ZodValidationPipe(createTablesBulkSchema))
@@ -71,6 +77,7 @@ export class TablesController {
   }
 
   @Patch("tables/:id")
+  @RequirePermission("tables:manage", byTable())
   update(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(updateTableSchema)) input: UpdateTableInput
@@ -79,6 +86,7 @@ export class TablesController {
   }
 
   @Delete("tables/:id")
+  @RequirePermission("tables:manage", byTable())
   @HttpCode(204)
   remove(@Param("id") id: string) {
     return this.tables.remove(id)

@@ -13,12 +13,15 @@ import type { Request } from "express"
 import { adminAuth, customerAuth, dashboardAuth } from "./instances"
 import { IS_PUBLIC_KEY } from "./public.decorator"
 
-/** The `{ session, user }` Better Auth resolves for a request, attached by the
- * guard so controllers/handlers can read the authenticated identity. */
-export type RequestAuth = {
+/** The session Better Auth resolves for a request (no audience discriminator). */
+export type ResolvedSession = {
   session: unknown
   user: { id: string; email: string; [key: string]: unknown }
 }
+
+/** What a guard attaches to `req.auth`: the resolved session plus whether the
+ * caller is a platform admin (admins bypass per-restaurant permission checks). */
+export type RequestAuth = ResolvedSession & { isAdmin: boolean }
 
 /** Express request augmented with the resolved auth context (when present). */
 export type AuthenticatedRequest = Request & { auth?: RequestAuth }
@@ -27,7 +30,7 @@ type SessionReader = {
   api: {
     getSession: (args: {
       headers: Headers
-    }) => Promise<RequestAuth | null | undefined>
+    }) => Promise<ResolvedSession | null | undefined>
   }
 }
 
@@ -43,7 +46,7 @@ type SessionReader = {
  */
 export function createAuthGuard(
   instance: SessionReader,
-  options: { optional?: boolean } = {}
+  options: { optional?: boolean; isAdmin?: boolean } = {}
 ): Type<CanActivate> {
   @Injectable()
   class AuthGuard implements CanActivate {
@@ -63,7 +66,7 @@ export function createAuthGuard(
         headers: fromNodeHeaders(req.headers),
       })
 
-      if (result) req.auth = result
+      if (result) req.auth = { ...result, isAdmin: options.isAdmin ?? false }
       if (options.optional) return true
       if (!result) throw new UnauthorizedException("Authentication required")
       return true
@@ -74,7 +77,7 @@ export function createAuthGuard(
 }
 
 /** Guards bound to each audience. Customer is optional (non-gating). */
-export const AdminAuthGuard = createAuthGuard(adminAuth)
+export const AdminAuthGuard = createAuthGuard(adminAuth, { isAdmin: true })
 export const DashboardAuthGuard = createAuthGuard(dashboardAuth)
 export const CustomerAuthGuard = createAuthGuard(customerAuth, {
   optional: true,

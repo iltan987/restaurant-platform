@@ -23,17 +23,20 @@ import {
   updateOptionSchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byMenuItem, byOption, byOptionGroup } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { OptionGroupsService } from "./option-groups.service"
 
 @Controller()
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class OptionGroupsController {
   constructor(private readonly groups: OptionGroupsService) {}
 
   // ── Groups ──
   @Post("menu-items/:id/option-groups")
+  @RequirePermission("menu:manage", byMenuItem())
   createGroup(
     @Param("id") itemId: string,
     @Body(new ZodValidationPipe(createOptionGroupSchema))
@@ -43,6 +46,7 @@ export class OptionGroupsController {
   }
 
   @Put("menu-items/:id/option-groups/order")
+  @RequirePermission("menu:manage", byMenuItem())
   reorderGroups(
     @Param("id") itemId: string,
     @Body(new ZodValidationPipe(reorderSchema)) input: ReorderInput
@@ -51,6 +55,7 @@ export class OptionGroupsController {
   }
 
   @Patch("option-groups/:gid")
+  @RequirePermission("menu:manage", byOptionGroup())
   updateGroup(
     @Param("gid") groupId: string,
     @Body(new ZodValidationPipe(updateOptionGroupSchema))
@@ -60,6 +65,7 @@ export class OptionGroupsController {
   }
 
   @Delete("option-groups/:gid")
+  @RequirePermission("menu:manage", byOptionGroup())
   @HttpCode(204)
   removeGroup(@Param("gid") groupId: string) {
     return this.groups.removeGroup(groupId)
@@ -67,6 +73,7 @@ export class OptionGroupsController {
 
   // ── Options ──
   @Post("option-groups/:gid/options")
+  @RequirePermission("menu:manage", byOptionGroup())
   createOption(
     @Param("gid") groupId: string,
     @Body(new ZodValidationPipe(createOptionSchema)) input: CreateOptionInput
@@ -75,6 +82,7 @@ export class OptionGroupsController {
   }
 
   @Put("option-groups/:gid/options/order")
+  @RequirePermission("menu:manage", byOptionGroup())
   reorderOptions(
     @Param("gid") groupId: string,
     @Body(new ZodValidationPipe(reorderSchema)) input: ReorderInput
@@ -83,6 +91,7 @@ export class OptionGroupsController {
   }
 
   @Patch("options/:oid")
+  @RequirePermission("menu:manage", byOption())
   updateOption(
     @Param("oid") optionId: string,
     @Body(new ZodValidationPipe(updateOptionSchema)) input: UpdateOptionInput
@@ -91,6 +100,7 @@ export class OptionGroupsController {
   }
 
   @Delete("options/:oid")
+  @RequirePermission("menu:manage", byOption())
   @HttpCode(204)
   removeOption(@Param("oid") optionId: string) {
     return this.groups.removeOption(optionId)

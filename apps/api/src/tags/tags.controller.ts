@@ -17,21 +17,25 @@ import {
   updateTagSchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byRestaurantId, byTag } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { TagsService } from "./tags.service"
 
 @Controller()
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class TagsController {
   constructor(private readonly tags: TagsService) {}
 
   @Get("restaurants/:id/tags")
+  @RequirePermission("restaurant:view", byRestaurantId())
   findAll(@Param("id") restaurantId: string) {
     return this.tags.findAllByRestaurant(restaurantId)
   }
 
   @Post("restaurants/:id/tags")
+  @RequirePermission("menu:manage", byRestaurantId())
   create(
     @Param("id") restaurantId: string,
     @Body(new ZodValidationPipe(createTagSchema)) input: CreateTagInput
@@ -40,6 +44,7 @@ export class TagsController {
   }
 
   @Patch("tags/:id")
+  @RequirePermission("menu:manage", byTag())
   update(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(updateTagSchema)) input: UpdateTagInput
@@ -48,6 +53,7 @@ export class TagsController {
   }
 
   @Delete("tags/:id")
+  @RequirePermission("menu:manage", byTag())
   @HttpCode(204)
   remove(@Param("id") id: string) {
     return this.tags.remove(id)

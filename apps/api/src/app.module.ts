@@ -6,6 +6,7 @@ import { LoggerModule } from "nestjs-pino"
 import { ActivityModule } from "./activity/activity.module"
 import { AllergensModule } from "./allergens/allergens.module"
 import { AreasModule } from "./areas/areas.module"
+import { AuthzModule } from "./auth/authz.module"
 import { CategoriesModule } from "./categories/categories.module"
 import { HttpExceptionFilter } from "./common/http-exception.filter"
 import { FloorsModule } from "./floors/floors.module"
@@ -40,6 +41,7 @@ import { HealthController } from "./health.controller"
       },
     }),
     PrismaModule,
+    AuthzModule,
     ActivityModule,
     RestaurantsModule,
     FloorsModule,

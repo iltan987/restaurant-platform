@@ -23,18 +23,21 @@ import {
   updateFloorSchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byFloor, byRestaurantId, bySlug } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { FloorsService } from "./floors.service"
 
 const FLOORS_PAGE_SIZE = 200
 
 @Controller()
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class FloorsController {
   constructor(private readonly floors: FloorsService) {}
 
   @Get("restaurants/:slug/floors")
+  @RequirePermission("restaurant:view", bySlug())
   findAll(
     @Param("slug") slug: string,
     @Query(new ZodValidationPipe(paginationQuerySchema)) query: PaginationQuery
@@ -47,6 +50,7 @@ export class FloorsController {
   }
 
   @Post("restaurants/:id/floors")
+  @RequirePermission("tables:manage", byRestaurantId())
   create(
     @Param("id") restaurantId: string,
     @Body(new ZodValidationPipe(createFloorSchema)) input: CreateFloorInput
@@ -55,6 +59,7 @@ export class FloorsController {
   }
 
   @Patch("floors/:id")
+  @RequirePermission("tables:manage", byFloor())
   update(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(updateFloorSchema)) input: UpdateFloorInput
@@ -63,6 +68,7 @@ export class FloorsController {
   }
 
   @Put("floors/:id/layout")
+  @RequirePermission("tables:manage", byFloor())
   saveLayout(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(floorLayoutSchema)) input: FloorLayoutInput
@@ -71,6 +77,7 @@ export class FloorsController {
   }
 
   @Delete("floors/:id")
+  @RequirePermission("tables:manage", byFloor())
   @HttpCode(204)
   remove(@Param("id") id: string, @Query("cascade") cascade?: string) {
     return this.floors.remove(id, cascade === "true")

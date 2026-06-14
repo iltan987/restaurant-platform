@@ -18,16 +18,19 @@ import {
   requestUploadSchema,
 } from "@repo/schemas"
 
-import { AdminAuthGuard } from "../auth/auth-guard.factory"
+import { RequirePermission } from "../auth/require-permission.decorator"
+import { RestaurantAccessGuard } from "../auth/restaurant-access.guard"
+import { byMedia, byMenuItem } from "../auth/scope-resolvers"
 import { ZodValidationPipe } from "../common/zod-validation.pipe"
 import { MediaService } from "./media.service"
 
 @Controller()
-@UseGuards(AdminAuthGuard)
+@UseGuards(RestaurantAccessGuard)
 export class MediaController {
   constructor(private readonly media: MediaService) {}
 
   @Post("menu-items/:id/media/upload-url")
+  @RequirePermission("menu:manage", byMenuItem())
   requestUpload(
     @Param("id") itemId: string,
     @Body(new ZodValidationPipe(requestUploadSchema)) input: RequestUploadInput
@@ -36,6 +39,7 @@ export class MediaController {
   }
 
   @Post("menu-items/:id/media")
+  @RequirePermission("menu:manage", byMenuItem())
   confirm(
     @Param("id") itemId: string,
     @Body(new ZodValidationPipe(confirmMediaSchema)) input: ConfirmMediaInput
@@ -44,6 +48,7 @@ export class MediaController {
   }
 
   @Put("menu-items/:id/media/order")
+  @RequirePermission("menu:manage", byMenuItem())
   reorder(
     @Param("id") itemId: string,
     @Body(new ZodValidationPipe(reorderSchema)) input: ReorderInput
@@ -52,6 +57,7 @@ export class MediaController {
   }
 
   @Delete("media/:mid")
+  @RequirePermission("menu:manage", byMedia())
   @HttpCode(204)
   remove(@Param("mid") mediaId: string) {
     return this.media.remove(mediaId)
