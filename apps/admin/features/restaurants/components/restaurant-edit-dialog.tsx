@@ -32,12 +32,14 @@ export function RestaurantEditDialog({
   trigger,
   open: controlledOpen,
   onOpenChange,
+  onSlugChange,
 }: {
   restaurant: Restaurant
   /** Omit to drive the dialog via `open` / `onOpenChange` (e.g. from a menu). */
   trigger?: ReactElement
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  onSlugChange?: (newSlug: string) => void
 }) {
   const update = useUpdateRestaurant()
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
@@ -61,13 +63,20 @@ export function RestaurantEditDialog({
   function save() {
     const trimmedName = name.trim()
     if (!trimmedName) return
-    update.mutate({
-      id: restaurant.id,
-      input: {
-        ...(trimmedName !== restaurant.name ? { name: trimmedName } : {}),
-        ...(slugChanged ? { slug: normalized } : {}),
+    update.mutate(
+      {
+        id: restaurant.id,
+        input: {
+          ...(trimmedName !== restaurant.name ? { name: trimmedName } : {}),
+          ...(slugChanged ? { slug: normalized } : {}),
+        },
       },
-    })
+      {
+        onSuccess: (r) => {
+          if (r.slug !== restaurant.slug) onSlugChange?.(r.slug)
+        },
+      }
+    )
     change(false)
   }
 

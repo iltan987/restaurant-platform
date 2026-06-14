@@ -1,6 +1,7 @@
 "use client"
 
 import { ExternalLink, Info, Pencil } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import {
@@ -29,6 +30,7 @@ import { useUpdateRestaurant } from "../../use-update-restaurant"
 import { RestaurantEditDialog } from "../restaurant-edit-dialog"
 
 export function TabProfil({ r }: { r: RestaurantWithCounts }) {
+  const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const update = useUpdateRestaurant()
   const root = rootDomain()
@@ -155,6 +157,7 @@ export function TabProfil({ r }: { r: RestaurantWithCounts }) {
         restaurant={r}
         open={editOpen}
         onOpenChange={setEditOpen}
+        onSlugChange={(newSlug) => router.replace(`/restoranlar/${newSlug}`)}
       />
     </div>
   )

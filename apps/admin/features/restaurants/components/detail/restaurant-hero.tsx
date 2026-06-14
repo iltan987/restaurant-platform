@@ -153,6 +153,7 @@ export function RestaurantHero({ r }: { r: RestaurantWithCounts }) {
         restaurant={r}
         open={editOpen}
         onOpenChange={setEditOpen}
+        onSlugChange={(newSlug) => router.replace(`/restoranlar/${newSlug}`)}
       />
       <ConfirmDialog
         open={deleteOpen}
