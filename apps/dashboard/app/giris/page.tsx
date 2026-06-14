@@ -3,11 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { KeyRound, Mail } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { Suspense, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { useTheme } from "@repo/ui/components/theme-provider"
 import { Button } from "@repo/ui/components/ui/button"
 import { Checkbox } from "@repo/ui/components/ui/checkbox"
 import { Input } from "@repo/ui/components/ui/input"
@@ -15,10 +15,23 @@ import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { AuthShell } from "@/components/auth-shell"
+import { GoogleButton } from "@/components/google-button"
 import { PasswordInput } from "@/components/password-input"
-import { oneTap, signIn } from "@/lib/auth-client"
+import { signIn } from "@/lib/auth-client"
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+
+// Better Auth redirects a failed OAuth flow to `errorCallbackURL?error=<code>`
+// (instead of its bare built-in error page). Map the codes a dashboard Google
+// sign-in can hit to a friendly Turkish message; everything else is generic.
+const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+  signup_disabled:
+    "Bu Google hesabı bir ekip üyesine ait değil. Panel yalnızca davetle açılır — lütfen davet e-postanızdaki bağlantıyı kullanın.",
+  account_not_linked:
+    "Bu e-posta başka bir giriş yöntemiyle kayıtlı. Lütfen e-posta ve parolanızla giriş yapın.",
+}
+const GOOGLE_ERROR_FALLBACK =
+  "Google ile giriş tamamlanamadı. Lütfen tekrar deneyin."
 
 const signInSchema = z.object({
   email: z.email(),
@@ -26,16 +39,17 @@ const signInSchema = z.object({
 })
 type SignInValues = z.infer<typeof signInSchema>
 
-/**
- * Dashboard sign-in for owners/members. On success lands on the apex chooser
- * (`/`), which lists the restaurants the user belongs to. Verification-gated:
- * unverified accounts can't sign in (invited users are verified on acceptance).
- */
-export default function DashboardSignInPage() {
+function SignInForm() {
+  // A failed Google sign-in lands back here as `?error=<code>` (see
+  // errorCallbackURL below); map it to a friendly banner.
+  const params = useSearchParams()
+  const errorCode = params.get("error")
+  const googleError = errorCode
+    ? (GOOGLE_ERROR_MESSAGES[errorCode] ?? GOOGLE_ERROR_FALLBACK)
+    : null
+
   const [formError, setFormError] = useState<string | null>(null)
   const [remember, setRemember] = useState(true)
-  const googleRef = useRef<HTMLDivElement>(null)
-  const { resolvedTheme } = useTheme()
   const {
     register,
     handleSubmit,
@@ -74,34 +88,6 @@ export default function DashboardSignInPage() {
     window.location.assign("/")
   }
 
-  // Google sign-in via GSI **button mode** (not the auto-prompt): renders
-  // Google's own account-aware button into our container. We use button mode
-  // because the auto-prompt card is pinned top-right by FedCM (unmovable,
-  // unstyleable) and would overlap this right-hand form. The button respects
-  // the active theme and shows localized ("Google ile devam et") text. Success
-  // hard-redirects to the apex chooser ("/") — the oneTap default.
-  useEffect(() => {
-    if (!GOOGLE_ENABLED || !resolvedTheme) return
-    const container = googleRef.current
-    if (!container) return
-    container.innerHTML = "" // avoid stacking a second button on theme change
-    void oneTap({
-      button: {
-        container,
-        config: {
-          type: "standard",
-          theme: resolvedTheme === "dark" ? "filled_black" : "outline",
-          size: "large",
-          text: "continue_with",
-          shape: "rectangular",
-          locale: "tr",
-          width: Math.min(container.clientWidth || 320, 400),
-        },
-      },
-      callbackURL: "/",
-    })
-  }, [resolvedTheme])
-
   // Passkey conditional UI: surface a registered passkey in the email field's
   // autofill (no extra button). New owners just see the normal form.
   useEffect(() => {
@@ -120,7 +106,7 @@ export default function DashboardSignInPage() {
   }, [])
 
   return (
-    <AuthShell>
+    <>
       <div className="mb-7">
         <h1 className="text-2xl font-semibold tracking-tight">
           Tekrar hoş geldiniz
@@ -130,12 +116,34 @@ export default function DashboardSignInPage() {
         </p>
       </div>
 
+      {googleError ? (
+        <p
+          role="alert"
+          className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive"
+        >
+          {googleError}
+        </p>
+      ) : null}
+
       {/* Passwordless options first — Google + passkey lead, password is the
           fallback below the divider. */}
       <div className="flex flex-col gap-3">
         {GOOGLE_ENABLED ? (
-          // GSI renders its own button here (see the button-mode effect above).
-          <div ref={googleRef} className="flex min-h-10 justify-center" />
+          <GoogleButton
+            label="Google ile devam et"
+            onClick={() =>
+              signIn.social({
+                provider: "google",
+                // These resolve against the AUTH server origin (the API), not
+                // this app — so pass absolute URLs back to the dashboard (this
+                // origin), both already trusted via the API's DASHBOARD_URL.
+                // errorCallbackURL bounces OAuth failures here as `?error=<code>`
+                // instead of Better Auth's bare built-in error page.
+                callbackURL: `${window.location.origin}/`,
+                errorCallbackURL: `${window.location.origin}/giris`,
+              })
+            }
+          />
         ) : null}
         <Button
           type="button"
@@ -230,6 +238,28 @@ export default function DashboardSignInPage() {
       <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
         Ekibe davet edildiyseniz e-postanızdaki bağlantıyı kullanın.
       </p>
+    </>
+  )
+}
+
+/**
+ * Dashboard sign-in for owners/members. On success lands on the apex chooser
+ * (`/`), which lists the restaurants the user belongs to. Verification-gated:
+ * unverified accounts can't sign in (invited users are verified on acceptance).
+ * Wrapped in Suspense because `useSearchParams` requires it.
+ */
+export default function DashboardSignInPage() {
+  return (
+    <AuthShell>
+      <Suspense
+        fallback={
+          <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
+            <Spinner className="size-4" /> Yükleniyor…
+          </div>
+        }
+      >
+        <SignInForm />
+      </Suspense>
     </AuthShell>
   )
 }

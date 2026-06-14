@@ -1,7 +1,7 @@
 import { passkey } from "@better-auth/passkey"
 import { betterAuth, type BetterAuthOptions } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { emailOTP, oneTap } from "better-auth/plugins"
+import { emailOTP } from "better-auth/plugins"
 
 import { prisma } from "@repo/db"
 
@@ -113,8 +113,6 @@ export const dashboardAuth = betterAuth({
   // Google sign-in for owners/members. `disableSignUp` keeps the invitation-only
   // model intact: a Google login only ever LINKS to an already-invited account
   // (matched by verified email); an unknown email is rejected, never created.
-  // Unlike the customer storefront, the dashboard signs in on a single apex
-  // origin, so Google OAuth and One Tap work natively — no iframe.
   ...(googleCredentials
     ? {
         socialProviders: {
@@ -132,9 +130,6 @@ export const dashboardAuth = betterAuth({
       rpName: "Restoran Yönetim Paneli",
       schema: { passkey: { modelName: "dash_passkey" } },
     }),
-    // Google One Tap on the apex /giris — verifies the GSI ID token. Same
-    // invitation-only guard via `disableSignUp`. Only meaningful with Google.
-    ...(googleCredentials ? [oneTap({ disableSignup: true })] : []),
   ],
 })
 

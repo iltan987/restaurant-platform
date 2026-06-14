@@ -1,5 +1,4 @@
 import { passkeyClient } from "@better-auth/passkey/client"
-import { oneTapClient } from "better-auth/client/plugins"
 import { createAuthClient } from "better-auth/react"
 
 /**
@@ -15,10 +14,6 @@ import { createAuthClient } from "better-auth/react"
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not set")
 
-/** Google client ID for One Tap (safe to expose). The dashboard signs in on a
- * single apex origin, so One Tap renders natively (no iframe). */
-const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""
-
 // `NEXT_PUBLIC_API_URL` is absolute (dev: http://localhost:3000/api, prod:
 // https://api.<root>/api). The API shares the apps' parent domain, so its
 // session cookie is first-party to every `<slug>.<root>` host — no proxy needed.
@@ -27,7 +22,7 @@ const baseURL = new URL(apiUrl).origin
 export const authClient = createAuthClient({
   baseURL,
   basePath: "/api/auth/dashboard",
-  plugins: [passkeyClient(), oneTapClient({ clientId: googleClientId })],
+  plugins: [passkeyClient()],
   fetchOptions: { credentials: "include" },
 })
 
@@ -38,5 +33,4 @@ export const {
   requestPasswordReset,
   resetPassword,
   passkey,
-  oneTap,
 } = authClient
