@@ -55,7 +55,7 @@ const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
  */
 export function AccountButton() {
   const { data: session, isPending } = useSession()
-  const { data: passkeys } = useListPasskeys()
+  const { data: passkeys, refetch: refetchPasskeys } = useListPasskeys()
   const [open, setOpen] = useState(false)
 
   const [step, setStep] = useState<"email" | "code">("email")
@@ -86,6 +86,17 @@ export function AccountButton() {
     url.searchParams.delete("error")
     window.history.replaceState({}, "", url.pathname + url.search + url.hash)
   }, [])
+
+  // Better Auth refetches the passkey list only on mount, on passkey register/
+  // delete, or on sign-out — NOT on an email-OTP/social XHR sign-in, which
+  // updates the session without touching the list. So after a no-reload OTP
+  // sign-in the signed-out (empty) result lingers and an existing passkey isn't
+  // shown until a refresh. Refetch when a session appears. (The list atom is
+  // global, so this also unblocks PasskeyOnboarding, which reads the same query.)
+  const signedInUserId = session?.user.id
+  useEffect(() => {
+    if (signedInUserId) void refetchPasskeys()
+  }, [signedInUserId, refetchPasskeys])
 
   // Passkey conditional UI: while the sign-in sheet is open and signed-out, ask
   // the browser to surface any registered passkey in the email field's autofill
