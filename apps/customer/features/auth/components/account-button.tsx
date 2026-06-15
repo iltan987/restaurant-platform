@@ -120,11 +120,11 @@ export function AccountButton() {
     start()
   }
 
-  async function verify(e: React.SyntheticEvent) {
-    e.preventDefault()
+  async function verify(e?: React.SyntheticEvent, otp = code) {
+    e?.preventDefault()
     setError(null)
     setPending(true)
-    const { error: err } = await signIn.emailOtp({ email, otp: code })
+    const { error: err } = await signIn.emailOtp({ email, otp })
     setPending(false)
     if (err) {
       setError("Kod geçersiz veya süresi dolmuş olabilir.")
@@ -375,9 +375,15 @@ export function AccountButton() {
                         placeholder="123456"
                         className="h-12 text-center text-lg tracking-[0.4em]"
                         value={code}
-                        onChange={(e) =>
-                          setCode(e.target.value.replace(/\D/g, "").slice(0, 8))
-                        }
+                        onChange={(e) => {
+                          const next = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 6)
+                          setCode(next)
+                          // Submit once complete (typed, pasted, or autofilled).
+                          if (next.length === 6 && !pending)
+                            void verify(undefined, next)
+                        }}
                       />
                     </div>
                     {error ? (

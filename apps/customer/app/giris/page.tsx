@@ -236,9 +236,13 @@ function SignInFlow() {
                 placeholder="123456"
                 className="h-11 text-center text-lg tracking-[0.4em]"
                 value={code}
-                onChange={(e) =>
-                  setCode(e.target.value.replace(/\D/g, "").slice(0, 8))
-                }
+                onChange={(e) => {
+                  const next = e.target.value.replace(/\D/g, "").slice(0, 6)
+                  setCode(next)
+                  // Submit as soon as the code is complete (typed last digit,
+                  // pasted, or one-time-code autofill) — no extra button press.
+                  if (next.length === 6 && !pending) void verify(email, next)
+                }}
               />
             </div>
 
