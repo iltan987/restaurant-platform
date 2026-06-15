@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Check, Mail } from "lucide-react"
+import { ArrowLeft, Check, ClipboardPaste, Mail } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useRef, useState } from "react"
@@ -9,6 +9,7 @@ import { Button } from "@repo/ui/components/ui/button"
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
+import { useClipboardOtp } from "@repo/ui/hooks/use-clipboard-otp"
 import { useResendCooldown } from "@repo/ui/hooks/use-resend-cooldown"
 
 import { env } from "@/env"
@@ -55,6 +56,7 @@ function SignInFlow() {
   const { remaining, canResend, start } = useResendCooldown(
     `resend:otp:${email}`
   )
+  const { canPaste, read: readClipboardOtp } = useClipboardOtp()
 
   // Auto-verify once when arriving from the email's one-click link (?email&otp).
   // The sign-in is inlined (rather than via `verify`) so the effect's only deps
@@ -121,6 +123,16 @@ function SignInFlow() {
       return
     }
     window.location.assign(signedInTarget)
+  }
+
+  async function pasteCode() {
+    const digits = await readClipboardOtp()
+    if (!digits) {
+      setError("Panoda 6 haneli bir kod bulunamadı.")
+      return
+    }
+    setCode(digits)
+    void verify(email, digits)
   }
 
   return (
@@ -227,23 +239,37 @@ function SignInFlow() {
             </p>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="code">Giriş kodu</Label>
-              <Input
-                id="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                required
-                placeholder="123456"
-                className="h-11 text-center text-lg tracking-[0.4em]"
-                value={code}
-                onChange={(e) => {
-                  const next = e.target.value.replace(/\D/g, "").slice(0, 6)
-                  setCode(next)
-                  // Submit as soon as the code is complete (typed last digit,
-                  // pasted, or one-time-code autofill) — no extra button press.
-                  if (next.length === 6 && !pending) void verify(email, next)
-                }}
-              />
+              <div className="relative">
+                <Input
+                  id="code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  required
+                  placeholder="123456"
+                  className="h-11 px-11 text-center text-lg tracking-[0.4em]"
+                  value={code}
+                  onChange={(e) => {
+                    const next = e.target.value.replace(/\D/g, "").slice(0, 6)
+                    setCode(next)
+                    // Submit as soon as the code is complete (typed last digit,
+                    // pasted, or one-time-code autofill) — no extra button press.
+                    if (next.length === 6 && !pending) void verify(email, next)
+                  }}
+                />
+                {canPaste ? (
+                  <button
+                    type="button"
+                    onClick={() => void pasteCode()}
+                    disabled={pending}
+                    aria-label="Panodan yapıştır"
+                    title="Panodan yapıştır"
+                    className="absolute inset-y-0 right-1 my-auto grid size-9 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                  >
+                    <ClipboardPaste className="size-4" />
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             {error ? (
