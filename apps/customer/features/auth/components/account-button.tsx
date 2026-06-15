@@ -22,6 +22,7 @@ import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { toast } from "@repo/ui/components/ui/sonner"
 import { Spinner } from "@repo/ui/components/ui/spinner"
+import { useResendCooldown } from "@repo/ui/hooks/use-resend-cooldown"
 
 import { env } from "@/env"
 import {
@@ -64,6 +65,9 @@ export function AccountButton() {
   const [pending, setPending] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
   const passkeySupported = useWebauthnSupported()
+  const { remaining, canResend, start } = useResendCooldown(
+    `resend:otp:${email}`
+  )
 
   function reset() {
     setStep("email")
@@ -92,8 +96,8 @@ export function AccountButton() {
     reset()
   })
 
-  async function sendCode(e: React.SyntheticEvent) {
-    e.preventDefault()
+  async function sendCode(e?: React.SyntheticEvent) {
+    e?.preventDefault()
     setError(null)
     setPending(true)
     const { error: err } = await emailOtp.sendVerificationOtp(
@@ -104,11 +108,16 @@ export function AccountButton() {
     )
     setPending(false)
     if (err) {
-      setError("Kod gönderilemedi. Lütfen tekrar deneyin.")
+      setError(
+        err.status === 429
+          ? "Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin."
+          : "Kod gönderilemedi. Lütfen tekrar deneyin."
+      )
       return
     }
     setCode("")
     setStep("code")
+    start()
   }
 
   async function verify(e: React.SyntheticEvent) {
@@ -388,16 +397,28 @@ export function AccountButton() {
                       )}
                       Giriş yap
                     </Button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep("email")
-                        setError(null)
-                      }}
-                      className="inline-flex items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <ArrowLeft className="size-4" /> Farklı e-posta kullan
-                    </button>
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStep("email")
+                          setError(null)
+                        }}
+                        className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ArrowLeft className="size-4" /> Farklı e-posta kullan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void sendCode()}
+                        disabled={pending || !canResend}
+                        className="text-muted-foreground transition-colors hover:text-foreground disabled:opacity-60 disabled:hover:text-muted-foreground"
+                      >
+                        {canResend
+                          ? "Kodu tekrar gönder"
+                          : `Tekrar gönder (${remaining}s)`}
+                      </button>
+                    </div>
                   </form>
                 )}
               </>

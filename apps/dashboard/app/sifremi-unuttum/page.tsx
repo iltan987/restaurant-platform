@@ -11,6 +11,7 @@ import { Button } from "@repo/ui/components/ui/button"
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { Spinner } from "@repo/ui/components/ui/spinner"
+import { useResendCooldown } from "@repo/ui/hooks/use-resend-cooldown"
 
 import { AuthShell } from "@/components/auth-shell"
 import { requestPasswordReset } from "@/lib/auth-client"
@@ -25,6 +26,11 @@ type ForgotValues = z.infer<typeof forgotSchema>
  */
 export default function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState<string | null>(null)
+  const [resending, setResending] = useState(false)
+  const [resendError, setResendError] = useState<string | null>(null)
+  const { remaining, canResend, start } = useResendCooldown(
+    `resend:reset:${sentTo ?? ""}`
+  )
   const {
     register,
     handleSubmit,
@@ -41,6 +47,26 @@ export default function ForgotPasswordPage() {
     })
     // Indistinguishable outcome regardless of whether the account exists.
     setSentTo(values.email)
+    start()
+  }
+
+  // Resend the same link. Behaves identically whether or not the account exists
+  // (Better Auth only mails on a match), so it leaks no enumeration; we only
+  // surface the rate-limit (429) signal, which is account-independent.
+  async function resend() {
+    if (!sentTo) return
+    setResendError(null)
+    setResending(true)
+    const { error } = await requestPasswordReset({
+      email: sentTo,
+      redirectTo: `${window.location.origin}/sifre-sifirla`,
+    })
+    setResending(false)
+    if (error?.status === 429) {
+      setResendError("Çok fazla deneme. Lütfen biraz bekleyip tekrar deneyin.")
+      return
+    }
+    start()
   }
 
   if (sentTo) {
@@ -63,9 +89,28 @@ export default function ForgotPasswordPage() {
             klasörünüzü kontrol edin.
           </span>
         </div>
+        {resendError ? (
+          <p className="mt-5 text-sm text-destructive" role="alert">
+            {resendError}
+          </p>
+        ) : null}
         <Button
           variant="outline"
           className="mt-6 h-9 w-full"
+          onClick={resend}
+          disabled={resending || !canResend}
+        >
+          {resending ? (
+            <Spinner className="size-3.5" />
+          ) : canResend ? (
+            "E-postayı tekrar gönder"
+          ) : (
+            `Tekrar gönder (${remaining}s)`
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          className="mt-2 h-9 w-full"
           render={<Link href="/giris" />}
         >
           Girişe dön

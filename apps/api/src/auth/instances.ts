@@ -62,7 +62,14 @@ export function sharedOptions(prefix: string): BetterAuthOptions {
       enabled: true,
       storage: "database",
       modelName: `${prefix}_rate_limit`,
-      customRules: { "/sign-in/email": { window: 10, max: 5 } },
+      customRules: {
+        "/sign-in/email": { window: 10, max: 5 },
+        // Resend-able sends: a couple retries per minute, then 429. The client
+        // adds a 60s cooldown on top; this is the server-side backstop. Shared
+        // across instances — harmless where the route isn't exposed.
+        "/email-otp/send-verification-otp": { window: 60, max: 3 },
+        "/request-password-reset": { window: 60, max: 3 },
+      },
     },
     advanced: {
       cookiePrefix:
