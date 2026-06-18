@@ -10,7 +10,7 @@ import {
   Trash2,
   User,
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 
 import { Button } from "@repo/ui/components/ui/button"
 import {
@@ -25,6 +25,7 @@ import { toast } from "@repo/ui/components/ui/sonner"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 import { useClipboardOtp } from "@repo/ui/hooks/use-clipboard-otp"
 import { useResendCooldown } from "@repo/ui/hooks/use-resend-cooldown"
+import { cn } from "@repo/ui/lib/utils"
 
 import { env } from "@/env"
 import {
@@ -46,6 +47,37 @@ import {
 } from "./passkey-sign-in-button"
 
 const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
+
+// Set once a diner first opens the account drawer, to retire the attention
+// pulse on the signed-out "Giriş yap" entry (it draws the eye once, then never
+// nags). Device-wide, not per-user — it's about the UI hint, not the account.
+// Read via an external store so the SSR snapshot is "seen" (no pulse / no
+// hydration flash) and `markEntrySeen` can flip it live without a setState
+// effect.
+const ENTRY_SEEN_KEY = "pk-entry-seen"
+
+let entrySeenCache: boolean | null = null
+const entrySeenListeners = new Set<() => void>()
+
+function getEntrySeen() {
+  if (entrySeenCache === null) {
+    entrySeenCache =
+      typeof window !== "undefined" &&
+      localStorage.getItem(ENTRY_SEEN_KEY) === "1"
+  }
+  return entrySeenCache
+}
+
+function subscribeEntrySeen(onChange: () => void) {
+  entrySeenListeners.add(onChange)
+  return () => entrySeenListeners.delete(onChange)
+}
+
+function markEntrySeen() {
+  if (typeof window !== "undefined") localStorage.setItem(ENTRY_SEEN_KEY, "1")
+  entrySeenCache = true
+  entrySeenListeners.forEach((l) => l())
+}
 
 /**
  * Optional diner account control, floating over the menu cover. Signed-out: opens
@@ -71,6 +103,18 @@ export function AccountButton() {
     `resend:otp:${email}`
   )
   const { canPaste, read: readClipboardOtp } = useClipboardOtp()
+  // One-time attention pulse on the signed-out entry; SSR snapshot is "seen"
+  // so it never flashes before hydration, then retires on first open.
+  const entrySeen = useSyncExternalStore(
+    subscribeEntrySeen,
+    getEntrySeen,
+    () => true
+  )
+
+  function openDrawer() {
+    setOpen(true)
+    if (!entrySeen) markEntrySeen()
+  }
 
   function reset() {
     setStep("email")
@@ -192,15 +236,25 @@ export function AccountButton() {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={openDrawer}
         aria-label={session ? "Hesabınız" : "Giriş yap"}
-        className="absolute top-[9px] right-[52px] z-[3] grid size-9 place-items-center rounded-full border shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] data-[in=false]:border-white/[0.22] data-[in=false]:bg-[oklch(0.28_0.03_45/0.34)] data-[in=false]:text-white/[0.95] data-[in=true]:border-white/40 data-[in=true]:bg-primary data-[in=true]:text-primary-foreground dark:data-[in=false]:border-white/[0.16] dark:data-[in=false]:bg-white/[0.12]"
+        className={cn(
+          "absolute top-[9px] right-[52px] z-[3] flex items-center justify-center rounded-full border shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] data-[in=false]:border-white/[0.22] data-[in=false]:bg-[oklch(0.28_0.03_45/0.34)] data-[in=false]:text-white/[0.95] data-[in=true]:border-white/40 data-[in=true]:bg-primary data-[in=true]:text-primary-foreground dark:data-[in=false]:border-white/[0.16] dark:data-[in=false]:bg-white/[0.12]",
+          // Signed-out (known) → labelled pill; signed-in / loading → circle.
+          !isPending && !session ? "h-9 gap-1.5 pr-3 pl-2.5" : "size-9",
+          // Gentle one-time halo on the signed-out entry; breathes when motion
+          // is allowed, sits as a static ring otherwise. Retires on first open.
+          !entrySeen &&
+            !isPending &&
+            !session &&
+            "before:absolute before:-inset-1 before:-z-10 before:rounded-full before:border before:border-white/60 before:content-[''] motion-safe:before:animate-pulse"
+        )}
         data-in={session ? "true" : "false"}
       >
         {/* Session is a client-only fetch, unknown on first paint — show a
             neutral loading dot rather than wrongly asserting the signed-out
-            "person" (which then flashed to the initial for signed-in diners).
-            Resolved: signed in → account initial; signed out → person. */}
+            entry (which then flashed to the initial for signed-in diners).
+            Resolved: signed in → account initial; signed out → "Giriş yap". */}
         {isPending ? (
           <span className="size-2 animate-pulse rounded-full bg-white/70" />
         ) : session ? (
@@ -210,7 +264,12 @@ export function AccountButton() {
             )}
           </span>
         ) : (
-          <User className="size-[18px]" />
+          <>
+            <User className="size-[18px]" />
+            <span className="text-[13px] leading-none font-semibold">
+              Giriş yap
+            </span>
+          </>
         )}
       </button>
 
