@@ -11,13 +11,27 @@ import { signIn } from "@/lib/auth-client"
 
 const noopSubscribe = () => () => {}
 
-/** Sign-in outcomes that aren't real failures — keep them silent and leave the
- * login view as-is. WebAuthn deliberately returns the same `NotAllowedError`
- * for "user cancelled" and "this device has no passkey" (it won't reveal which),
- * which `@simplewebauthn` surfaces as `ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY`; so
- * tapping the button with no passkey saved is benign, not an error to toast.
- * `AUTH_CANCELLED` is Better Auth's generic cancel/verify-abort code. */
-const SILENT_SIGNIN_CODES = new Set([
+/**
+ * `signIn.passkey()` error codes that aren't real failures — keep them silent
+ * and leave the login view as-is. WebAuthn deliberately returns the same
+ * `NotAllowedError` for "user cancelled" and "this device has no passkey" (it
+ * won't reveal which), which `@simplewebauthn` surfaces as
+ * `ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY`; so tapping the button with no passkey
+ * saved is benign, not an error to toast.
+ *
+ * `AUTH_CANCELLED` is Better Auth's (`@better-auth/passkey`) generic cancel/
+ * verify-abort code; the `ERROR_*` values are `@simplewebauthn/browser`
+ * `WebAuthnErrorCode`s that Better Auth passes through verbatim. Better Auth's
+ * own types only declare its codes, so the passed-through ones read as plain
+ * strings at the call site — hence this explicit, typo-checked union. */
+type SilentSignInCode =
+  | "AUTH_CANCELLED"
+  | "ERROR_CEREMONY_ABORTED"
+  | "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY"
+
+// Typed on construction so a typo in a literal fails to compile; widened to
+// `string` for lookup since the runtime `code` is an untyped string.
+const SILENT_SIGNIN_CODES: ReadonlySet<string> = new Set<SilentSignInCode>([
   "AUTH_CANCELLED",
   "ERROR_CEREMONY_ABORTED",
   "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",
