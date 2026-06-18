@@ -37,7 +37,7 @@ import {
 } from "@/lib/auth-client"
 
 import { passkeyAddErrorMessage } from "../passkey-errors"
-import { markPasskeyOnboarded } from "../passkey-onboarded"
+import { completePasskeyPrompt } from "../passkey-prompt-state"
 import { usePasskeyAutofill } from "../use-passkey-autofill"
 import { GoogleButton } from "./google-button"
 import {
@@ -171,7 +171,7 @@ export function AccountButton() {
       toast.error(passkeyAddErrorMessage(code))
       return
     }
-    if (session) markPasskeyOnboarded(session.user.id)
+    if (session) completePasskeyPrompt(session.user.id)
     toast.success(
       "Geçiş anahtarı eklendi. Bir dahaki sefere tek dokunuşla girin."
     )
