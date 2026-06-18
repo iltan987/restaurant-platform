@@ -245,21 +245,21 @@ export function AccountButton() {
           "absolute top-[9px] right-[52px] z-[3] flex items-center justify-center rounded-full border shadow-sm backdrop-blur-[4px] transition active:scale-[0.93] data-[in=false]:border-white/[0.22] data-[in=false]:bg-[oklch(0.28_0.03_45/0.34)] data-[in=false]:text-white/[0.95] data-[in=true]:border-white/40 data-[in=true]:bg-primary data-[in=true]:text-primary-foreground dark:data-[in=false]:border-white/[0.16] dark:data-[in=false]:bg-white/[0.12]",
           // Signed-out (known) → labelled pill; signed-in / loading → circle.
           !isPending && !session ? "h-9 gap-1.5 pr-3 pl-2.5" : "size-9",
-          // A persistent bright ring so the entry reads as interactive even
-          // mid-animation and under reduced motion; the expanding halo below
-          // adds the motion. Retires on first open.
-          showEntryPulse && "ring-2 ring-white/75"
+          // A faint static ring as the calm baseline (and the reduced-motion
+          // fallback); the soft glow below adds a gentle breathe. Retires on
+          // first open.
+          showEntryPulse && "ring-1 ring-white/40"
         )}
         data-in={session ? "true" : "false"}
       >
-        {/* Expanding "ping" halo behind the pill — the eye-catcher. Sits behind
-            (-z-10) so it never covers the label; only the scaled, fading ring
-            shows past the edges. motion-safe so reduced-motion users just get
-            the static ring above. */}
+        {/* Soft, blurred halo behind the pill that gently breathes — an
+            inviting "wanna sign in?" hint, not a hard ping. Sits behind (-z-10)
+            so it never covers the label; motion-safe so reduced-motion users
+            just get the static ring above. */}
         {showEntryPulse && (
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/70 motion-safe:animate-ping"
+            className="pointer-events-none absolute -inset-1 -z-10 rounded-full bg-white/25 blur-[3px] motion-safe:animate-pulse"
           />
         )}
         {/* Session is a client-only fetch, unknown on first paint — show a
