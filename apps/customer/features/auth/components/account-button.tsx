@@ -48,22 +48,29 @@ import {
 
 const GOOGLE_ENABLED = env.NEXT_PUBLIC_GOOGLE_ENABLED === "true"
 
-// Set once a diner first opens the account drawer, to retire the attention
-// pulse on the signed-out "Giriş yap" entry (it draws the eye once, then never
-// nags). Device-wide, not per-user — it's about the UI hint, not the account.
-// Read via an external store so the SSR snapshot is "seen" (no pulse / no
-// hydration flash) and `markEntrySeen` can flip it live without a setState
-// effect.
+// Epoch ms of the last time a still-signed-out diner opened the account drawer.
+// The attention hint on the "Giriş yap" entry retires for a cooldown after that,
+// then gently re-arms — so opening it once out of curiosity quiets it for a
+// quarter, but a diner who still hasn't signed in and returns much later (the
+// "came back a year on" case) is invited again. Device-wide, not per-user — it's
+// about the UI hint, not an account. Read via an external store so the SSR
+// snapshot is "seen" (no pulse / no hydration flash) and `markEntrySeen` can
+// flip it live without a setState effect.
 const ENTRY_SEEN_KEY = "pk-entry-seen"
+const ENTRY_HINT_COOLDOWN_MS = 90 * 24 * 60 * 60 * 1000 // 90 days
 
 let entrySeenCache: boolean | null = null
 const entrySeenListeners = new Set<() => void>()
 
 function getEntrySeen() {
   if (entrySeenCache === null) {
-    entrySeenCache =
-      typeof window !== "undefined" &&
-      localStorage.getItem(ENTRY_SEEN_KEY) === "1"
+    if (typeof window === "undefined") {
+      entrySeenCache = true
+    } else {
+      const ts = Number(localStorage.getItem(ENTRY_SEEN_KEY))
+      entrySeenCache =
+        Number.isFinite(ts) && Date.now() - ts < ENTRY_HINT_COOLDOWN_MS
+    }
   }
   return entrySeenCache
 }
@@ -74,7 +81,8 @@ function subscribeEntrySeen(onChange: () => void) {
 }
 
 function markEntrySeen() {
-  if (typeof window !== "undefined") localStorage.setItem(ENTRY_SEEN_KEY, "1")
+  if (typeof window !== "undefined")
+    localStorage.setItem(ENTRY_SEEN_KEY, String(Date.now()))
   entrySeenCache = true
   entrySeenListeners.forEach((l) => l())
 }
