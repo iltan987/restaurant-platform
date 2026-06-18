@@ -11,6 +11,18 @@ import { signIn } from "@/lib/auth-client"
 
 const noopSubscribe = () => () => {}
 
+/** Sign-in outcomes that aren't real failures — keep them silent and leave the
+ * login view as-is. WebAuthn deliberately returns the same `NotAllowedError`
+ * for "user cancelled" and "this device has no passkey" (it won't reveal which),
+ * which `@simplewebauthn` surfaces as `ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY`; so
+ * tapping the button with no passkey saved is benign, not an error to toast.
+ * `AUTH_CANCELLED` is Better Auth's generic cancel/verify-abort code. */
+const SILENT_SIGNIN_CODES = new Set([
+  "AUTH_CANCELLED",
+  "ERROR_CEREMONY_ABORTED",
+  "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",
+])
+
 /** Whether this browser exposes WebAuthn at all. `useSyncExternalStore` reads it
  * client-side (server snapshot `false`) with no hydration mismatch. Gate both
  * the passkey button and its divider on it. */
@@ -37,7 +49,7 @@ export function PasskeySignInButton({ onSuccess }: { onSuccess: () => void }) {
     setPending(false)
     if (res?.error) {
       const code = "code" in res.error ? res.error.code : undefined
-      if (code && code !== "AUTH_CANCELLED") {
+      if (!code || !SILENT_SIGNIN_CODES.has(code)) {
         toast.error("Geçiş anahtarı ile giriş yapılamadı.")
       }
       return
