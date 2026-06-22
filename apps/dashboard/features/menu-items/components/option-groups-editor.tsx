@@ -12,11 +12,12 @@ import {
   parsePriceToMinor,
 } from "@repo/core"
 import { type OptionGroup } from "@repo/schemas"
-import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
 import { Checkbox } from "@repo/ui/components/ui/checkbox"
 import { Input } from "@repo/ui/components/ui/input"
 import { Spinner } from "@repo/ui/components/ui/spinner"
+
+import { ToneBadge } from "@/components/tone-badge"
 
 import { menuItemsQueries } from "../queries"
 import { useOptionMutations } from "../use-option-mutations"
@@ -75,10 +76,10 @@ export function OptionGroupsEditor({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Seçenekler</h3>
-        <span className="text-xs text-muted-foreground">
+        <h3 className="text-sm font-semibold text-ink">Seçenekler</h3>
+        <span className="text-xs text-ink-3">
           Varsayılan fiyat:{" "}
-          <span className="font-medium text-foreground tabular-nums">
+          <span className="font-medium text-ink tabular-nums">
             {formatPriceMinor(defaultPrice)}
           </span>
         </span>
@@ -88,13 +89,13 @@ export function OptionGroupsEditor({
         <GroupCard key={group.id} group={group} mutations={m} />
       ))}
 
-      <div className="flex items-center gap-2 rounded-lg border border-dashed p-2">
+      <div className="flex items-center gap-2 rounded-card border border-dashed border-line-strong bg-surface-subtle p-2">
         <Input
           value={newGroupName}
           onChange={(e) => setNewGroupName(e.target.value)}
           placeholder="Yeni grup adı (ör. Boy, Ekstralar)"
           maxLength={80}
-          className="h-8"
+          className="h-9 bg-surface"
         />
         <Button
           variant="outline"
@@ -160,16 +161,16 @@ function GroupCard({
   }
 
   return (
-    <div className="rounded-lg border">
-      <div className="flex items-center gap-2 border-b px-3 py-2">
-        <span className="flex-1 truncate text-sm font-medium">
+    <div className="overflow-hidden rounded-card border border-line bg-surface">
+      <div className="flex items-center gap-2 border-b border-line-subtle px-3 py-2">
+        <span className="flex-1 truncate text-sm font-medium text-ink">
           {group.name}
         </span>
-        <Badge variant="secondary">
+        <ToneBadge tone="neutral">
           {groupKind(group) === "single" ? "Tek seçim" : "Çoklu seçim"}
-        </Badge>
+        </ToneBadge>
         {groupKind(group) === "multi" && (
-          <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+          <label className="flex shrink-0 items-center gap-1.5 text-xs text-ink-3">
             En fazla
             <Input
               value={maxStr}
@@ -183,7 +184,7 @@ function GroupCard({
             />
           </label>
         )}
-        <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+        <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-ink-3">
           <Checkbox
             checked={group.required}
             onCheckedChange={(v) =>
@@ -199,25 +200,23 @@ function GroupCard({
           variant="ghost"
           size="icon"
           aria-label="Grubu sil"
-          className="text-muted-foreground hover:text-destructive"
+          className="text-ink-3 hover:text-danger"
           onClick={() => mutations.deleteGroup.mutate(group.id)}
         >
           <Trash2Icon className="size-4" />
         </Button>
       </div>
 
-      <div className="divide-y">
+      <div className="divide-y divide-line-subtle">
         {group.options.length === 0 ? (
-          <p className="px-3 py-2 text-xs text-muted-foreground">
-            Henüz seçenek yok.
-          </p>
+          <p className="px-3 py-2 text-xs text-ink-3">Henüz seçenek yok.</p>
         ) : (
           group.options.map((option) => (
             <div
               key={option.id}
               className="flex items-center gap-2 px-3 py-1.5"
             >
-              <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm">
+              <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm text-ink">
                 <Checkbox
                   checked={option.defaultSelected}
                   onCheckedChange={(v) =>
@@ -229,7 +228,7 @@ function GroupCard({
                 />
                 <span className="truncate">{option.name}</span>
               </label>
-              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+              <span className="shrink-0 text-xs text-ink-3 tabular-nums">
                 {option.priceDeltaMinor > 0
                   ? `+${formatPriceMinor(option.priceDeltaMinor)}`
                   : "—"}
@@ -238,7 +237,7 @@ function GroupCard({
                 variant="ghost"
                 size="icon"
                 aria-label="Seçeneği sil"
-                className="text-muted-foreground hover:text-destructive"
+                className="text-ink-3 hover:text-danger"
                 onClick={() => mutations.deleteOption.mutate(option.id)}
               >
                 <Trash2Icon className="size-4" />
@@ -248,13 +247,13 @@ function GroupCard({
         )}
       </div>
 
-      <div className="flex items-center gap-2 border-t bg-muted/40 px-3 py-2">
+      <div className="flex items-center gap-2 border-t border-line-subtle bg-surface-subtle px-3 py-2">
         <Input
           value={optName}
           onChange={(e) => setOptName(e.target.value)}
           placeholder="Seçenek adı"
           maxLength={80}
-          className="h-8 flex-1"
+          className="h-9 flex-1 bg-surface"
           onKeyDown={(e) => e.key === "Enter" && addOption()}
         />
         <Input
@@ -262,10 +261,10 @@ function GroupCard({
           onChange={(e) => setOptPrice(e.target.value)}
           placeholder="+₺"
           inputMode="decimal"
-          className="h-8 w-20"
+          className="h-9 w-20 bg-surface"
           onKeyDown={(e) => e.key === "Enter" && addOption()}
         />
-        <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+        <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-ink-3">
           <Checkbox
             checked={optDefault}
             onCheckedChange={(v) => setOptDefault(v === true)}

@@ -128,10 +128,10 @@ function AvailabilityForm({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">Servis saatleri</span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm font-semibold text-ink">Servis saatleri</span>
+        <span className="text-xs text-ink-3">
           {windows.length === 0 ? "Her zaman açık" : `${windows.length} aralık`}
         </span>
       </div>
@@ -139,9 +139,9 @@ function AvailabilityForm({
       {windows.map((w, index) => (
         <div
           key={index}
-          className="flex flex-col gap-2 rounded-lg border p-2.5"
+          className="flex flex-col gap-2.5 rounded-card border border-line bg-surface-subtle p-3"
         >
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {DAY_LABELS.map((d) => {
               const on = w.days.includes(d.value)
               return (
@@ -151,10 +151,10 @@ function AvailabilityForm({
                   onClick={() => toggleDay(index, d.value)}
                   aria-pressed={on}
                   className={cn(
-                    "rounded-md border px-2 py-1 text-xs font-medium transition",
+                    "rounded-md border px-2.5 py-1.5 text-xs font-medium transition",
                     on
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted"
+                      ? "border-brand bg-brand text-white"
+                      : "border-line-strong bg-surface text-ink-2 hover:bg-surface-hover"
                   )}
                 >
                   {d.label}
@@ -167,16 +167,16 @@ function AvailabilityForm({
               type="time"
               value={w.start}
               aria-label="Başlangıç"
-              className="h-8 w-32"
+              className="h-9 w-32"
               onChange={(e) => setTime(index, "start", e.target.value)}
               onBlur={() => persist(windows)}
             />
-            <span className="text-muted-foreground">–</span>
+            <span className="text-ink-3">–</span>
             <Input
               type="time"
               value={w.end}
               aria-label="Bitiş"
-              className="h-8 w-32"
+              className="h-9 w-32"
               onChange={(e) => setTime(index, "end", e.target.value)}
               onBlur={() => persist(windows)}
             />
@@ -184,14 +184,14 @@ function AvailabilityForm({
               variant="ghost"
               size="icon"
               aria-label="Aralığı sil"
-              className="ml-auto text-muted-foreground hover:text-destructive"
+              className="ml-auto text-ink-3 hover:text-danger"
               onClick={() => removeWindow(index)}
             >
               <Trash2Icon className="size-4" />
             </Button>
           </div>
           {w.end < w.start && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Gece yarısını geçer (ertesi güne sarkar).
             </p>
           )}
@@ -201,7 +201,7 @@ function AvailabilityForm({
       <Button
         variant="ghost"
         size="sm"
-        className="w-fit text-primary"
+        className="w-fit text-brand hover:bg-brand-soft hover:text-brand"
         onClick={addWindow}
       >
         <PlusIcon className="size-4" />

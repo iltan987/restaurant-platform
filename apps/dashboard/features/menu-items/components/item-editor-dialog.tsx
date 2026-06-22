@@ -23,7 +23,6 @@ import {
   DialogTrigger,
 } from "@repo/ui/components/ui/dialog"
 import { Input } from "@repo/ui/components/ui/input"
-import { Label } from "@repo/ui/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -31,8 +30,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/ui/select"
-import { Separator } from "@repo/ui/components/ui/separator"
 import { Textarea } from "@repo/ui/components/ui/textarea"
+
+import { EditorSection, Field } from "@/components/field"
 
 import { useCreateItem } from "../use-create-item"
 import { useUpdateItem } from "../use-update-item"
@@ -187,186 +187,204 @@ export function ItemEditorDialog({
   return (
     <Dialog open={open} onOpenChange={change}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{item ? "Ürünü düzenle" : "Yeni ürün"}</DialogTitle>
+      <DialogContent className="grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="px-5 pt-5 pb-4">
+          <DialogTitle className="text-[17px]">
+            {item ? "Ürünü düzenle" : "Yeni ürün"}
+          </DialogTitle>
           <DialogDescription>
-            Ürün adını ve fiyatını girin. Fiyat Türk Lirası cinsindendir.
+            {item
+              ? "Adı, fiyatı ve diğer ayrıntıları güncelleyin."
+              : "Ürün adını ve fiyatını girin. Fiyat Türk Lirası cinsindendir."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-[1fr_8rem] gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="item-name">Ürün adı</Label>
-            <Input
-              id="item-name"
-              value={name}
-              autoFocus
-              maxLength={120}
-              aria-invalid={nameError}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => setTouched(true)}
-              onKeyDown={(e) => e.key === "Enter" && save()}
-            />
+        <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 pb-1">
+          <div className="grid grid-cols-[1fr_8rem] gap-3">
+            <Field
+              label="Ürün adı"
+              htmlFor="item-name"
+              required
+              error={nameError ? "Ürün adı gerekli." : undefined}
+            >
+              <Input
+                id="item-name"
+                value={name}
+                autoFocus
+                maxLength={120}
+                aria-invalid={nameError}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setTouched(true)}
+                onKeyDown={(e) => e.key === "Enter" && save()}
+              />
+            </Field>
+            <Field
+              label="Fiyat (₺)"
+              htmlFor="item-price"
+              required
+              error={priceError ? "Geçerli fiyat girin." : undefined}
+            >
+              <Input
+                id="item-price"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={price}
+                aria-invalid={priceError}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </Field>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="item-price">Fiyat (₺)</Label>
-            <Input
-              id="item-price"
-              inputMode="decimal"
-              placeholder="0,00"
-              value={price}
-              aria-invalid={priceError}
-              onChange={(e) => setPrice(e.target.value)}
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-card border border-line bg-surface-subtle px-3.5 py-3">
+            <Checkbox
+              checked={inStock}
+              onCheckedChange={(v) => setInStock(v === true)}
             />
-          </div>
+            <span className="flex flex-col">
+              <span className="text-sm font-medium text-ink">Stokta</span>
+              <span className="text-xs text-ink-3">
+                Kapatırsanız müşteriye “tükendi” olarak görünür.
+              </span>
+            </span>
+          </label>
+
+          {item && (
+            <>
+              <EditorSection>
+                <MediaUploader itemId={item.id} categoryId={categoryId} />
+              </EditorSection>
+
+              <EditorSection title="Ayrıntılar">
+                <Field label="Açıklama" htmlFor="item-desc">
+                  <Textarea
+                    id="item-desc"
+                    value={description}
+                    maxLength={2000}
+                    rows={2}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </Field>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <Field label="Kalori" htmlFor="item-cal">
+                    <Input
+                      id="item-cal"
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      placeholder="—"
+                      value={calories}
+                      onChange={(e) => setCalories(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Porsiyon" htmlFor="item-amount">
+                    <Input
+                      id="item-amount"
+                      type="number"
+                      min={0}
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={servingAmount}
+                      onChange={(e) => setServingAmount(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Birim">
+                    <Select
+                      value={servingUnit}
+                      onValueChange={(v) => {
+                        const next = v ?? NONE
+                        setServingUnit(next)
+                        // Drop an now-incompatible magnitude back to Otomatik.
+                        if (!basisOptionsFor(next).includes(unitPriceBasis)) {
+                          setUnitPriceBasis("AUTO")
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue>
+                          {(value: string) =>
+                            SERVING_UNITS.find((u) => u.value === value)?.label
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SERVING_UNITS.map((u) => (
+                          <SelectItem key={u.value} value={u.value}>
+                            {u.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+
+                {basisOptions.length > 0 && (
+                  <Field
+                    label="Birim fiyat"
+                    hint={
+                      <>
+                        Müşteriye gösterilen:{" "}
+                        <span className="font-medium text-ink tabular-nums">
+                          {preview
+                            ? `${formatPriceMinor(preview.perUnitMinor)}/${preview.unit}`
+                            : "Gösterilmiyor"}
+                        </span>
+                      </>
+                    }
+                  >
+                    <Select
+                      value={unitPriceBasis}
+                      onValueChange={(v) =>
+                        setUnitPriceBasis((v ?? "AUTO") as UnitPriceBasis)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue>
+                          {(value: string) =>
+                            UNIT_PRICE_BASIS_LABEL[value as UnitPriceBasis]
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {basisOptions.map((b) => (
+                          <SelectItem key={b} value={b}>
+                            {UNIT_PRICE_BASIS_LABEL[b]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              </EditorSection>
+
+              <EditorSection>
+                <AllergenPicker
+                  restaurantId={item.restaurantId}
+                  itemId={item.id}
+                  categoryId={categoryId}
+                />
+                <TagPicker
+                  restaurantId={item.restaurantId}
+                  itemId={item.id}
+                  categoryId={categoryId}
+                />
+              </EditorSection>
+
+              <EditorSection>
+                <AvailabilityEditor itemId={item.id} categoryId={categoryId} />
+              </EditorSection>
+
+              <EditorSection>
+                <OptionGroupsEditor
+                  itemId={item.id}
+                  basePriceMinor={priceMinor ?? item.priceMinor}
+                />
+              </EditorSection>
+            </>
+          )}
         </div>
 
-        <label className="flex w-fit cursor-pointer items-center gap-2.5 text-sm">
-          <Checkbox
-            checked={inStock}
-            onCheckedChange={(v) => setInStock(v === true)}
-          />
-          <span>Stokta</span>
-        </label>
-
-        {item && (
-          <>
-            <Separator />
-
-            <MediaUploader itemId={item.id} categoryId={categoryId} />
-
-            <Separator />
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="item-desc">Açıklama</Label>
-              <Textarea
-                id="item-desc"
-                value={description}
-                maxLength={2000}
-                rows={2}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="item-cal">Kalori</Label>
-                <Input
-                  id="item-cal"
-                  type="number"
-                  min={0}
-                  inputMode="numeric"
-                  placeholder="—"
-                  value={calories}
-                  onChange={(e) => setCalories(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="item-amount">Porsiyon</Label>
-                <Input
-                  id="item-amount"
-                  type="number"
-                  min={0}
-                  inputMode="decimal"
-                  placeholder="—"
-                  value={servingAmount}
-                  onChange={(e) => setServingAmount(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label>Birim</Label>
-                <Select
-                  value={servingUnit}
-                  onValueChange={(v) => {
-                    const next = v ?? NONE
-                    setServingUnit(next)
-                    // Drop an now-incompatible magnitude back to Otomatik.
-                    if (!basisOptionsFor(next).includes(unitPriceBasis)) {
-                      setUnitPriceBasis("AUTO")
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue>
-                      {(value: string) =>
-                        SERVING_UNITS.find((u) => u.value === value)?.label
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SERVING_UNITS.map((u) => (
-                      <SelectItem key={u.value} value={u.value}>
-                        {u.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {basisOptions.length > 0 && (
-              <div className="flex flex-col gap-1.5">
-                <Label>Birim fiyat</Label>
-                <Select
-                  value={unitPriceBasis}
-                  onValueChange={(v) =>
-                    setUnitPriceBasis((v ?? "AUTO") as UnitPriceBasis)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue>
-                      {(value: string) =>
-                        UNIT_PRICE_BASIS_LABEL[value as UnitPriceBasis]
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {basisOptions.map((b) => (
-                      <SelectItem key={b} value={b}>
-                        {UNIT_PRICE_BASIS_LABEL[b]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Müşteriye gösterilen:{" "}
-                  <span className="font-medium text-foreground tabular-nums">
-                    {preview
-                      ? `${formatPriceMinor(preview.perUnitMinor)}/${preview.unit}`
-                      : "Gösterilmiyor"}
-                  </span>
-                </p>
-              </div>
-            )}
-
-            <Separator />
-
-            <AllergenPicker
-              restaurantId={item.restaurantId}
-              itemId={item.id}
-              categoryId={categoryId}
-            />
-            <TagPicker
-              restaurantId={item.restaurantId}
-              itemId={item.id}
-              categoryId={categoryId}
-            />
-
-            <Separator />
-
-            <AvailabilityEditor itemId={item.id} categoryId={categoryId} />
-
-            <Separator />
-
-            <OptionGroupsEditor
-              itemId={item.id}
-              basePriceMinor={priceMinor ?? item.priceMinor}
-            />
-          </>
-        )}
-
-        <DialogFooter>
+        <DialogFooter className="m-0 rounded-b-xl border-line-subtle bg-surface-subtle px-5 py-3.5">
           <DialogClose render={<Button variant="outline">Vazgeç</Button>} />
           <Button onClick={save}>{item ? "Kaydet" : "Ekle"}</Button>
         </DialogFooter>

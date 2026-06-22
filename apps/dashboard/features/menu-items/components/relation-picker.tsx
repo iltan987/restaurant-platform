@@ -43,7 +43,7 @@ export function RelationPicker({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-medium">{title}</span>
+      <span className="text-[13px] font-medium text-ink-2">{title}</span>
 
       {options.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -56,10 +56,10 @@ export function RelationPicker({
                   onClick={() => onToggle(o.id)}
                   aria-pressed={selected}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition",
+                    "inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[13px] font-medium transition",
                     selected
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "bg-background text-muted-foreground hover:bg-muted",
+                      ? "border-brand bg-brand text-white"
+                      : "border-line-strong bg-surface text-ink-2 hover:bg-surface-hover",
                     o.deletable && "rounded-r-none"
                   )}
                 >
@@ -71,7 +71,7 @@ export function RelationPicker({
                     type="button"
                     aria-label={`${o.label} sil`}
                     onClick={() => onDelete(o.id)}
-                    className="grid h-[26px] place-items-center rounded-r-full border border-l-0 px-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    className="grid h-[31px] place-items-center rounded-r-full border border-l-0 border-line-strong px-1.5 text-ink-3 hover:bg-danger-soft hover:text-danger"
                   >
                     <XIcon className="size-3" />
                   </button>
@@ -88,7 +88,7 @@ export function RelationPicker({
           onChange={(e) => setDraft(e.target.value)}
           placeholder={placeholder}
           maxLength={60}
-          className="h-8"
+          className="h-9"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault()
@@ -101,7 +101,7 @@ export function RelationPicker({
           aria-label="Ekle"
           disabled={!draft.trim() || creating}
           onClick={add}
-          className="grid size-8 shrink-0 place-items-center rounded-md border text-primary disabled:opacity-40"
+          className="grid size-9 shrink-0 place-items-center rounded-md border border-line-strong text-brand transition hover:bg-brand-soft disabled:opacity-40 disabled:hover:bg-transparent"
         >
           <PlusIcon className="size-4" />
         </button>

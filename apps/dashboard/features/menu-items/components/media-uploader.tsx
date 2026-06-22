@@ -45,9 +45,9 @@ export function MediaUploader({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">Görseller</span>
+        <span className="text-sm font-semibold text-ink">Görseller</span>
         {isUploading && <Spinner className="size-4" />}
       </div>
 
@@ -55,7 +55,7 @@ export function MediaUploader({
         {media.map((m, i) => (
           <div
             key={m.id}
-            className="group relative aspect-square overflow-hidden rounded-lg border bg-muted"
+            className="group relative aspect-square overflow-hidden rounded-card border border-line bg-surface-muted"
           >
             {m.type === "PHOTO" ? (
               <Image
@@ -66,13 +66,13 @@ export function MediaUploader({
                 className="object-cover"
               />
             ) : (
-              <div className="grid size-full place-items-center text-muted-foreground">
+              <div className="grid size-full place-items-center text-ink-3">
                 <FilmIcon className="size-6" />
               </div>
             )}
 
             {i === 0 && (
-              <span className="absolute top-1 left-1 rounded bg-primary px-1 py-0.5 text-[10px] font-medium text-primary-foreground">
+              <span className="absolute top-1 left-1 rounded bg-brand px-1.5 py-0.5 text-[10px] font-medium text-white">
                 Kapak
               </span>
             )}
@@ -84,7 +84,7 @@ export function MediaUploader({
                   aria-label="Kapak yap"
                   title="Kapak yap"
                   onClick={() => makeCover(m.id, orderedIds)}
-                  className="grid size-6 place-items-center rounded bg-background/90 text-muted-foreground hover:text-primary"
+                  className="grid size-6 place-items-center rounded bg-surface/90 text-ink-3 hover:text-brand"
                 >
                   <StarIcon className="size-3.5" />
                 </button>
@@ -95,7 +95,7 @@ export function MediaUploader({
                 type="button"
                 aria-label="Sil"
                 onClick={() => remove(m.id)}
-                className="grid size-6 place-items-center rounded bg-background/90 text-muted-foreground hover:text-destructive"
+                className="grid size-6 place-items-center rounded bg-surface/90 text-ink-3 hover:text-danger"
               >
                 <Trash2Icon className="size-3.5" />
               </button>
@@ -107,7 +107,7 @@ export function MediaUploader({
           type="button"
           onClick={() => fileInput.current?.click()}
           disabled={isUploading}
-          className="grid aspect-square place-items-center rounded-lg border border-dashed text-muted-foreground hover:bg-muted disabled:opacity-50"
+          className="grid aspect-square place-items-center rounded-card border border-dashed border-line-strong text-ink-3 transition hover:bg-surface-hover hover:text-brand disabled:opacity-50"
           aria-label="Medya ekle"
         >
           <ImagePlusIcon className="size-6" />
@@ -123,7 +123,7 @@ export function MediaUploader({
         onChange={(e) => onPick(e.target.files)}
       />
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Fotoğraf (≤8 MB) ve video (≤50 MB). İlk görsel kapaktır.
       </p>
     </div>
