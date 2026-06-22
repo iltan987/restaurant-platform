@@ -57,6 +57,7 @@ const tr: Record<ErrorCode, string> = {
   [ErrorCode.INSUFFICIENT_ROLE]: "Bu işlem için yetkiniz yetersiz.",
   [ErrorCode.LAST_OWNER]:
     "Son sahibi kaldıramaz veya yetkisini düşüremezsiniz. Önce başka bir sahip atayın.",
+  [ErrorCode.MEMBER_SUSPENDED]: "Hesabınız bu restoran için askıya alınmıştır.",
 }
 
 /**

@@ -60,6 +60,7 @@ export const ErrorCode = {
   NOT_A_MEMBER: "NOT_A_MEMBER",
   INSUFFICIENT_ROLE: "INSUFFICIENT_ROLE",
   LAST_OWNER: "LAST_OWNER",
+  MEMBER_SUSPENDED: "MEMBER_SUSPENDED",
 } as const
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]

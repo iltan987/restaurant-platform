@@ -84,3 +84,17 @@ export const memberSchema = z.object({
   role: restaurantRoleSchema,
 })
 export type Member = z.infer<typeof memberSchema>
+
+/** Current owner of a restaurant as seen by the admin (member-table derived). */
+export const restaurantOwnerSchema = z.object({
+  email: z.string(),
+  suspended: z.boolean(),
+  directlyAssigned: z.boolean(),
+})
+export type RestaurantOwner = z.infer<typeof restaurantOwnerSchema>
+
+/** Body for the admin suspend/unsuspend endpoint. */
+export const toggleSuspensionSchema = z.object({
+  suspended: z.boolean(),
+})
+export type ToggleSuspensionInput = z.infer<typeof toggleSuspensionSchema>
