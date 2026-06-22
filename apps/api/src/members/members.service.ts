@@ -21,7 +21,7 @@ export class MembersService {
   /** Restaurants the user belongs to, with their role — drives switching. */
   async listMemberships(userId: string) {
     const members = await this.prisma.restaurantMember.findMany({
-      where: { userId, suspended: false },
+      where: { userId },
       orderBy: { createdAt: "asc" },
       include: { restaurant: { select: { id: true, name: true, slug: true } } },
     })
@@ -30,6 +30,7 @@ export class MembersService {
       name: m.restaurant.name,
       slug: m.restaurant.slug,
       role: m.role,
+      suspended: m.suspended,
     }))
   }
 

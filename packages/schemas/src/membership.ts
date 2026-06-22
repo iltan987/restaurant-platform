@@ -74,6 +74,7 @@ export const membershipSchema = z.object({
   name: z.string(),
   slug: z.string(),
   role: restaurantRoleSchema,
+  suspended: z.boolean(),
 })
 export type Membership = z.infer<typeof membershipSchema>
 

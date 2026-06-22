@@ -68,14 +68,14 @@ export function TenantShell({
     )
   }
 
-  const isMember = memberships?.some((m) => m.slug === slug)
-  if (!isMember) {
+  const membership = memberships?.find((m) => m.slug === slug)
+  if (membership?.suspended) {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-canvas text-center">
         <ShieldOff className="size-10 text-ink-3" />
         <div className="space-y-1">
           <p className="text-ink-1 text-sm font-medium">
-            Bu restoran için erişiminiz kaldırılmıştır.
+            Bu restoran için erişiminiz askıya alınmıştır.
           </p>
           <p className="text-xs text-ink-3">
             Daha fazla bilgi için platform yöneticisiyle iletişime geçin.
