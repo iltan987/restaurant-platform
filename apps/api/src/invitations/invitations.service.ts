@@ -238,7 +238,15 @@ export class InvitationsService {
         message: "This restaurant has no owner to remove",
       })
     }
-    await this.prisma.restaurantMember.delete({ where: { id: owner.id } })
+    await this.prisma.$transaction(async (tx) => {
+      await tx.restaurantMember.delete({ where: { id: owner.id } })
+      // Revoke the accepted invitation so the UI source of truth resets to
+      // "no owner" — the invite form then becomes active again.
+      await tx.restaurantInvitation.updateMany({
+        where: { restaurantId, status: "ACCEPTED" },
+        data: { status: "REVOKED" },
+      })
+    })
   }
 
   /** Returns the dash_user id for `email`, creating a verified credential user
