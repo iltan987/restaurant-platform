@@ -139,13 +139,15 @@ model Restaurant {
 // Service invariant: every restaurant keeps ≥1 OWNER at all times (FR-015).
 
 model RestaurantMember {
-  id           String         @id @default(cuid(2))
-  restaurantId String
-  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  userId       String
-  role         RestaurantRole
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id               String         @id @default(cuid(2))
+  restaurantId     String
+  restaurant       Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId           String
+  role             RestaurantRole
+  suspended        Boolean        @default(false)
+  directlyAssigned Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@unique([restaurantId, userId])
   @@index([userId])
