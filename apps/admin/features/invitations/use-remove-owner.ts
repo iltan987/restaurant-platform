@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { toastApiError } from "@/lib/toast-error"
 
 import { removeOwner } from "./api"
-import { invitationsQueries } from "./queries"
+import { invitationsQueries, ownerQueries } from "./queries"
 
 /** Remove the accepted owner for a restaurant so a new invite can be sent. */
 export function useRemoveOwner(restaurantId: string) {
@@ -19,6 +19,9 @@ export function useRemoveOwner(restaurantId: string) {
     },
     onError: toastApiError,
     onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ownerQueries.byRestaurant(restaurantId).queryKey,
+      })
       queryClient.invalidateQueries({
         queryKey: invitationsQueries.byRestaurant(restaurantId).queryKey,
       })

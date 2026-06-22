@@ -1,7 +1,12 @@
 import { z } from "zod"
 
 import { apiFetch, apiSend } from "@repo/api-client"
-import { type Invitation, invitationSchema } from "@repo/schemas"
+import {
+  type Invitation,
+  invitationSchema,
+  type RestaurantOwner,
+  restaurantOwnerSchema,
+} from "@repo/schemas"
 
 import { apiBase as API } from "@/lib/api-base"
 
@@ -48,5 +53,49 @@ export function revokeInvitation(invitationId: string): Promise<void> {
 export function removeOwner(restaurantId: string): Promise<void> {
   return apiSend(`${API}/admin/restaurants/${restaurantId}/owner`, {
     method: "DELETE",
+  })
+}
+
+const ownerResultSchema = z.object({
+  owner: restaurantOwnerSchema.nullable(),
+})
+
+/** Current OWNER for a restaurant as the admin sees it (member-table derived). */
+export async function fetchOwner(
+  restaurantId: string
+): Promise<RestaurantOwner | null> {
+  const { owner } = await apiFetch(
+    `${API}/admin/restaurants/${restaurantId}/owner`,
+    ownerResultSchema,
+    { cache: "no-store" }
+  )
+  return owner
+}
+
+/** Directly assign an owner without the email flow. */
+export async function directAssign(
+  restaurantId: string,
+  email: string
+): Promise<{ tempPassword: string | null }> {
+  return apiFetch(
+    `${API}/admin/restaurants/${restaurantId}/owner/direct`,
+    z.object({ tempPassword: z.string().nullable() }),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }
+  )
+}
+
+/** Suspend or re-enable the current owner's access. */
+export function toggleSuspension(
+  restaurantId: string,
+  suspended: boolean
+): Promise<void> {
+  return apiSend(`${API}/admin/restaurants/${restaurantId}/owner/suspended`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ suspended }),
   })
 }
