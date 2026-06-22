@@ -5,7 +5,6 @@ import { getQueryClient } from "@repo/query/get-query-client"
 
 import { MenuManager } from "@/features/categories/components/menu-manager"
 import { categoriesQueries } from "@/features/categories/queries"
-import { menuItemsQueries } from "@/features/menu-items/queries"
 import { restaurantsQueries } from "@/features/restaurants/queries"
 
 /**
@@ -26,14 +25,7 @@ export default async function MenuPage({
   )
   if (!restaurant) notFound()
 
-  const categories = await queryClient.fetchQuery(
-    categoriesQueries.bySlug(slug)
-  )
-  await Promise.all(
-    categories.map((category) =>
-      queryClient.prefetchQuery(menuItemsQueries.byCategory(category.id))
-    )
-  )
+  await queryClient.prefetchQuery(categoriesQueries.bySlug(slug))
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
