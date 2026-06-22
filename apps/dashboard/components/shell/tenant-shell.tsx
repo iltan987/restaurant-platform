@@ -48,9 +48,20 @@ export function TenantShell({
     enabled: !!session,
   })
 
+  const notAMember =
+    !isMembershipsPending &&
+    !!memberships &&
+    !memberships.find((m) => m.slug === slug)
+
   useEffect(() => {
     if (!isPending && !session) window.location.href = signInHref()
   }, [isPending, session])
+
+  useEffect(() => {
+    if (!notAMember) return
+    const protocol = window.location.protocol
+    window.location.href = `${protocol}//${ROOT_DOMAIN}/`
+  }, [notAMember])
 
   if (isPending || !session) {
     return (
@@ -69,6 +80,16 @@ export function TenantShell({
   }
 
   const membership = memberships?.find((m) => m.slug === slug)
+
+  // Redirect in progress (useEffect above) — hold the spinner.
+  if (notAMember) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-canvas">
+        <Spinner className="size-5 text-ink-3" />
+      </div>
+    )
+  }
+
   if (membership?.suspended) {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-canvas text-center">
