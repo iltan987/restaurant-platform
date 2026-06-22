@@ -1,7 +1,7 @@
 "use client"
 
 import { Fingerprint, KeyRound, Plus, Trash2 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@repo/ui/components/ui/button"
 import {
@@ -24,10 +24,31 @@ type Passkey = { id: string; name?: string | null }
  * device, and remove. Registration triggers the platform biometric/PIN prompt.
  * WebAuthn needs a secure context (HTTPS or localhost).
  */
-export function PasskeysDialog() {
-  const [open, setOpen] = useState(false)
+export function PasskeysDialog({
+  open: openProp,
+  onOpenChange,
+  showTrigger = true,
+}: {
+  /** Controlled open state (e.g. opened from a menu). Defaults to internal state. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** Render the built-in icon-button trigger. Set false when opened externally. */
+  showTrigger?: boolean
+} = {}) {
+  const [openState, setOpenState] = useState(false)
+  const open = openProp ?? openState
+  const setOpen = (v: boolean) => {
+    setOpenState(v)
+    onOpenChange?.(v)
+  }
   const [items, setItems] = useState<Passkey[] | null>(null)
   const [busy, setBusy] = useState(false)
+
+  // Refresh the list whenever the dialog opens (covers both the built-in
+  // trigger and programmatic opens from the account menu).
+  useEffect(() => {
+    if (open) void refresh()
+  }, [open])
 
   async function refresh() {
     const { data } = await passkey.listUserPasskeys()
@@ -56,25 +77,21 @@ export function PasskeysDialog() {
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v)
-        if (v) void refresh()
-      }}
-    >
-      <DialogTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground"
-            aria-label="Geçiş anahtarları"
-          >
-            <KeyRound className="size-4" />
-          </Button>
-        }
-      />
+    <Dialog open={open} onOpenChange={setOpen}>
+      {showTrigger ? (
+        <DialogTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground"
+              aria-label="Geçiş anahtarları"
+            >
+              <KeyRound className="size-4" />
+            </Button>
+          }
+        />
+      ) : null}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Geçiş anahtarları</DialogTitle>

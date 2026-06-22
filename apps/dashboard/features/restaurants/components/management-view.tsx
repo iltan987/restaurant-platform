@@ -1,31 +1,27 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { LogOut, RocketIcon, Undo2Icon } from "lucide-react"
+import { RocketIcon, Undo2Icon } from "lucide-react"
 
 import { type Restaurant } from "@repo/schemas"
-import { ThemeToggle } from "@repo/ui/components/theme-toggle"
-import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
 import { Separator } from "@repo/ui/components/ui/separator"
-import { cn } from "@repo/ui/lib/utils"
 
 import { ConfirmDialog } from "@/components/confirm-dialog"
-import { PasskeysDialog } from "@/features/account/components/passkeys-dialog"
+import { PageHeader } from "@/components/page-header"
 import { AreasStep } from "@/features/areas/components/areas-step"
 import { FloorsStep } from "@/features/floors/components/floors-step"
 import { MembersSection } from "@/features/members/components/members-section"
-import { RestaurantSwitcher } from "@/features/members/components/restaurant-switcher"
 import { TablesStep } from "@/features/tables/components/tables-step"
 import { tablesQueries } from "@/features/tables/queries"
-import { signOut } from "@/lib/auth-client"
 
 import { useSetOnboarding } from "../use-set-onboarding"
 import { useSetStatus } from "../use-set-status"
 
 /**
- * Post-onboarding management. A lightweight surface for now — the full table
- * manager (per-row QR, destructive edits, floor plan) lands with later stories.
+ * Post-onboarding management overview, rendered inside the app shell. Account
+ * actions (theme, passkeys, sign-out) and restaurant switching live in the
+ * shell; this surface owns the publish state and the structure sections.
  */
 export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
   const slug = restaurant.slug
@@ -35,36 +31,15 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
   const isActive = restaurant.status === "ACTIVE"
 
   return (
-    <div className="min-h-svh bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-6 py-3.5">
-          <h1 className="truncate text-base font-semibold tracking-tight">
-            {restaurant.name}
-          </h1>
-          <Badge
-            variant="outline"
-            className={cn(
-              "gap-1.5",
-              isActive
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                : "text-muted-foreground"
-            )}
-          >
-            <span
-              className={cn(
-                "size-1.5 rounded-full",
-                isActive ? "bg-emerald-500" : "bg-muted-foreground"
-              )}
-            />
-            {isActive ? "Yayında" : "Pasif"}
-          </Badge>
-
-          <RestaurantSwitcher currentSlug={slug} />
-
-          <div className="ml-auto flex items-center gap-2">
+    <div className="mx-auto max-w-[1080px] px-4 py-7 pb-20 sm:px-7">
+      <PageHeader
+        title={restaurant.name}
+        subtitle="Restoranınızın kat planı, masaları ve ekibi."
+        actions={
+          <>
             <ConfirmDialog
               trigger={
-                <Button variant="ghost" className="text-muted-foreground">
+                <Button variant="ghost" className="text-ink-3">
                   <Undo2Icon className="size-4" />
                   Kuruluma dön
                 </Button>
@@ -79,19 +54,6 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
                 })
               }
             />
-            <PasskeysDialog />
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Çıkış yap"
-              onClick={async () => {
-                await signOut()
-                window.location.reload()
-              }}
-            >
-              <LogOut className="size-4" />
-            </Button>
             {isActive ? (
               <Button
                 variant="outline"
@@ -118,18 +80,18 @@ export function ManagementView({ restaurant }: { restaurant: Restaurant }) {
                 }
               />
             )}
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
-      <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-8">
+      <div className="flex flex-col gap-8">
         <FloorsStep restaurant={restaurant} embedded />
         <AreasStep restaurant={restaurant} embedded />
         <Separator />
         <TablesStep restaurant={restaurant} embedded />
         <Separator />
         <MembersSection restaurantId={restaurant.id} />
-      </main>
+      </div>
     </div>
   )
 }

@@ -1,46 +1,34 @@
-"use client"
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query"
+import { notFound } from "next/navigation"
 
-import { useEffect } from "react"
+import { getQueryClient } from "@repo/query/get-query-client"
 
-import { Spinner } from "@repo/ui/components/ui/spinner"
-
-import { env } from "@/env"
-import { useSession } from "@/lib/auth-client"
-
-const ROOT_DOMAIN = env.NEXT_PUBLIC_ROOT_DOMAIN
-
-/** Apex sign-in URL. The tenant lives on a `<slug>.<root>` subdomain, so we send
- * the user to the apex host to sign in. */
-function signInHref(): string {
-  const protocol =
-    typeof window !== "undefined" ? window.location.protocol : "http:"
-  return `${protocol}//${ROOT_DOMAIN}/giris`
-}
+import { TenantShell } from "@/components/shell/tenant-shell"
+import { restaurantsQueries } from "@/features/restaurants/queries"
 
 /**
- * Client-side auth gate for a tenant dashboard. Uses `useSession` (browser→API,
- * credentials included) so it works on any host without cross-host cookie
- * sharing. Redirects unauthenticated visitors to sign-in. The API guards are
- * the real boundary; this is the UX layer.
+ * Tenant workspace layout. Prefetches the restaurant so the shell (sidebar,
+ * topbar, onboarding branch) hydrates instantly on every route, then defers the
+ * session gate + chrome to the client `TenantShell`.
  */
-export default function TenantLayout({
+export default async function TenantLayout({
   children,
+  params,
 }: {
   children: React.ReactNode
+  params: Promise<{ slug: string }>
 }) {
-  const { data: session, isPending } = useSession()
+  const { slug } = await params
 
-  useEffect(() => {
-    if (!isPending && !session) window.location.href = signInHref()
-  }, [isPending, session])
+  const queryClient = getQueryClient()
+  const restaurant = await queryClient.fetchQuery(
+    restaurantsQueries.detail(slug)
+  )
+  if (!restaurant) notFound()
 
-  if (isPending || !session) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Spinner className="size-5 text-muted-foreground" />
-      </div>
-    )
-  }
-
-  return <>{children}</>
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <TenantShell slug={slug}>{children}</TenantShell>
+    </HydrationBoundary>
+  )
 }
