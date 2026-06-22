@@ -12,3 +12,4 @@ Memories for this project are checked into the repo here (`.claude/memory/`), no
 - [Backend on Render](backend-on-render.md) — NestJS API deploys to Render (persistent), only the Next apps are on Vercel; why + env wiring
 - [Terse comments](terse-comments.md) — keep comments/docs terse, esp. .env.example; no repeated multi-line rationale
 - [Vercel production branch](vercel-production-branch.md) — prod branch must be `main`; if prod looks stale, check it before debugging code
+- [Dashboard redesign](dashboard-redesign.md) — in-progress dashboard UI redesign: phase plan + new design-token vocabulary (bg-surface/text-ink/etc.) to reuse

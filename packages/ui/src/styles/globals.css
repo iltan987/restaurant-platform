@@ -48,6 +48,48 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+
+  /* ---- Design system layer (additive; opt-in utilities) ---- */
+  /* Cool-neutral surface hierarchy */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-hover: var(--surface-hover);
+  /* Ink (text) hierarchy */
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  /* Lines */
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-subtle: var(--line-subtle);
+  /* Status tones (text/dot + soft background) */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  /* Brand soft (indigo tint; brand solid = primary) */
+  --color-brand: var(--primary);
+  --color-brand-soft: var(--brand-soft);
+  /* Card radius (13px) */
+  --radius-card: 0.8125rem;
+  /* Layered shadows */
+  --shadow-soft: 0 1px 2px oklch(0.2 0.02 270 / 0.05);
+  --shadow-card:
+    0 1px 2px oklch(0.2 0.02 270 / 0.06), 0 1px 1px oklch(0.2 0.02 270 / 0.04);
+  --shadow-raised:
+    0 4px 12px oklch(0.2 0.02 270 / 0.08), 0 1px 3px oklch(0.2 0.02 270 / 0.05);
+  --shadow-float:
+    0 12px 32px oklch(0.2 0.02 270 / 0.12), 0 4px 8px oklch(0.2 0.02 270 / 0.06);
+  --shadow-pop:
+    0 24px 60px oklch(0.2 0.02 270 / 0.18),
+    0 8px 16px oklch(0.2 0.02 270 / 0.08);
 }
 
 :root {
@@ -83,6 +125,29 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Design system layer — light */
+  --canvas: oklch(0.995 0.001 270);
+  --surface: #ffffff;
+  --surface-subtle: oklch(0.985 0.002 270);
+  --surface-muted: oklch(0.968 0.003 270);
+  --surface-hover: oklch(0.975 0.003 270);
+  --ink: oklch(0.22 0.006 270);
+  --ink-2: oklch(0.44 0.006 270);
+  --ink-3: oklch(0.58 0.006 270);
+  --ink-4: oklch(0.7 0.005 270);
+  --line: oklch(0.922 0.004 270);
+  --line-strong: oklch(0.87 0.005 270);
+  --line-subtle: oklch(0.95 0.003 270);
+  --success: oklch(0.5 0.13 155);
+  --success-soft: oklch(0.96 0.04 155);
+  --warning: oklch(0.52 0.13 70);
+  --warning-soft: oklch(0.96 0.05 70);
+  --danger: oklch(0.55 0.19 25);
+  --danger-soft: oklch(0.96 0.05 25);
+  --info: oklch(0.55 0.14 245);
+  --info-soft: oklch(0.96 0.04 245);
+  --brand-soft: oklch(0.96 0.03 268);
 }
 
 .dark {
@@ -117,6 +182,29 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Design system layer — dark */
+  --canvas: oklch(0.17 0.004 270);
+  --surface: oklch(0.205 0.005 270);
+  --surface-subtle: oklch(0.185 0.004 270);
+  --surface-muted: oklch(0.255 0.005 270);
+  --surface-hover: oklch(0.235 0.005 270);
+  --ink: oklch(0.96 0.004 270);
+  --ink-2: oklch(0.78 0.005 270);
+  --ink-3: oklch(0.64 0.005 270);
+  --ink-4: oklch(0.52 0.005 270);
+  --line: oklch(1 0 0 / 10%);
+  --line-strong: oklch(1 0 0 / 18%);
+  --line-subtle: oklch(1 0 0 / 6%);
+  --success: oklch(0.7 0.14 155);
+  --success-soft: oklch(0.3 0.06 155);
+  --warning: oklch(0.78 0.14 70);
+  --warning-soft: oklch(0.32 0.06 70);
+  --danger: oklch(0.7 0.17 25);
+  --danger-soft: oklch(0.33 0.08 25);
+  --info: oklch(0.72 0.13 245);
+  --info-soft: oklch(0.32 0.07 245);
+  --brand-soft: oklch(0.3 0.06 268);
 }
 
 @layer base {
