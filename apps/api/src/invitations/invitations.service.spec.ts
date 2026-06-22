@@ -45,6 +45,7 @@ function makePrisma() {
       updateMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
     dashUser: { findUnique: jest.fn(), update: jest.fn() },
+    dashSession: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
   }
   // $transaction runs the callback against the same delegate set (the tx).
   return {
@@ -274,9 +275,10 @@ describe("InvitationsService", () => {
   })
 
   describe("adminToggleSuspension", () => {
-    it("sets suspended=true on the OWNER member", async () => {
+    it("sets suspended=true on the OWNER member and revokes their sessions", async () => {
       prisma.restaurantMember.findFirst.mockResolvedValue({
         id: "m1",
+        userId: "u1",
       } as never)
 
       await service.adminToggleSuspension("r1", true)
@@ -285,11 +287,15 @@ describe("InvitationsService", () => {
         where: { id: "m1" },
         data: { suspended: true },
       })
+      expect(prisma.dashSession.deleteMany).toHaveBeenCalledWith({
+        where: { userId: "u1" },
+      })
     })
 
-    it("sets suspended=false to re-enable", async () => {
+    it("sets suspended=false to re-enable without revoking sessions", async () => {
       prisma.restaurantMember.findFirst.mockResolvedValue({
         id: "m1",
+        userId: "u1",
       } as never)
 
       await service.adminToggleSuspension("r1", false)
@@ -298,6 +304,7 @@ describe("InvitationsService", () => {
         where: { id: "m1" },
         data: { suspended: false },
       })
+      expect(prisma.dashSession.deleteMany).not.toHaveBeenCalled()
     })
 
     it("throws NOT_A_MEMBER when no OWNER exists", async () => {

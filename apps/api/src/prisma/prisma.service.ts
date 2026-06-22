@@ -29,6 +29,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   // Dashboard-audience identity table (Better Auth), read/updated by the
   // invitation-acceptance flow to attach memberships and confirm the email.
   readonly dashUser = prisma.dash_user
+  readonly dashSession = prisma.dash_session
 
   /** Interactive transaction — bound so services can group writes atomically. */
   readonly $transaction = prisma.$transaction.bind(prisma)

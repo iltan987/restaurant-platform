@@ -324,6 +324,11 @@ export class InvitationsService {
       where: { id: owner.id },
       data: { suspended },
     })
+    if (suspended) {
+      await this.prisma.dashSession.deleteMany({
+        where: { userId: owner.userId },
+      })
+    }
   }
 
   /** Current OWNER for a restaurant, derived from the member table (admin view). */
