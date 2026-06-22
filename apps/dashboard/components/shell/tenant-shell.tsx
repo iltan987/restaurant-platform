@@ -1,13 +1,15 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { ShieldOff } from "lucide-react"
 import { useEffect } from "react"
 
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { env } from "@/env"
+import { membersQueries } from "@/features/members/queries"
 import { restaurantsQueries } from "@/features/restaurants/queries"
-import { useSession } from "@/lib/auth-client"
+import { signOut, useSession } from "@/lib/auth-client"
 
 import { AppShell } from "./app-shell"
 
@@ -18,6 +20,13 @@ function signInHref(): string {
   const protocol =
     typeof window !== "undefined" ? window.location.protocol : "http:"
   return `${protocol}//${ROOT_DOMAIN}/giris`
+}
+
+async function handleSignOut() {
+  await signOut()
+  const protocol =
+    typeof window !== "undefined" ? window.location.protocol : "http:"
+  window.location.href = `${protocol}//${ROOT_DOMAIN}/giris`
 }
 
 /**
@@ -34,6 +43,10 @@ export function TenantShell({
 }) {
   const { data: session, isPending } = useSession()
   const { data: restaurant } = useQuery(restaurantsQueries.detail(slug))
+  const { data: memberships, isPending: isMembershipsPending } = useQuery({
+    ...membersQueries.memberships(),
+    enabled: !!session,
+  })
 
   useEffect(() => {
     if (!isPending && !session) window.location.href = signInHref()
@@ -43,6 +56,37 @@ export function TenantShell({
     return (
       <div className="flex min-h-svh items-center justify-center bg-canvas">
         <Spinner className="size-5 text-ink-3" />
+      </div>
+    )
+  }
+
+  if (isMembershipsPending) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-canvas">
+        <Spinner className="size-5 text-ink-3" />
+      </div>
+    )
+  }
+
+  const isMember = memberships?.some((m) => m.slug === slug)
+  if (!isMember) {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-canvas text-center">
+        <ShieldOff className="size-10 text-ink-3" />
+        <div className="space-y-1">
+          <p className="text-ink-1 text-sm font-medium">
+            Bu restoran için erişiminiz kaldırılmıştır.
+          </p>
+          <p className="text-xs text-ink-3">
+            Daha fazla bilgi için platform yöneticisiyle iletişime geçin.
+          </p>
+        </div>
+        <button
+          onClick={handleSignOut}
+          className="text-xs text-ink-3 underline underline-offset-2 hover:text-ink-2"
+        >
+          Çıkış yap
+        </button>
       </div>
     )
   }
