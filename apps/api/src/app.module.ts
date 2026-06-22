@@ -30,7 +30,7 @@ import { HealthController } from "./health.controller"
     // captures stdout). Each request gets an auto log line with a request id.
     LoggerModule.forRoot({
       pinoHttp: {
-        level: env.LOG_LEVEL,
+        level: env.LOG_LEVEL ?? "info",
         // Skip the platform liveness probe (Render hits /api/health every ~5s)
         // so it doesn't drown the request log.
         autoLogging: { ignore: (req) => req.url === "/api/health" },

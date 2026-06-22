@@ -1,8 +1,8 @@
 /**
  * Purpose-built in-memory Prisma fake for e2e tests — no real database.
- * Implements only the query shapes the services actually use
- * (Restaurant → Floor → Area → Table). Import `fakePrisma` as the
- * PrismaService override and call `fakePrisma.__reset()` in beforeEach.
+ * Implements only the query shapes the services actually use.
+ * Import `fakePrisma` as the PrismaService override and call
+ * `fakePrisma.__reset()` in beforeEach.
  */
 
 type Restaurant = {
@@ -638,10 +638,12 @@ const menuItem = {
   },
   findMany({
     where,
+    include,
   }: {
     where?: { categoryId?: string; id?: { in?: string[] } }
     orderBy?: unknown
     select?: unknown
+    include?: { media?: unknown; tags?: unknown }
   } = {}) {
     const cid = where?.categoryId
     const idIn = where?.id?.in
@@ -652,6 +654,15 @@ const menuItem = {
           (idIn === undefined || idIn.includes(m.id))
       )
       .sort((a, b) => a.position - b.position)
+    if (include?.media || include?.tags) {
+      return Promise.resolve(
+        rows.map((m) => ({
+          ...m,
+          ...(include.media ? { media: [] } : {}),
+          ...(include.tags ? { tags: [] } : {}),
+        }))
+      )
+    }
     return Promise.resolve(rows)
   },
   count({ where }: { where: { categoryId: string } }) {
@@ -778,6 +789,122 @@ const tag = {
   },
 }
 
+type RestaurantMember = {
+  restaurantId: string
+  userId: string
+  role: "OWNER" | "MANAGER" | "STAFF"
+  suspended: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+const restaurantMembers: RestaurantMember[] = []
+
+const restaurantMember = {
+  findMany({
+    where,
+  }: {
+    where?: { userId?: string; restaurantId?: string; role?: string }
+    orderBy?: unknown
+    include?: unknown
+  } = {}) {
+    const rows = restaurantMembers.filter(
+      (m) =>
+        (where?.userId === undefined || m.userId === where.userId) &&
+        (where?.restaurantId === undefined ||
+          m.restaurantId === where.restaurantId) &&
+        (where?.role === undefined || m.role === where.role)
+    )
+    // Attach the restaurant relation (include: { restaurant }) by looking it up.
+    return Promise.resolve(
+      rows.map((m) => ({
+        ...m,
+        restaurant: restaurants.find((r) => r.id === m.restaurantId) ?? null,
+      }))
+    )
+  },
+  findUnique({
+    where,
+  }: {
+    where: { restaurantId_userId?: { restaurantId: string; userId: string } }
+  }) {
+    const cond = where.restaurantId_userId
+    if (!cond) return Promise.resolve(null)
+    return Promise.resolve(
+      restaurantMembers.find(
+        (m) => m.restaurantId === cond.restaurantId && m.userId === cond.userId
+      ) ?? null
+    )
+  },
+  findFirst({ where }: { where: { restaurantId?: string; role?: string } }) {
+    return Promise.resolve(
+      restaurantMembers.find(
+        (m) =>
+          (where.restaurantId === undefined ||
+            m.restaurantId === where.restaurantId) &&
+          (where.role === undefined || m.role === where.role)
+      ) ?? null
+    )
+  },
+  count({ where }: { where: { restaurantId?: string; role?: string } }) {
+    return Promise.resolve(
+      restaurantMembers.filter(
+        (m) =>
+          (where.restaurantId === undefined ||
+            m.restaurantId === where.restaurantId) &&
+          (where.role === undefined || m.role === where.role)
+      ).length
+    )
+  },
+  create({ data }: { data: Partial<RestaurantMember> }) {
+    const row: RestaurantMember = {
+      restaurantId: data.restaurantId!,
+      userId: data.userId!,
+      role: data.role ?? "OWNER",
+      suspended: data.suspended ?? false,
+      createdAt: now(),
+      updatedAt: now(),
+    }
+    restaurantMembers.push(row)
+    return Promise.resolve(row)
+  },
+  update({
+    where,
+    data,
+  }: {
+    where: { restaurantId_userId: { restaurantId: string; userId: string } }
+    data: Partial<RestaurantMember>
+  }) {
+    const row = restaurantMembers.find(
+      (m) =>
+        m.restaurantId === where.restaurantId_userId.restaurantId &&
+        m.userId === where.restaurantId_userId.userId
+    )!
+    Object.assign(row, data, { updatedAt: now() })
+    return Promise.resolve(row)
+  },
+  delete({
+    where,
+  }: {
+    where:
+      | { id: string }
+      | { restaurantId_userId: { restaurantId: string; userId: string } }
+  }) {
+    let i: number
+    if ("restaurantId_userId" in where) {
+      i = restaurantMembers.findIndex(
+        (m) =>
+          m.restaurantId === where.restaurantId_userId.restaurantId &&
+          m.userId === where.restaurantId_userId.userId
+      )
+    } else {
+      i = -1 // id-based delete not used in tests
+    }
+    const [row] = i >= 0 ? restaurantMembers.splice(i, 1) : [null]
+    return Promise.resolve(row)
+  },
+}
+
 export const fakePrisma = {
   restaurant,
   floor,
@@ -787,6 +914,7 @@ export const fakePrisma = {
   menuItem,
   allergen,
   tag,
+  restaurantMember,
   $transaction(cb: (tx: unknown) => unknown) {
     return Promise.resolve(
       cb({ restaurant, floor, area, table, category, menuItem, allergen, tag })
@@ -801,6 +929,7 @@ export const fakePrisma = {
     menuItems.length = 0
     allergens.length = 0
     tags.length = 0
+    restaurantMembers.length = 0
     seq = 0
     forceP2002 = false
   },
@@ -816,5 +945,6 @@ export const fakePrisma = {
     menuItems,
     allergens,
     tags,
+    restaurantMembers,
   },
 }
