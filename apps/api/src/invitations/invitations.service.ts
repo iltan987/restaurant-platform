@@ -227,6 +227,25 @@ export class InvitationsService {
     return invitation
   }
 
+  /** Current OWNER for a restaurant, derived from the member table (admin view). */
+  async adminGetOwner(restaurantId: string) {
+    const member = await this.prisma.restaurantMember.findFirst({
+      where: { restaurantId, role: "OWNER" },
+    })
+    if (!member) return { owner: null }
+    const user = await this.prisma.dashUser.findUnique({
+      where: { id: member.userId },
+      select: { email: true },
+    })
+    return {
+      owner: {
+        email: user?.email ?? "",
+        suspended: member.suspended,
+        directlyAssigned: member.directlyAssigned,
+      },
+    }
+  }
+
   /** Remove the current OWNER member for a restaurant (admin-only, no last-owner guard). */
   async adminRemoveOwner(restaurantId: string): Promise<void> {
     const owner = await this.prisma.restaurantMember.findFirst({

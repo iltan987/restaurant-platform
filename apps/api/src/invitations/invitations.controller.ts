@@ -73,6 +73,11 @@ export class AdminInvitationsController {
     return this.invitations.revoke(invitationId)
   }
 
+  @Get("restaurants/:restaurantId/owner")
+  getOwner(@Param("restaurantId") restaurantId: string) {
+    return this.invitations.adminGetOwner(restaurantId)
+  }
+
   @Delete("restaurants/:restaurantId/owner")
   @HttpCode(204)
   removeOwner(@Param("restaurantId") restaurantId: string) {

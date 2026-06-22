@@ -36,7 +36,14 @@ function makePrisma() {
       findFirst: jest.fn(),
       update: jest.fn().mockResolvedValue({}),
     },
-    restaurantMember: { findUnique: jest.fn(), create: jest.fn() },
+    restaurantMember: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn().mockResolvedValue({}),
+      delete: jest.fn().mockResolvedValue({}),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
     dashUser: { findUnique: jest.fn(), update: jest.fn() },
   }
   // $transaction runs the callback against the same delegate set (the tx).
@@ -186,6 +193,43 @@ describe("InvitationsService", () => {
       expect(prisma.restaurantInvitation.update).toHaveBeenCalledWith({
         where: { id: "inv1" },
         data: { status: "ACCEPTED", acceptedAt: expect.any(Date) },
+      })
+    })
+  })
+
+  describe("adminGetOwner", () => {
+    it("returns null when no OWNER member exists", async () => {
+      prisma.restaurantMember.findFirst.mockResolvedValue(null)
+
+      const result = await service.adminGetOwner("r1")
+
+      expect(result).toEqual({ owner: null })
+    })
+
+    it("returns owner details joined with DashUser email", async () => {
+      prisma.restaurantMember.findFirst.mockResolvedValue({
+        id: "m1",
+        restaurantId: "r1",
+        userId: "u1",
+        role: "OWNER",
+        suspended: false,
+        directlyAssigned: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      prisma.dashUser.findUnique.mockResolvedValue({
+        id: "u1",
+        email: "owner@example.com",
+      })
+
+      const result = await service.adminGetOwner("r1")
+
+      expect(result).toEqual({
+        owner: {
+          email: "owner@example.com",
+          suspended: false,
+          directlyAssigned: true,
+        },
       })
     })
   })
