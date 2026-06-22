@@ -12,7 +12,7 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import { useQuery } from "@tanstack/react-query"
-import { ChevronLeftIcon, ListIcon } from "lucide-react"
+import { InfoIcon, LayoutGridIcon, ListIcon } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useRef, useState } from "react"
 
@@ -20,6 +20,8 @@ import { type Restaurant, type Table } from "@repo/schemas"
 import { Button } from "@repo/ui/components/ui/button"
 import { cn } from "@repo/ui/lib/utils"
 
+import { EmptyState } from "@/components/empty-state"
+import { PageHeader } from "@/components/page-header"
 import { areasQueries } from "@/features/areas/queries"
 import { tablesQueries } from "@/features/tables/queries"
 
@@ -137,11 +139,11 @@ function TableNode({
         transform: `translate(-50%, -50%) translate3d(${transform?.x ?? 0}px, ${transform?.y ?? 0}px, 0)${isDragging ? " scale(1.05)" : ""}`,
       }}
       className={cn(
-        "absolute grid touch-none place-items-center border-2 bg-card text-sm font-semibold shadow-sm transition-colors select-none",
-        "focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
+        "absolute grid touch-none place-items-center border-2 bg-surface text-sm font-semibold shadow-card transition-colors select-none",
+        "focus-visible:ring-3 focus-visible:ring-brand/30 focus-visible:outline-none",
         SHAPE_CLASS[table.shape],
         palette.node,
-        isDragging ? "z-20 cursor-grabbing shadow-lg" : "cursor-grab"
+        isDragging ? "z-20 cursor-grabbing shadow-float" : "cursor-grab"
       )}
       {...listeners}
       {...attributes}
@@ -251,53 +253,62 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
     )
   }
 
+  const stats: { n: number; label: string }[] = [
+    ...(isMulti ? [{ n: floors.length, label: "Kat" }] : []),
+    { n: floorAreas.length, label: "Alan" },
+    { n: floorTables.length, label: "Masa" },
+  ]
+
   return (
-    <div className="min-h-svh bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-6 py-3.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            nativeButton={false}
-            className="text-muted-foreground"
-            render={<Link href={`/`} />}
-          >
-            <ChevronLeftIcon className="size-4" />
-            Geri
-          </Button>
-          <h1 className="text-base font-semibold tracking-tight">
-            Yerleşim planı
-          </h1>
+    <div className="mx-auto w-full max-w-[1080px] px-4 py-7 pb-20 sm:px-7">
+      <PageHeader
+        title="Masalar & Alanlar"
+        subtitle="Masaları sürükleyerek salonunuzdaki yerleşime göre düzenleyin."
+        actions={
           <Button
             variant="outline"
-            size="sm"
             nativeButton={false}
-            className="ml-auto"
-            render={<Link href={`/`} />}
+            render={<Link href="/" />}
           >
             <ListIcon className="size-4" />
             Masaları yönet
           </Button>
-        </div>
-      </header>
+        }
+      />
 
-      <main className="mx-auto flex max-w-5xl flex-col gap-5 px-6 py-6">
-        <p className="text-sm text-muted-foreground">
-          Masaları sürükleyerek salonunuzdaki yerleşimine göre düzenleyin. Bu
-          yalnızca görsel bir düzendir; QR kodlarını veya menüyü etkilemez. Masa
-          eklemek, adlandırmak veya silmek için{" "}
-          <Link
-            href="/"
-            className="font-medium text-primary underline-offset-4 hover:underline"
-          >
-            masa listesini
-          </Link>{" "}
-          kullanın.
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {stats.map((s) => (
+            <span
+              key={s.label}
+              className="inline-flex items-center gap-1.5 rounded-card border border-line bg-surface px-3 py-1.5 text-sm shadow-soft"
+            >
+              <span className="font-mono font-semibold text-ink tabular-nums">
+                {s.n}
+              </span>
+              <span className="text-ink-3">{s.label}</span>
+            </span>
+          ))}
+        </div>
+
+        <p className="flex items-start gap-2 text-sm text-ink-3">
+          <InfoIcon className="mt-0.5 size-4 shrink-0 text-ink-4" />
+          <span>
+            Bu yalnızca görsel bir düzendir; QR kodlarını veya menüyü etkilemez.
+            Masa eklemek, adlandırmak veya silmek için{" "}
+            <Link
+              href="/"
+              className="font-medium text-brand underline-offset-4 hover:underline"
+            >
+              masaları yönet
+            </Link>{" "}
+            bölümünü kullanın.
+          </span>
         </p>
 
         {isMulti && (
           <div
-            className="flex flex-wrap gap-1.5"
+            className="inline-flex w-fit gap-1 rounded-lg border border-line bg-surface-muted p-1"
             role="tablist"
             aria-label="Kat seç"
           >
@@ -311,10 +322,10 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
                   aria-selected={selected}
                   onClick={() => setActiveFloorId(f.id)}
                   className={cn(
-                    "rounded-lg border px-3 py-1.5 text-sm font-medium transition focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition focus-visible:ring-3 focus-visible:ring-brand/30 focus-visible:outline-none",
                     selected
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted"
+                      ? "bg-surface text-ink shadow-soft"
+                      : "text-ink-3 hover:text-ink"
                   )}
                 >
                   {f.name}
@@ -329,7 +340,7 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
             {floorAreas.map((a) => (
               <span
                 key={a.id}
-                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+                className="inline-flex items-center gap-1.5 text-xs text-ink-3"
               >
                 <span
                   className={cn("size-2.5 rounded-full", colorOf(a.id).dot)}
@@ -341,15 +352,16 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
         )}
 
         {floorTables.length === 0 ? (
-          <div className="grid place-items-center rounded-2xl border border-dashed bg-muted/30 py-20 text-center text-sm text-muted-foreground">
-            Bu katta henüz masa yok.{" "}
-            <Link
-              href="/"
-              className="font-medium text-primary underline-offset-4 hover:underline"
-            >
-              Önce masa ekleyin.
-            </Link>
-          </div>
+          <EmptyState
+            icon={<LayoutGridIcon />}
+            title="Bu katta henüz masa yok"
+            description="Yerleşimi düzenleyebilmek için önce bir masa ekleyin."
+          >
+            <Button nativeButton={false} render={<Link href="/" />}>
+              <ListIcon className="size-4" />
+              Masaları yönet
+            </Button>
+          </EmptyState>
         ) : (
           <DndContext
             id="floor-plan-canvas"
@@ -360,7 +372,7 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
           >
             <div
               ref={surfaceRef}
-              className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border bg-muted/20 [background-image:linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [background-size:40px_40px]"
+              className="relative aspect-[16/10] w-full overflow-hidden rounded-card border border-line bg-surface-subtle [background-image:linear-gradient(to_right,var(--color-line)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-line)_1px,transparent_1px)] [background-size:40px_40px] shadow-soft"
             >
               {floorTables.map((t) => {
                 const { x, y } = posOf(t)
@@ -377,7 +389,7 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
             </div>
           </DndContext>
         )}
-      </main>
+      </div>
     </div>
   )
 }
