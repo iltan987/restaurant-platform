@@ -4,16 +4,18 @@ import {
   type MenuItem,
   type MenuItemDetail,
   menuItemDetailSchema,
+  type MenuItemListEntry,
+  menuItemListSchema,
   menuItemSchema,
   type UpdateMenuItemInput,
 } from "@repo/schemas"
 
 import { apiBase as API } from "@/lib/api-base"
 
-const itemListSchema = menuItemSchema.array()
+const itemListSchema = menuItemListSchema.array()
 
-/** Items within a category, ordered. */
-export function fetchItems(categoryId: string): Promise<MenuItem[]> {
+/** Items within a category, ordered (each with a thumbnail + tags). */
+export function fetchItems(categoryId: string): Promise<MenuItemListEntry[]> {
   return apiFetch(`${API}/categories/${categoryId}/items`, itemListSchema, {
     cache: "no-store",
   })
@@ -55,7 +57,7 @@ export function deleteItem(id: string): Promise<void> {
 export function reorderItems(
   categoryId: string,
   ids: string[]
-): Promise<MenuItem[]> {
+): Promise<MenuItemListEntry[]> {
   return apiFetch(
     `${API}/categories/${categoryId}/items/order`,
     itemListSchema,

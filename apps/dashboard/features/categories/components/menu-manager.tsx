@@ -14,13 +14,15 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { useQuery } from "@tanstack/react-query"
-import { SearchIcon } from "lucide-react"
+import { PlusIcon, SearchIcon, UtensilsCrossedIcon } from "lucide-react"
 import { useState } from "react"
 
+import { Button } from "@repo/ui/components/ui/button"
 import { Input } from "@repo/ui/components/ui/input"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
-import { InlineAdd } from "@/components/inline-add"
+import { EmptyState } from "@/components/empty-state"
+import { PageHeader } from "@/components/page-header"
 
 import { categoriesQueries } from "../queries"
 import { useCreateCategory } from "../use-create-category"
@@ -46,6 +48,8 @@ export function MenuManager({
   const createCategory = useCreateCategory(slug, restaurantId)
   const reorderCategories = useReorderCategories(slug, restaurantId)
   const [search, setSearch] = useState("")
+  const [adding, setAdding] = useState(false)
+  const [newName, setNewName] = useState("")
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -62,34 +66,94 @@ export function MenuManager({
     )
   }
 
+  function startAdding() {
+    setSearch("")
+    setAdding(true)
+  }
+
+  function submitCategory() {
+    const name = newName.trim()
+    if (!name) return
+    createCategory.mutate({ name })
+    setNewName("")
+  }
+
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      <header className="mb-4">
-        <h1 className="text-xl font-semibold">Menü</h1>
-        <p className="text-sm text-muted-foreground">
-          Kategorileri ve ürünleri düzenleyin. Sürükleyerek sıralayın.
-        </p>
-      </header>
+    <div className="mx-auto w-full max-w-[920px] px-4 py-7 pb-20 sm:px-7">
+      <PageHeader
+        title="Menü"
+        subtitle="Kategorileri ve ürünleri düzenleyin; sürükleyerek sıralayın."
+        actions={
+          <Button onClick={startAdding}>
+            <PlusIcon className="size-4" />
+            Kategori ekle
+          </Button>
+        }
+      />
 
       <div className="relative mb-4">
-        <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-4" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Menüde ara (ürün veya kategori)"
           aria-label="Menüde ara"
-          className="pl-9"
+          className="h-11 pl-9"
         />
       </div>
 
-      {isLoading ? (
-        <div className="grid place-items-center py-12">
-          <Spinner />
+      {adding ? (
+        <div className="mb-3 flex items-center gap-2 rounded-card border border-line bg-surface p-2 shadow-soft">
+          <Input
+            autoFocus
+            value={newName}
+            maxLength={80}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitCategory()
+              if (e.key === "Escape") {
+                setNewName("")
+                setAdding(false)
+              }
+            }}
+            placeholder="Kategori adı (örn. Başlangıçlar)"
+            aria-label="Yeni kategori adı"
+            className="h-10"
+          />
+          <Button
+            onClick={submitCategory}
+            disabled={!newName.trim() || createCategory.isPending}
+          >
+            Ekle
+          </Button>
+          <Button
+            variant="ghost"
+            className="text-ink-3"
+            onClick={() => {
+              setNewName("")
+              setAdding(false)
+            }}
+          >
+            İptal
+          </Button>
         </div>
-      ) : categories.length === 0 ? (
-        <p className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
-          Henüz kategori yok. Aşağıdan ilk kategorinizi ekleyin.
-        </p>
+      ) : null}
+
+      {isLoading ? (
+        <div className="grid place-items-center py-16">
+          <Spinner className="text-ink-3" />
+        </div>
+      ) : categories.length === 0 && !adding ? (
+        <EmptyState
+          icon={<UtensilsCrossedIcon />}
+          title="Henüz menünüz yok"
+          description="İlk kategorinizi ekleyerek başlayın — sonra her kategoriye ürünlerinizi ekleyin."
+        >
+          <Button onClick={startAdding}>
+            <PlusIcon className="size-4" />
+            İlk kategoriyi ekle
+          </Button>
+        </EmptyState>
       ) : (
         <DndContext
           id="menu-categories"
@@ -114,15 +178,6 @@ export function MenuManager({
           </SortableContext>
         </DndContext>
       )}
-
-      <div className="mt-3 overflow-hidden rounded-xl border bg-card">
-        <InlineAdd
-          placeholder="Yeni kategori ekle"
-          maxLength={80}
-          pending={createCategory.isPending}
-          onAdd={(name) => createCategory.mutate({ name })}
-        />
-      </div>
     </div>
   )
 }

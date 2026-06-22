@@ -68,6 +68,18 @@ export const menuItemSchema = z.object({
 export type MenuItem = z.infer<typeof menuItemSchema>
 
 /**
+ * List entry (GET /categories/:id/items) — the base item plus a primary photo
+ * URL and its tags, so the management list can show a thumbnail and dietary
+ * badges without fetching each item's full detail.
+ */
+export const menuItemListSchema = menuItemSchema.extend({
+  thumbnailUrl: z.string().nullable(),
+  tags: z.array(tagSchema),
+})
+
+export type MenuItemListEntry = z.infer<typeof menuItemListSchema>
+
+/**
  * Full item detail (GET /menu-items/:id) — the base item plus its ordered
  * option groups (each with ordered options), assigned allergens & tags,
  * availability windows, and ordered media.

@@ -214,7 +214,7 @@ describe("InvitationsService", () => {
       const result = await service.adminDirectAssign("r1", "New@Example.com")
 
       expect(signUpEmail).toHaveBeenCalledTimes(1)
-      expect(signUpEmail.mock.calls[0][0].body.email).toBe("new@example.com")
+      expect(signUpEmail.mock.calls[0]![0]!.body.email).toBe("new@example.com")
       expect(prisma.dashUser.update).toHaveBeenCalledWith({
         where: { id: "u1" },
         data: { emailVerified: true },

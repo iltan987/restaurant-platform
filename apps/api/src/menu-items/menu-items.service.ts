@@ -18,13 +18,34 @@ export class MenuItemsService {
     private readonly activity: ActivityService
   ) {}
 
-  /** Items within a category, ordered. */
+  /** Items within a category, ordered, each with a primary photo + tags. */
   async findAllByCategory(categoryId: string) {
     await this.getCategoryOrThrow(categoryId)
-    return this.prisma.menuItem.findMany({
+    return this.listByCategory(categoryId)
+  }
+
+  /**
+   * Ordered list entries enriched for the management list: the first photo's
+   * public URL (`thumbnailUrl`) and the item's tags. Raw media rows (which
+   * carry storage keys) are not exposed here.
+   */
+  private async listByCategory(categoryId: string) {
+    const items = await this.prisma.menuItem.findMany({
       where: { categoryId },
       orderBy: { position: "asc" },
+      include: {
+        media: {
+          where: { type: "PHOTO" },
+          orderBy: { position: "asc" },
+          take: 1,
+        },
+        tags: { orderBy: { label: "asc" } },
+      },
     })
+    return items.map(({ media, ...item }) => ({
+      ...item,
+      thumbnailUrl: media[0] ? this.s3.publicUrl(media[0].storageKey) : null,
+    }))
   }
 
   /**
@@ -140,10 +161,7 @@ export class MenuItemsService {
         )
       )
     )
-    return this.prisma.menuItem.findMany({
-      where: { categoryId },
-      orderBy: { position: "asc" },
-    })
+    return this.listByCategory(categoryId)
   }
 
   private async getCategoryOrThrow(categoryId: string) {

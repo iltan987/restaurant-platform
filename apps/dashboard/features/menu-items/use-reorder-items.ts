@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { type MenuItem } from "@repo/schemas"
+import { type MenuItemListEntry } from "@repo/schemas"
 
 import { toastApiError } from "@/lib/toast-error"
 
@@ -17,15 +17,15 @@ export function useReorderItems(categoryId: string) {
     mutationFn: (ids: string[]) => reorderItems(categoryId, ids),
     onMutate: async (ids) => {
       await queryClient.cancelQueries({ queryKey: key })
-      const previous = queryClient.getQueryData<MenuItem[]>(key)
+      const previous = queryClient.getQueryData<MenuItemListEntry[]>(key)
       const byId = new Map((previous ?? []).map((i) => [i.id, i]))
-      queryClient.setQueryData<MenuItem[]>(key, () =>
+      queryClient.setQueryData<MenuItemListEntry[]>(key, () =>
         ids
           .map((id, index) => {
             const i = byId.get(id)
             return i ? { ...i, position: index } : undefined
           })
-          .filter((i): i is MenuItem => i !== undefined)
+          .filter((i): i is MenuItemListEntry => i !== undefined)
       )
       return { previous }
     },

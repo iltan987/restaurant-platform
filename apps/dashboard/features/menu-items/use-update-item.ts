@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { type MenuItem, type UpdateMenuItemInput } from "@repo/schemas"
+import { type MenuItemListEntry, type UpdateMenuItemInput } from "@repo/schemas"
 
 import { toastApiError } from "@/lib/toast-error"
 
@@ -18,8 +18,8 @@ export function useUpdateItem(categoryId: string) {
       updateItem(id, input),
     onMutate: async ({ id, input }) => {
       await queryClient.cancelQueries({ queryKey: key })
-      const previous = queryClient.getQueryData<MenuItem[]>(key)
-      queryClient.setQueryData<MenuItem[]>(key, (old) =>
+      const previous = queryClient.getQueryData<MenuItemListEntry[]>(key)
+      queryClient.setQueryData<MenuItemListEntry[]>(key, (old) =>
         (old ?? []).map((i) => (i.id === id ? { ...i, ...input } : i))
       )
       return { previous }

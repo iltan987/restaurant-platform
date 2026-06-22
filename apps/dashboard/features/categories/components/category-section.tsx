@@ -26,12 +26,12 @@ import {
 import { useState } from "react"
 
 import { type Category } from "@repo/schemas"
-import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
 import { Spinner } from "@repo/ui/components/ui/spinner"
 import { cn } from "@repo/ui/lib/utils"
 
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { ToneBadge } from "@/components/tone-badge"
 import { ItemEditorDialog } from "@/features/menu-items/components/item-editor-dialog"
 import { ItemRow } from "@/features/menu-items/components/item-row"
 import { menuItemsQueries } from "@/features/menu-items/queries"
@@ -114,18 +114,20 @@ export function CategorySection({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "rounded-xl border bg-card",
-        isDragging && "relative z-10 shadow-md",
+        "overflow-hidden rounded-card border border-line bg-surface shadow-soft",
+        isDragging && "relative z-10 shadow-float",
         category.isHidden && "opacity-60"
       )}
     >
-      <div className="flex items-center gap-2 border-b px-3 py-2">
+      <div className="flex items-center gap-1.5 border-b border-line-subtle px-3 py-2.5">
         <button
           type="button"
           aria-label="Kategoriyi sürükle"
           className={cn(
-            "grid size-6 shrink-0 place-items-center rounded text-muted-foreground",
-            draggable ? "cursor-grab active:cursor-grabbing" : "opacity-30"
+            "hidden size-6 shrink-0 place-items-center rounded text-ink-4 sm:grid",
+            draggable
+              ? "cursor-grab active:cursor-grabbing"
+              : "pointer-events-none opacity-30"
           )}
           {...attributes}
           {...listeners}
@@ -146,17 +148,18 @@ export function CategorySection({
           }}
           aria-label="Kategori adı"
           maxLength={80}
-          className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold outline-none hover:bg-muted/60 focus:border-ring focus:bg-background focus:ring-3 focus:ring-ring/30"
+          className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-[15px] font-semibold tracking-[-0.01em] text-ink outline-none hover:bg-surface-muted focus:border-brand focus:bg-surface focus:ring-3 focus:ring-brand/25"
         />
 
-        {category.isHidden && <Badge variant="secondary">Gizli</Badge>}
-        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+        {category.isHidden ? <ToneBadge tone="neutral">Gizli</ToneBadge> : null}
+        <span className="shrink-0 px-1 font-mono text-xs text-ink-3 tabular-nums">
           {items.length}
         </span>
 
         <Button
           variant="ghost"
           size="icon"
+          className="text-ink-3"
           aria-label={category.isHidden ? "Göster" : "Gizle"}
           onClick={() =>
             updateCategory.mutate({
@@ -178,7 +181,7 @@ export function CategorySection({
               variant="ghost"
               size="icon"
               aria-label="Kategoriyi sil"
-              className="text-muted-foreground hover:text-destructive"
+              className="text-ink-3 hover:text-danger"
             >
               <Trash2Icon className="size-4" />
             </Button>
@@ -192,8 +195,8 @@ export function CategorySection({
       </div>
 
       {isLoading ? (
-        <div className="grid place-items-center py-6">
-          <Spinner />
+        <div className="grid place-items-center py-8">
+          <Spinner className="text-ink-3" />
         </div>
       ) : (
         <DndContext
@@ -207,7 +210,7 @@ export function CategorySection({
             strategy={verticalListSortingStrategy}
           >
             {filtered.length === 0 ? (
-              <p className="px-3 py-4 text-sm text-muted-foreground">
+              <p className="px-3 py-5 text-center text-sm text-ink-3">
                 {search ? "Eşleşen ürün yok." : "Henüz ürün eklenmedi."}
               </p>
             ) : (
@@ -224,17 +227,18 @@ export function CategorySection({
         </DndContext>
       )}
 
-      <div className="border-t bg-muted/40 px-3 py-2">
-        <ItemEditorDialog
-          categoryId={category.id}
-          trigger={
-            <Button variant="ghost" size="sm" className="text-primary">
-              <PlusIcon className="size-4" />
-              Ürün ekle
-            </Button>
-          }
-        />
-      </div>
+      <ItemEditorDialog
+        categoryId={category.id}
+        trigger={
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 border-t border-line-subtle bg-surface-subtle px-3 py-2.5 text-sm font-medium text-brand transition-colors hover:bg-surface-muted"
+          >
+            <PlusIcon className="size-4" />
+            Ürün ekle
+          </button>
+        }
+      />
     </div>
   )
 }
