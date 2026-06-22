@@ -197,6 +197,82 @@ describe("InvitationsService", () => {
     })
   })
 
+  describe("adminDirectAssign", () => {
+    it("creates a new dashboard user and OWNER member, returns temp password", async () => {
+      prisma.restaurant.findUnique.mockResolvedValue({
+        id: "r1",
+        name: "Bistro",
+      })
+      prisma.restaurantMember.findFirst.mockResolvedValue(null) // no existing owner
+      prisma.dashUser.findUnique
+        .mockResolvedValueOnce(null) // user doesn't exist yet
+        .mockResolvedValueOnce({ id: "u1" }) // re-read after signUpEmail
+      prisma.dashUser.update.mockResolvedValue({} as never)
+      prisma.restaurantMember.create.mockResolvedValue({} as never)
+
+      const result = await service.adminDirectAssign("r1", "New@Example.com")
+
+      expect(signUpEmail).toHaveBeenCalledTimes(1)
+      expect(signUpEmail.mock.calls[0][0].body.email).toBe("new@example.com")
+      expect(prisma.dashUser.update).toHaveBeenCalledWith({
+        where: { id: "u1" },
+        data: { emailVerified: true },
+      })
+      expect(prisma.restaurantMember.create).toHaveBeenCalledWith({
+        data: {
+          restaurantId: "r1",
+          userId: "u1",
+          role: "OWNER",
+          directlyAssigned: true,
+        },
+      })
+      expect(result.tempPassword).toMatch(/^[\w-]{16}$/)
+    })
+
+    it("assigns an existing user as owner, returns null temp password", async () => {
+      prisma.restaurant.findUnique.mockResolvedValue({
+        id: "r1",
+        name: "Bistro",
+      })
+      prisma.restaurantMember.findFirst.mockResolvedValue(null)
+      prisma.dashUser.findUnique.mockResolvedValue({ id: "u1" }) // user exists
+
+      prisma.restaurantMember.create.mockResolvedValue({} as never)
+
+      const result = await service.adminDirectAssign(
+        "r1",
+        "existing@example.com"
+      )
+
+      expect(signUpEmail).not.toHaveBeenCalled()
+      expect(result.tempPassword).toBeNull()
+    })
+
+    it("throws CONFLICT when restaurant already has an OWNER", async () => {
+      prisma.restaurant.findUnique.mockResolvedValue({
+        id: "r1",
+        name: "Bistro",
+      })
+      prisma.restaurantMember.findFirst.mockResolvedValue({ id: "m1" } as never)
+
+      await expect(
+        service.adminDirectAssign("r1", "new@example.com")
+      ).rejects.toMatchObject({
+        response: { code: ErrorCode.CONFLICT },
+      })
+    })
+
+    it("throws RESTAURANT_NOT_FOUND for an unknown restaurant", async () => {
+      prisma.restaurant.findUnique.mockResolvedValue(null)
+
+      await expect(
+        service.adminDirectAssign("missing", "x@example.com")
+      ).rejects.toMatchObject({
+        response: { code: ErrorCode.RESTAURANT_NOT_FOUND },
+      })
+    })
+  })
+
   describe("adminGetOwner", () => {
     it("returns null when no OWNER member exists", async () => {
       prisma.restaurantMember.findFirst.mockResolvedValue(null)

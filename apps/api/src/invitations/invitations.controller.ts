@@ -78,6 +78,14 @@ export class AdminInvitationsController {
     return this.invitations.adminGetOwner(restaurantId)
   }
 
+  @Post("restaurants/:restaurantId/owner/direct")
+  directAssign(
+    @Param("restaurantId") restaurantId: string,
+    @Body(new ZodValidationPipe(inviteOwnerSchema)) body: InviteOwnerInput
+  ) {
+    return this.invitations.adminDirectAssign(restaurantId, body.email)
+  }
+
   @Delete("restaurants/:restaurantId/owner")
   @HttpCode(204)
   removeOwner(@Param("restaurantId") restaurantId: string) {

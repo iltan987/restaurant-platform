@@ -34,6 +34,9 @@ const generateToken = () => randomBytes(32).toString("base64url")
 const hashToken = (raw: string) =>
   createHash("sha256").update(raw).digest("hex")
 const normalizeEmail = (email: string) => email.trim().toLowerCase()
+/** 16-char URL-safe password from 12 random bytes. */
+const generatePassword = (): string =>
+  randomBytes(12).toString("base64url").slice(0, 16)
 
 @Injectable()
 export class InvitationsService {
@@ -225,6 +228,82 @@ export class InvitationsService {
       })
     }
     return invitation
+  }
+
+  /**
+   * Directly assign an OWNER without the email invitation flow. Creates a
+   * dashboard user with a generated password when none exists for `email`;
+   * returns that password (shown once to the admin) or null if the user
+   * already had an account.
+   */
+  async adminDirectAssign(
+    restaurantId: string,
+    email: string
+  ): Promise<{ tempPassword: string | null }> {
+    const normalized = normalizeEmail(email)
+
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      select: { id: true },
+    })
+    if (!restaurant) {
+      throw new NotFoundException({
+        code: ErrorCode.RESTAURANT_NOT_FOUND,
+        message: `Restaurant ${restaurantId} not found`,
+      })
+    }
+
+    const existingOwner = await this.prisma.restaurantMember.findFirst({
+      where: { restaurantId, role: "OWNER" },
+    })
+    if (existingOwner) {
+      throw new ConflictException({
+        code: ErrorCode.CONFLICT,
+        message: "This restaurant already has an owner",
+      })
+    }
+
+    let tempPassword: string | null = null
+    let user = await this.prisma.dashUser.findUnique({
+      where: { email: normalized },
+      select: { id: true },
+    })
+
+    if (!user) {
+      tempPassword = generatePassword()
+      await dashboardSignUpAuth.api.signUpEmail({
+        body: {
+          email: normalized,
+          password: tempPassword,
+          name: normalized.split("@")[0] ?? "Owner",
+        },
+      })
+      user = await this.prisma.dashUser.findUnique({
+        where: { email: normalized },
+        select: { id: true },
+      })
+      if (!user) {
+        throw new ConflictException({
+          code: ErrorCode.INTERNAL_ERROR,
+          message: "Failed to create dashboard user",
+        })
+      }
+      await this.prisma.dashUser.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      })
+    }
+
+    await this.prisma.restaurantMember.create({
+      data: {
+        restaurantId,
+        userId: user.id,
+        role: "OWNER",
+        directlyAssigned: true,
+      },
+    })
+
+    return { tempPassword }
   }
 
   /** Current OWNER for a restaurant, derived from the member table (admin view). */
