@@ -49,6 +49,12 @@ export class MembersService {
         message: "You are not a member of this restaurant",
       })
     }
+    if (member.suspended) {
+      throw new ForbiddenException({
+        code: ErrorCode.MEMBER_SUSPENDED,
+        message: "Your account has been suspended for this restaurant",
+      })
+    }
     return member
   }
 

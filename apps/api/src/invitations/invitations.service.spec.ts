@@ -273,6 +273,44 @@ describe("InvitationsService", () => {
     })
   })
 
+  describe("adminToggleSuspension", () => {
+    it("sets suspended=true on the OWNER member", async () => {
+      prisma.restaurantMember.findFirst.mockResolvedValue({
+        id: "m1",
+      } as never)
+
+      await service.adminToggleSuspension("r1", true)
+
+      expect(prisma.restaurantMember.update).toHaveBeenCalledWith({
+        where: { id: "m1" },
+        data: { suspended: true },
+      })
+    })
+
+    it("sets suspended=false to re-enable", async () => {
+      prisma.restaurantMember.findFirst.mockResolvedValue({
+        id: "m1",
+      } as never)
+
+      await service.adminToggleSuspension("r1", false)
+
+      expect(prisma.restaurantMember.update).toHaveBeenCalledWith({
+        where: { id: "m1" },
+        data: { suspended: false },
+      })
+    })
+
+    it("throws NOT_A_MEMBER when no OWNER exists", async () => {
+      prisma.restaurantMember.findFirst.mockResolvedValue(null)
+
+      await expect(
+        service.adminToggleSuspension("r1", true)
+      ).rejects.toMatchObject({
+        response: { code: ErrorCode.NOT_A_MEMBER },
+      })
+    })
+  })
+
   describe("adminGetOwner", () => {
     it("returns null when no OWNER member exists", async () => {
       prisma.restaurantMember.findFirst.mockResolvedValue(null)

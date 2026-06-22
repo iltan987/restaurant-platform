@@ -306,6 +306,26 @@ export class InvitationsService {
     return { tempPassword }
   }
 
+  /** Suspend or re-enable the OWNER's access without removing their membership. */
+  async adminToggleSuspension(
+    restaurantId: string,
+    suspended: boolean
+  ): Promise<void> {
+    const owner = await this.prisma.restaurantMember.findFirst({
+      where: { restaurantId, role: "OWNER" },
+    })
+    if (!owner) {
+      throw new ForbiddenException({
+        code: ErrorCode.NOT_A_MEMBER,
+        message: "This restaurant has no owner to suspend",
+      })
+    }
+    await this.prisma.restaurantMember.update({
+      where: { id: owner.id },
+      data: { suspended },
+    })
+  }
+
   /** Current OWNER for a restaurant, derived from the member table (admin view). */
   async adminGetOwner(restaurantId: string) {
     const member = await this.prisma.restaurantMember.findFirst({

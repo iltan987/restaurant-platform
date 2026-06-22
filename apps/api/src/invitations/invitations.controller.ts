@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from "@nestjs/common"
@@ -14,6 +15,8 @@ import {
   acceptInvitationSchema,
   type InviteOwnerInput,
   inviteOwnerSchema,
+  type ToggleSuspensionInput,
+  toggleSuspensionSchema,
 } from "@repo/schemas"
 
 import { AdminAuthGuard } from "../auth/auth-guard.factory"
@@ -84,6 +87,16 @@ export class AdminInvitationsController {
     @Body(new ZodValidationPipe(inviteOwnerSchema)) body: InviteOwnerInput
   ) {
     return this.invitations.adminDirectAssign(restaurantId, body.email)
+  }
+
+  @Patch("restaurants/:restaurantId/owner/suspended")
+  @HttpCode(204)
+  toggleSuspension(
+    @Param("restaurantId") restaurantId: string,
+    @Body(new ZodValidationPipe(toggleSuspensionSchema))
+    body: ToggleSuspensionInput
+  ) {
+    return this.invitations.adminToggleSuspension(restaurantId, body.suspended)
   }
 
   @Delete("restaurants/:restaurantId/owner")
