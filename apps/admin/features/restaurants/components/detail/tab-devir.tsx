@@ -2,7 +2,16 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQuery } from "@tanstack/react-query"
-import { Check, Clock, Info, Mail, RotateCw, Users, X } from "lucide-react"
+import {
+  Check,
+  Clock,
+  Info,
+  Mail,
+  RotateCw,
+  Users,
+  UserX,
+  X,
+} from "lucide-react"
 import { useForm } from "react-hook-form"
 
 import {
@@ -10,6 +19,17 @@ import {
   inviteOwnerSchema,
   type RestaurantWithCounts,
 } from "@repo/schemas"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/ui/components/ui/alert-dialog"
 import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
 import { Input } from "@repo/ui/components/ui/input"
@@ -22,6 +42,7 @@ import { isoDate } from "@/lib/format"
 
 import { invitationsQueries } from "../../../invitations/queries"
 import { useInviteOwner } from "../../../invitations/use-invite-owner"
+import { useRemoveOwner } from "../../../invitations/use-remove-owner"
 import { useRevokeInvitation } from "../../../invitations/use-revoke-invitation"
 import { setupProgress } from "../../lib/derive"
 
@@ -73,6 +94,7 @@ export function TabDevir({ r }: { r: RestaurantWithCounts }) {
   )
   const invite = useInviteOwner(r.id)
   const revoke = useRevokeInvitation(r.id)
+  const removeOwner = useRemoveOwner(r.id)
 
   // The active owner relationship: an accepted invite wins over a pending one;
   // revoked/expired invites don't count toward the current state.
@@ -112,19 +134,53 @@ export function TabDevir({ r }: { r: RestaurantWithCounts }) {
             <Spinner className="size-4" /> Yükleniyor…
           </div>
         ) : accepted ? (
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-            <div className="grid size-10 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-              <Check className="size-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium">
-                {accepted.email}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                <Check className="size-5" />
               </div>
-              <div className="text-xs text-muted-foreground">
-                Davet kabul edildi
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium">
+                  {accepted.email}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Davet kabul edildi
+                </div>
               </div>
+              <Badge variant="secondary">Sahip atandı</Badge>
             </div>
-            <Badge variant="secondary">Sahip atandı</Badge>
+            <div className="mt-3 flex gap-2 border-t border-border/60 pt-3">
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={<Button variant="ghost" size="sm" />}
+                >
+                  <UserX className="size-4" />
+                  Sahipliği kaldır
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Sahibi kaldır</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {accepted.email} adresinin sahip erişimi kaldırılacak.
+                      Gerekirse yeni bir sahip davet edebilirsin.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => removeOwner.mutate()}
+                      disabled={removeOwner.isPending}
+                      className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+                    >
+                      {removeOwner.isPending ? (
+                        <Spinner className="size-3.5" />
+                      ) : null}
+                      Kaldır
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         ) : pending ? (
           <div className="rounded-xl border border-border bg-card p-4">

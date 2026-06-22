@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto"
 
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
@@ -224,6 +225,20 @@ export class InvitationsService {
       })
     }
     return invitation
+  }
+
+  /** Remove the current OWNER member for a restaurant (admin-only, no last-owner guard). */
+  async adminRemoveOwner(restaurantId: string): Promise<void> {
+    const owner = await this.prisma.restaurantMember.findFirst({
+      where: { restaurantId, role: "OWNER" },
+    })
+    if (!owner) {
+      throw new ForbiddenException({
+        code: ErrorCode.NOT_A_MEMBER,
+        message: "This restaurant has no owner to remove",
+      })
+    }
+    await this.prisma.restaurantMember.delete({ where: { id: owner.id } })
   }
 
   /** Returns the dash_user id for `email`, creating a verified credential user

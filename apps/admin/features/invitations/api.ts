@@ -43,3 +43,10 @@ export function revokeInvitation(invitationId: string): Promise<void> {
     method: "DELETE",
   })
 }
+
+/** Remove the accepted owner from a restaurant (admin override, no last-owner guard). */
+export function removeOwner(restaurantId: string): Promise<void> {
+  return apiSend(`${API}/admin/restaurants/${restaurantId}/owner`, {
+    method: "DELETE",
+  })
+}

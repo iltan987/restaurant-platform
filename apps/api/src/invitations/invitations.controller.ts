@@ -72,6 +72,12 @@ export class AdminInvitationsController {
   revoke(@Param("invitationId") invitationId: string) {
     return this.invitations.revoke(invitationId)
   }
+
+  @Delete("restaurants/:restaurantId/owner")
+  @HttpCode(204)
+  removeOwner(@Param("restaurantId") restaurantId: string) {
+    return this.invitations.adminRemoveOwner(restaurantId)
+  }
 }
 
 /** Public token surface: look up and accept an invitation. */

@@ -15,6 +15,11 @@ confirm current, version-correct usage — do not rely on training memory for AP
 - **context7** is the always-available fallback for any other library/framework/CLI.
 - The user may enable/disable specific doc tools per session for cost reasons — if a
   preferred one is unavailable, fall back to context7 rather than guessing.
+- **`@repo/ui` uses shadcn with the Base UI style (`base-nova`)**, not the Radix style.
+  shadcn now ships both variants; this project chose Base UI. The shadcn MCP is valid,
+  but always confirm the active style. Base UI uses `render` prop for composition — NOT
+  `asChild` (that is Radix). Read component source or Base UI docs before writing usage
+  code. The `asChild` mistake came from assuming the Radix variant.
 
 **Why:** Claude's training data lags real releases; these tools surface the newest APIs,
 flags, and breaking changes so generated code matches the installed versions.
