@@ -72,7 +72,7 @@ export function MediaUploader({
             )}
 
             {i === 0 && (
-              <span className="absolute top-1 left-1 rounded bg-brand px-1.5 py-0.5 text-[10px] font-medium text-white">
+              <span className="absolute top-1 left-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
                 Kapak
               </span>
             )}

@@ -31,7 +31,7 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
       {/* Rail */}
       <aside className="hidden w-70 shrink-0 flex-col border-r border-line bg-surface-subtle md:flex">
         <div className="flex items-center gap-2.5 px-6 pt-6 pb-4">
-          <span className="grid size-8 place-items-center rounded-lg bg-brand font-semibold text-white shadow-soft">
+          <span className="grid size-8 place-items-center rounded-lg bg-primary font-semibold text-primary-foreground shadow-soft">
             {mark}
           </span>
           <span className="truncate text-[15px] font-semibold text-ink">
@@ -58,7 +58,8 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
                 <span
                   className={cn(
                     "grid size-6 shrink-0 place-items-center rounded-full border font-mono text-xs font-semibold transition",
-                    state === "active" && "border-brand bg-brand text-white",
+                    state === "active" &&
+                      "border-primary bg-primary text-primary-foreground",
                     state === "done" &&
                       "border-brand/30 bg-brand-soft text-brand",
                     state === "upcoming" && "border-line-strong text-ink-3"
@@ -133,7 +134,7 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
                 key={s.label}
                 className={cn(
                   "h-1.5 rounded-full transition-all",
-                  i === step ? "w-5 bg-brand" : "w-1.5 bg-line-strong"
+                  i === step ? "w-5 bg-primary" : "w-1.5 bg-line-strong"
                 )}
               />
             ))}

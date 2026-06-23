@@ -62,7 +62,7 @@ function ChoiceCard({
         className={cn(
           "absolute top-4 right-4 grid size-5 place-items-center rounded-full border",
           selected
-            ? "border-brand bg-brand text-white"
+            ? "border-primary bg-primary text-primary-foreground"
             : "border-line-strong text-transparent"
         )}
       >

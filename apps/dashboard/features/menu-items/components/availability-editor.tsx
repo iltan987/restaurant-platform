@@ -153,7 +153,7 @@ function AvailabilityForm({
                   className={cn(
                     "rounded-md border px-2.5 py-1.5 text-xs font-medium transition",
                     on
-                      ? "border-brand bg-brand text-white"
+                      ? "border-primary bg-primary text-primary-foreground"
                       : "border-line-strong bg-surface text-ink-2 hover:bg-surface-hover"
                   )}
                 >

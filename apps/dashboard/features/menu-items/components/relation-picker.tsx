@@ -58,7 +58,7 @@ export function RelationPicker({
                   className={cn(
                     "inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-[13px] font-medium transition",
                     selected
-                      ? "border-brand bg-brand text-white"
+                      ? "border-primary bg-primary text-primary-foreground"
                       : "border-line-strong bg-surface text-ink-2 hover:bg-surface-hover",
                     o.deletable && "rounded-r-none"
                   )}
