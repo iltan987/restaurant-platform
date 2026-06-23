@@ -128,6 +128,18 @@ export class FloorsService {
     )
   }
 
+  /**
+   * Clears every table's saved canvas position on a floor so they fall back to
+   * the automatic grid layout. Backs the "reset layout" action.
+   */
+  async resetLayout(floorId: string) {
+    await this.getFloorOrThrow(floorId)
+    await this.prisma.table.updateMany({
+      where: { area: { floorId } },
+      data: { positionX: null, positionY: null },
+    })
+  }
+
   private async getFloorOrThrow(id: string) {
     const floor = await this.prisma.floor.findUnique({ where: { id } })
     if (!floor) {

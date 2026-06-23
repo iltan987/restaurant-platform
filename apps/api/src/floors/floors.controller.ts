@@ -76,6 +76,13 @@ export class FloorsController {
     return this.floors.saveLayout(id, input)
   }
 
+  @Delete("floors/:id/layout")
+  @RequirePermission("tables:manage", byFloor())
+  @HttpCode(204)
+  resetLayout(@Param("id") id: string) {
+    return this.floors.resetLayout(id)
+  }
+
   @Delete("floors/:id")
   @RequirePermission("tables:manage", byFloor())
   @HttpCode(204)

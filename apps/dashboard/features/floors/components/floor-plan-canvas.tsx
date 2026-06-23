@@ -12,7 +12,7 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import { useQuery } from "@tanstack/react-query"
-import { InfoIcon, LayoutGridIcon, ListIcon } from "lucide-react"
+import { InfoIcon, LayoutGridIcon, ListIcon, RotateCcwIcon } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useRef, useState } from "react"
 
@@ -20,12 +20,14 @@ import { type Restaurant, type Table } from "@repo/schemas"
 import { Button } from "@repo/ui/components/ui/button"
 import { cn } from "@repo/ui/lib/utils"
 
+import { ConfirmDialog } from "@/components/confirm-dialog"
 import { EmptyState } from "@/components/empty-state"
 import { PageHeader } from "@/components/page-header"
 import { areasQueries } from "@/features/areas/queries"
 import { tablesQueries } from "@/features/tables/queries"
 
 import { floorsQueries } from "../queries"
+import { useResetFloorLayout } from "../use-reset-floor-layout"
 import { useSaveFloorLayout } from "../use-save-floor-layout"
 
 /** One palette entry per area — node border + legend dot, cycled by area order. */
@@ -81,10 +83,16 @@ const restrictToParentElement: Modifier = ({
   return value
 }
 
+/** Most tables placed on one row before the auto-layout wraps to a new row. */
+const MAX_PER_ROW = 8
+
 /**
- * Auto-arranges tables that have no saved position into a grid grouped by area
- * — each area becomes a horizontal band, its tables spread left-to-right
- * (FR-043). Only unplaced tables are laid out; placed ones keep their coords.
+ * Auto-arranges tables that have no saved position, grouped by area — each area
+ * is a horizontal band, its tables wrapped into a tidy grid that grows in rows
+ * instead of overflowing one cramped line (FR-043). Bands share the canvas
+ * height in proportion to how many rows each needs, and cells are centered so
+ * nothing sits on the edges or touches the neighbouring band. Only unplaced
+ * tables are laid out; placed ones keep their coords.
  */
 function defaultLayout(
   unplaced: Table[],
@@ -96,18 +104,33 @@ function defaultLayout(
     list.push(t)
     byArea.set(t.areaId, list)
   }
+  // Balance each band's grid so rows fill evenly (11 tables → 6×2, not 8+3).
   const bands = areaOrder
-    .map((id) => [id, byArea.get(id) ?? []] as const)
-    .filter(([, ts]) => ts.length > 0)
-
-  const map = new Map<string, { x: number; y: number }>()
-  bands.forEach(([, ts], bi) => {
-    const y = bands.length === 1 ? 0.5 : 0.14 + (0.72 * bi) / (bands.length - 1)
-    ts.forEach((t, ci) => {
-      const x = ts.length === 1 ? 0.5 : 0.08 + (0.84 * ci) / (ts.length - 1)
-      map.set(t.id, { x, y })
+    .map((id) => byArea.get(id) ?? [])
+    .filter((ts) => ts.length > 0)
+    .map((ts) => {
+      const rows = Math.ceil(ts.length / MAX_PER_ROW)
+      const cols = Math.ceil(ts.length / rows)
+      return { ts, rows, cols }
     })
-  })
+
+  const totalRows = bands.reduce((sum, b) => sum + b.rows, 0)
+  const map = new Map<string, { x: number; y: number }>()
+  const PAD = 0.06
+  let rowCursor = 0
+  for (const { ts, rows, cols } of bands) {
+    const bandTop = PAD + (1 - 2 * PAD) * (rowCursor / totalRows)
+    const bandH = (1 - 2 * PAD) * (rows / totalRows)
+    ts.forEach((t, i) => {
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      map.set(t.id, {
+        x: PAD + (1 - 2 * PAD) * ((col + 0.5) / cols),
+        y: bandTop + bandH * ((row + 0.5) / rows),
+      })
+    })
+    rowCursor += rows
+  }
   return map
 }
 
@@ -159,6 +182,7 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
   const { data: areas = [] } = useQuery(areasQueries.bySlug(slug))
   const { data: tables = [] } = useQuery(tablesQueries.bySlug(slug))
   const save = useSaveFloorLayout(slug)
+  const reset = useResetFloorLayout(slug)
 
   const [activeFloorId, setActiveFloorId] = useState<string | null>(null)
   // Position set the instant a drag ends, so the node stays put on drop instead
@@ -238,19 +262,40 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
       x: clamp01(start.x + delta.x / rect.width),
       y: clamp01(start.y + delta.y / rect.height),
     }
-    setDropped((prev) => ({ ...prev, [t.id]: next }))
+    // Freeze every still-unplaced table at its current resolved spot in the
+    // same save, so the auto-layout never re-runs and re-indexes them on the
+    // next refetch (which is what made untouched tables teleport).
+    const frozen = floorTables
+      .filter(
+        (x) => x.id !== t.id && (x.positionX == null || x.positionY == null)
+      )
+      .map((x) => ({ tableId: x.id, ...posOf(x) }))
+    const positions = [{ tableId: t.id, ...next }, ...frozen]
+
+    setDropped((prev) => ({
+      ...prev,
+      [t.id]: next,
+      ...Object.fromEntries(frozen.map((f) => [f.tableId, { x: f.x, y: f.y }])),
+    }))
     save.mutate(
-      { floorId, positions: [{ tableId: t.id, ...next }] },
+      { floorId, positions },
       {
-        // Drop the override once the cache is authoritative — on success it
-        // already matches; on error it reverts to the rolled-back position.
+        // Drop the overrides once the cache is authoritative — on success it
+        // already matches; on error it reverts to the rolled-back positions.
         onSettled: () =>
           setDropped((prev) => {
-            const { [t.id]: _drop, ...rest } = prev
+            const rest = { ...prev }
+            for (const p of positions) delete rest[p.tableId]
             return rest
           }),
       }
     )
+  }
+
+  function handleReset() {
+    if (!floorId) return
+    setDropped({})
+    reset.mutate({ floorId, tableIds: floorTables.map((t) => t.id) })
   }
 
   const stats: { n: number; label: string }[] = [
@@ -265,14 +310,30 @@ export function FloorPlanCanvas({ restaurant }: { restaurant: Restaurant }) {
         title="Masalar & Alanlar"
         subtitle="Masaları sürükleyerek salonunuzdaki yerleşime göre düzenleyin."
         actions={
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link href="/" />}
-          >
-            <ListIcon className="size-4" />
-            Masaları yönet
-          </Button>
+          <>
+            {floorTables.length > 0 && (
+              <ConfirmDialog
+                trigger={
+                  <Button variant="ghost" size="sm" className="text-ink-3">
+                    <RotateCcwIcon className="size-4" />
+                    Yerleşimi sıfırla
+                  </Button>
+                }
+                title="Yerleşimi sıfırla"
+                description="Bu kattaki tüm masaların elle düzenlenmiş konumları silinir ve otomatik yerleşime döner. Masalar, adları veya QR kodları etkilenmez."
+                confirmLabel="Sıfırla"
+                onConfirm={handleReset}
+              />
+            )}
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href="/" />}
+            >
+              <ListIcon className="size-4" />
+              Masaları yönet
+            </Button>
+          </>
         }
       />
 

@@ -45,3 +45,8 @@ export function updateFloor(
 export function deleteFloor(id: string): Promise<void> {
   return apiSend(`${API}/floors/${id}`, { method: "DELETE" })
 }
+
+/** Clears all saved table positions on a floor, reverting it to the auto layout. */
+export function resetFloorLayout(id: string): Promise<void> {
+  return apiSend(`${API}/floors/${id}/layout`, { method: "DELETE" })
+}

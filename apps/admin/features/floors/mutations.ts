@@ -6,7 +6,7 @@ import { type CreateFloorInput, type UpdateFloorInput } from "@repo/schemas"
 
 import { toastApiError } from "@/lib/toast-error"
 
-import { createFloor, deleteFloor, updateFloor } from "./api"
+import { createFloor, deleteFloor, resetFloorLayout, updateFloor } from "./api"
 
 /** Invalidate-based mutations — the admin panel favors simplicity over optimism. */
 export function useCreateFloor(slug: string, restaurantId: string) {
@@ -37,5 +37,16 @@ export function useDeleteFloor(slug: string) {
     onError: toastApiError,
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: ["floors", slug] }),
+  })
+}
+
+/** Clears a floor's table positions — invalidates tables, where positions live. */
+export function useResetFloorLayout(slug: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => resetFloorLayout(id),
+    onError: toastApiError,
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["tables", slug] }),
   })
 }

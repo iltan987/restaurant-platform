@@ -22,7 +22,7 @@ describe("FloorsService", () => {
       delete: jest.Mock
     }
     area: { count: jest.Mock }
-    table: { findMany: jest.Mock; update: jest.Mock }
+    table: { findMany: jest.Mock; update: jest.Mock; updateMany: jest.Mock }
     $transaction: jest.Mock
   }
 
@@ -45,6 +45,7 @@ describe("FloorsService", () => {
           .mockImplementation(({ where, data }) =>
             Promise.resolve({ id: where.id, ...data })
           ),
+        updateMany: jest.fn().mockResolvedValue({ count: 0 }),
       },
       $transaction: jest.fn().mockImplementation((cb) => cb(prismaMock)),
     }
@@ -159,6 +160,24 @@ describe("FloorsService", () => {
       expect(err).toBeInstanceOf(NotFoundException)
       expect(responseOf(err)).toMatchObject({ code: ErrorCode.TABLE_NOT_FOUND })
       expect(prismaMock.$transaction).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("resetLayout", () => {
+    it("clears positions for every table on the floor", async () => {
+      await service.resetLayout("f1")
+      expect(prismaMock.table.updateMany).toHaveBeenCalledWith({
+        where: { area: { floorId: "f1" } },
+        data: { positionX: null, positionY: null },
+      })
+    })
+
+    it("throws FLOOR_NOT_FOUND when the floor is missing", async () => {
+      prismaMock.floor.findUnique.mockResolvedValue(null)
+      const err = await service.resetLayout("nope").catch((e) => e)
+      expect(err).toBeInstanceOf(NotFoundException)
+      expect(responseOf(err)).toMatchObject({ code: ErrorCode.FLOOR_NOT_FOUND })
+      expect(prismaMock.table.updateMany).not.toHaveBeenCalled()
     })
   })
 

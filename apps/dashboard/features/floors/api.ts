@@ -64,3 +64,8 @@ export function saveFloorLayout(
     body: JSON.stringify({ positions }),
   })
 }
+
+/** Clears all saved positions on a floor, reverting it to the auto layout. */
+export function resetFloorLayout(floorId: string): Promise<void> {
+  return apiSend(`${API}/floors/${floorId}/layout`, { method: "DELETE" })
+}

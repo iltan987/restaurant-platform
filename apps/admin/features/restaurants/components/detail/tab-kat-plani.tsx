@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { PlusIcon, Trash2Icon } from "lucide-react"
+import { PlusIcon, RotateCcwIcon, Trash2Icon } from "lucide-react"
 import { useState } from "react"
 
 import { type Area, type Floor, type Table } from "@repo/schemas"
@@ -19,6 +19,7 @@ import { areasQueries } from "@/features/areas/queries"
 import {
   useCreateFloor,
   useDeleteFloor,
+  useResetFloorLayout,
   useUpdateFloor,
 } from "@/features/floors/mutations"
 import { floorsQueries } from "@/features/floors/queries"
@@ -227,8 +228,11 @@ function FloorSection({
 }) {
   const updateFloor = useUpdateFloor(slug)
   const delFloor = useDeleteFloor(slug)
+  const resetLayout = useResetFloorLayout(slug)
   const createArea = useCreateArea(slug)
   const floorAreas = areas.filter((a) => a.floorId === floor.id)
+  const floorAreaIds = new Set(floorAreas.map((a) => a.id))
+  const hasTables = tables.some((t) => floorAreaIds.has(t.areaId))
 
   return (
     <section className="rounded-xl border bg-card p-4">
@@ -240,23 +244,43 @@ function FloorSection({
           }
           className="text-sm font-semibold"
         />
-        <ConfirmDialog
-          trigger={
-            <button
-              type="button"
-              aria-label={`${floor.name} katını sil`}
-              className="ml-auto grid size-6 place-items-center rounded text-muted-foreground transition hover:text-destructive"
-            >
-              <Trash2Icon className="size-4" />
-            </button>
-          }
-          title="Katı sil"
-          description={`"${floor.name}" katı silinecek.`}
-          warning="Katta bölge varsa önce onları kaldırmanız gerekir."
-          confirmLabel="Sil"
-          destructive
-          onConfirm={() => delFloor.mutate(floor.id)}
-        />
+        <div className="ml-auto flex items-center gap-1">
+          {hasTables && (
+            <ConfirmDialog
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                >
+                  <RotateCcwIcon className="size-4" />
+                  Yerleşimi sıfırla
+                </Button>
+              }
+              title="Yerleşimi sıfırla"
+              description={`"${floor.name}" katındaki tüm masaların kayıtlı konumları silinir ve panodaki otomatik yerleşime döner. Masalar, adları veya QR kodları etkilenmez.`}
+              confirmLabel="Sıfırla"
+              onConfirm={() => resetLayout.mutate(floor.id)}
+            />
+          )}
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                aria-label={`${floor.name} katını sil`}
+                className="grid size-6 place-items-center rounded text-muted-foreground transition hover:text-destructive"
+              >
+                <Trash2Icon className="size-4" />
+              </button>
+            }
+            title="Katı sil"
+            description={`"${floor.name}" katı silinecek.`}
+            warning="Katta bölge varsa önce onları kaldırmanız gerekir."
+            confirmLabel="Sil"
+            destructive
+            onConfirm={() => delFloor.mutate(floor.id)}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
