@@ -116,8 +116,12 @@ describe("MenuItemsService", () => {
   describe("reorder", () => {
     it("assigns position from array index within the category", async () => {
       prismaMock.menuItem.findMany
+        // 1) ownership check (select id), 2) listByCategory (includes media/tags)
         .mockResolvedValueOnce([{ id: "i1" }, { id: "i2" }])
-        .mockResolvedValueOnce([{ id: "i2" }, { id: "i1" }])
+        .mockResolvedValueOnce([
+          { id: "i2", media: [], tags: [] },
+          { id: "i1", media: [], tags: [] },
+        ])
       await service.reorder("c1", ["i2", "i1"])
       expect(prismaMock.menuItem.update).toHaveBeenCalledWith({
         where: { id: "i2" },
