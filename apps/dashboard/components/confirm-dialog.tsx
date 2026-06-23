@@ -69,7 +69,7 @@ export function ConfirmDialog({
         </AlertDialogHeader>
 
         {warning && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+          <div className="flex items-start gap-2.5 rounded-lg border border-danger/25 bg-danger-soft p-3 text-sm font-medium text-danger">
             <TriangleAlertIcon className="mt-px size-4 shrink-0" />
             <div>{warning}</div>
           </div>

@@ -44,17 +44,17 @@ export function GoLiveStep({ restaurant }: { restaurant: Restaurant }) {
         {tiles.map((t) => (
           <div
             key={t.l}
-            className="rounded-lg border bg-muted/40 p-4 text-center"
+            className="rounded-card border border-line bg-surface-subtle p-4 text-center"
           >
-            <div className="font-mono text-2xl font-bold tracking-tight">
+            <div className="font-mono text-2xl font-bold tracking-tight text-ink">
               {t.n}
             </div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{t.l}</div>
+            <div className="mt-0.5 text-xs text-ink-3">{t.l}</div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border bg-card p-5">
+      <div className="rounded-card border border-line bg-surface p-5 shadow-soft">
         <GoLiveControls restaurant={restaurant} tableCount={tables.length} />
       </div>
     </div>

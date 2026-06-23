@@ -51,19 +51,19 @@ function ChoiceCard({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "relative flex flex-col gap-2.5 rounded-xl border-2 p-5 text-left transition",
+        "relative flex flex-col gap-2.5 rounded-card border-2 p-5 text-left transition",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected
-          ? "border-primary bg-primary/5 ring-2 ring-primary/15"
-          : "border-border hover:border-foreground/20 hover:bg-muted/40"
+          ? "border-brand bg-brand-soft ring-2 ring-brand/15"
+          : "border-line hover:border-line-strong hover:bg-surface-hover"
       )}
     >
       <span
         className={cn(
           "absolute top-4 right-4 grid size-5 place-items-center rounded-full border",
           selected
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-border text-transparent"
+            ? "border-brand bg-brand text-white"
+            : "border-line-strong text-transparent"
         )}
       >
         <CheckIcon className="size-3" />
@@ -71,15 +71,13 @@ function ChoiceCard({
       <span
         className={cn(
           "grid size-10 place-items-center rounded-lg",
-          selected ? "bg-card text-primary" : "bg-muted text-muted-foreground"
+          selected ? "bg-surface text-brand" : "bg-surface-muted text-ink-3"
         )}
       >
         {icon}
       </span>
-      <span className="text-[15px] font-semibold">{title}</span>
-      <span className="text-xs leading-relaxed text-muted-foreground">
-        {desc}
-      </span>
+      <span className="text-[15px] font-semibold text-ink">{title}</span>
+      <span className="text-xs leading-relaxed text-ink-3">{desc}</span>
     </button>
   )
 }
@@ -129,7 +127,7 @@ export function FloorsStep({
 
   const list = (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-xl border bg-card">
+      <div className="overflow-hidden rounded-card border border-line bg-surface">
         {floors.map((f, i) => {
           const floorAreas = areas.filter((a) => a.floorId === f.id)
           const floorTables = tables.filter((t) =>
@@ -143,7 +141,7 @@ export function FloorsStep({
               value={f.name}
               optimistic={f.id.startsWith("__optimistic__")}
               leading={
-                <span className="grid size-6 shrink-0 place-items-center rounded-md bg-primary/10 font-mono text-xs font-semibold text-primary">
+                <span className="grid size-6 shrink-0 place-items-center rounded-md bg-brand-soft font-mono text-xs font-semibold text-brand">
                   {i + 1}
                 </span>
               }
@@ -151,7 +149,7 @@ export function FloorsStep({
               onCommit={(name) => update.mutate({ id: f.id, input: { name } })}
               action={
                 i === 0 ? (
-                  <span className="shrink-0 px-2 text-[11px] font-medium text-muted-foreground">
+                  <span className="shrink-0 px-2 text-[11px] font-medium text-ink-3">
                     Ana kat
                   </span>
                 ) : (
@@ -162,7 +160,7 @@ export function FloorsStep({
                         variant="ghost"
                         aria-label={`${f.name} katını sil`}
                       >
-                        <Trash2Icon className="size-4 text-destructive" />
+                        <Trash2Icon className="size-4 text-danger" />
                       </Button>
                     }
                     title="Katı sil"
@@ -207,7 +205,7 @@ export function FloorsStep({
     if (!isMulti) return null
     return (
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold">Katlar</h2>
+        <h2 className="text-sm font-semibold text-ink">Katlar</h2>
         {list}
       </section>
     )
@@ -240,7 +238,7 @@ export function FloorsStep({
 
       {showList && (
         <div className="flex flex-col gap-3">
-          <p className="text-sm font-medium">Katlarınız</p>
+          <p className="text-sm font-medium text-ink">Katlarınız</p>
           {list}
         </div>
       )}

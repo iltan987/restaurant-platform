@@ -46,7 +46,7 @@ export function InlineAdd({
         onAdd(v.value.trim())
         form.reset()
       })}
-      className="border-t bg-muted/40 px-4 py-2.5"
+      className="border-t border-line-subtle bg-surface-subtle px-4 py-2.5"
     >
       <Controller
         name="value"
@@ -58,7 +58,7 @@ export function InlineAdd({
                 type="submit"
                 disabled={pending}
                 aria-label="Ekle"
-                className="grid size-5 place-items-center rounded text-primary disabled:opacity-40"
+                className="grid size-5 place-items-center rounded text-brand disabled:opacity-40"
               >
                 <PlusIcon className="size-4" />
               </button>
@@ -68,7 +68,7 @@ export function InlineAdd({
                 aria-label={placeholder}
                 aria-invalid={fieldState.invalid || undefined}
                 autoComplete="off"
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:font-normal placeholder:text-ink-3"
               />
             </div>
             {fieldState.invalid && (

@@ -49,12 +49,12 @@ function CountStepper({
   onChange: (n: number) => void
 }) {
   return (
-    <div className="inline-flex items-center overflow-hidden rounded-lg border focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30">
+    <div className="inline-flex items-center overflow-hidden rounded-lg border border-line-strong focus-within:border-brand focus-within:ring-3 focus-within:ring-brand/25">
       <button
         type="button"
         onClick={() => onChange(clampCount(value - 1))}
         aria-label="Azalt"
-        className="grid size-9 place-items-center text-muted-foreground transition hover:bg-primary/5 hover:text-primary"
+        className="grid size-9 place-items-center text-ink-3 transition hover:bg-brand-soft hover:text-brand"
       >
         <MinusIcon className="size-4" />
       </button>
@@ -69,13 +69,13 @@ function CountStepper({
         }}
         onFocus={(e) => e.currentTarget.select()}
         onBlur={() => onChange(clampCount(value))}
-        className="w-12 border-x bg-transparent text-center font-mono text-[15px] leading-9 font-semibold outline-none"
+        className="w-12 border-x border-line-strong bg-transparent text-center font-mono text-[15px] leading-9 font-semibold text-ink outline-none"
       />
       <button
         type="button"
         onClick={() => onChange(clampCount(value + 1))}
         aria-label="Artır"
-        className="grid size-9 place-items-center text-muted-foreground transition hover:bg-primary/5 hover:text-primary"
+        className="grid size-9 place-items-center text-ink-3 transition hover:bg-brand-soft hover:text-brand"
       >
         <PlusIcon className="size-4" />
       </button>
@@ -105,7 +105,7 @@ function TableChip({
   return (
     <span
       className={cn(
-        "group inline-flex items-center gap-1 rounded-md border py-1 pr-1 pl-1 text-sm",
+        "group inline-flex items-center gap-1 rounded-md border border-line bg-surface py-1 pr-1 pl-1 text-sm",
         optimistic && "opacity-50"
       )}
     >
@@ -119,16 +119,14 @@ function TableChip({
             type="button"
             disabled={optimistic}
             aria-label={`${table.label} masasını düzenle`}
-            className="rounded px-1.5 py-0.5 font-medium transition hover:bg-muted disabled:hover:bg-transparent"
+            className="rounded px-1.5 py-0.5 font-medium text-ink transition hover:bg-surface-hover disabled:hover:bg-transparent"
           >
             {table.label}
           </button>
         }
       />
       {table.capacity ? (
-        <span className="text-xs text-muted-foreground">
-          · {table.capacity}
-        </span>
+        <span className="text-xs text-ink-3">· {table.capacity}</span>
       ) : null}
       <QrSheet
         slug={slug}
@@ -140,7 +138,7 @@ function TableChip({
             type="button"
             disabled={optimistic}
             aria-label={`${table.label} masasının QR kodu`}
-            className="grid size-4 place-items-center rounded text-muted-foreground transition hover:text-primary disabled:opacity-40"
+            className="grid size-4 place-items-center rounded text-ink-3 transition hover:text-brand disabled:opacity-40"
           >
             <QrCodeIcon className="size-3.5" />
           </button>
@@ -152,7 +150,7 @@ function TableChip({
             type="button"
             disabled={optimistic}
             aria-label={`${table.label} masasını sil`}
-            className="grid size-4 place-items-center rounded text-muted-foreground transition hover:text-destructive"
+            className="grid size-4 place-items-center rounded text-ink-3 transition hover:text-danger"
           >
             <XIcon className="size-3.5" />
           </button>
@@ -196,16 +194,16 @@ function AreaBlock({
   const seats = tables.reduce((s, t) => s + (t.capacity ?? 0), 0)
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card">
-      <div className="flex flex-wrap items-center gap-2.5 border-b bg-muted/40 px-4 py-3">
-        <span className="text-sm font-semibold">{area.name}</span>
+    <div className="overflow-hidden rounded-card border border-line bg-surface">
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-line-subtle bg-surface-subtle px-4 py-3">
+        <span className="text-sm font-semibold text-ink">{area.name}</span>
         {floorLabel && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border border-line bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-3">
             <LayersIcon className="size-3" />
             {floorLabel}
           </span>
         )}
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
+        <span className="ml-auto font-mono text-xs text-ink-3">
           {tables.length} masa{seats > 0 ? ` · ${seats} koltuk` : ""}
         </span>
       </div>
@@ -228,7 +226,7 @@ function AreaBlock({
         )}
 
         {remaining <= 0 ? (
-          <p className="rounded-lg border border-dashed bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-line-strong bg-surface-subtle px-3 py-2.5 text-xs text-ink-3">
             Masa sınırına ulaşıldı (en fazla {TABLE_LIMIT_PER_RESTAURANT}). Yeni
             masa eklemek için önce mevcut masaları kaldırın.
           </p>
@@ -236,7 +234,7 @@ function AreaBlock({
           <>
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-xs font-medium text-ink-3">
                   Toplu ekle
                 </span>
                 <CountStepper value={count} onChange={setCount} />
@@ -258,14 +256,14 @@ function AreaBlock({
                 {bulk.isPending ? <Spinner className="size-3.5" /> : null}
                 {count} masa oluştur
               </Button>
-              <span className="pb-2 font-mono text-xs text-muted-foreground">
+              <span className="pb-2 font-mono text-xs text-ink-3">
                 Sonraki: {area.code ?? ""}
                 {nextStart}
               </span>
             </div>
 
             {count > remaining && (
-              <p className="-mt-2 text-xs text-destructive">
+              <p className="-mt-2 text-xs text-danger">
                 Yalnızca {remaining} masa daha eklenebilir.
               </p>
             )}
@@ -347,7 +345,7 @@ export function TablesStep({
         />
       ))}
       {areas.length === 0 && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Önce bir bölge ekleyin, sonra masaları buraya ekleyebilirsiniz.
         </p>
       )}
@@ -386,7 +384,7 @@ export function TablesStep({
     return (
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold">Masalar</h2>
+          <h2 className="text-sm font-semibold text-ink">Masalar</h2>
           <div className="flex items-center gap-2">
             {planLink}
             {printAll}
@@ -413,12 +411,12 @@ export function TablesStep({
         ].map((t) => (
           <div
             key={t.l}
-            className="rounded-lg border bg-muted/40 p-4 text-center"
+            className="rounded-card border border-line bg-surface-subtle p-4 text-center"
           >
-            <div className="font-mono text-2xl font-bold tracking-tight">
+            <div className="font-mono text-2xl font-bold tracking-tight text-ink">
               {t.n}
             </div>
-            <div className="mt-0.5 text-xs text-muted-foreground">{t.l}</div>
+            <div className="mt-0.5 text-xs text-ink-3">{t.l}</div>
           </div>
         ))}
       </div>

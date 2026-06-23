@@ -27,14 +27,14 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
   const mark = restaurant.name.trim().charAt(0).toUpperCase() || "R"
 
   return (
-    <div className="flex h-svh bg-background">
+    <div className="flex h-svh bg-canvas text-ink">
       {/* Rail */}
-      <aside className="hidden w-70 shrink-0 flex-col border-r bg-muted/30 md:flex">
+      <aside className="hidden w-70 shrink-0 flex-col border-r border-line bg-surface-subtle md:flex">
         <div className="flex items-center gap-2.5 px-6 pt-6 pb-4">
-          <span className="grid size-8 place-items-center rounded-lg bg-primary font-semibold text-primary-foreground shadow-sm">
+          <span className="grid size-8 place-items-center rounded-lg bg-brand font-semibold text-white shadow-soft">
             {mark}
           </span>
-          <span className="truncate text-[15px] font-semibold">
+          <span className="truncate text-[15px] font-semibold text-ink">
             {restaurant.name}
           </span>
         </div>
@@ -50,18 +50,18 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
                 aria-current={i === step ? "step" : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition",
-                  state === "active" ? "bg-card shadow-sm" : "hover:bg-muted"
+                  state === "active"
+                    ? "bg-surface shadow-soft"
+                    : "hover:bg-surface-hover"
                 )}
               >
                 <span
                   className={cn(
                     "grid size-6 shrink-0 place-items-center rounded-full border font-mono text-xs font-semibold transition",
-                    state === "active" &&
-                      "border-primary bg-primary text-primary-foreground",
+                    state === "active" && "border-brand bg-brand text-white",
                     state === "done" &&
-                      "border-primary/30 bg-primary/10 text-primary",
-                    state === "upcoming" &&
-                      "border-border text-muted-foreground"
+                      "border-brand/30 bg-brand-soft text-brand",
+                    state === "upcoming" && "border-line-strong text-ink-3"
                   )}
                 >
                   {i + 1}
@@ -69,42 +69,40 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
                 <span className="min-w-0">
                   <span
                     className={cn(
-                      "block text-sm font-medium",
-                      state === "upcoming" && "text-muted-foreground"
+                      "block text-sm font-medium text-ink",
+                      state === "upcoming" && "text-ink-3"
                     )}
                   >
                     {s.label}
                   </span>
-                  <span className="block text-[11px] text-muted-foreground">
-                    {s.sub}
-                  </span>
+                  <span className="block text-[11px] text-ink-3">{s.sub}</span>
                 </span>
               </button>
             )
           })}
         </nav>
 
-        <div className="flex h-16 items-center justify-between gap-2 border-t px-4">
+        <div className="flex h-16 items-center justify-between gap-2 border-t border-line px-4">
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground"
+            className="text-ink-3"
             onClick={() => setStep(last)}
           >
             Daha sonra tamamla
           </Button>
-          <ThemeToggle />
+          <ThemeToggle className="text-ink-3" />
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile progress header */}
-        <header className="flex items-center justify-between border-b px-5 py-3 md:hidden">
-          <span className="text-sm font-medium">
+        <header className="flex items-center justify-between border-b border-line px-5 py-3 md:hidden">
+          <span className="text-sm font-medium text-ink">
             {step + 1}/{STEPS.length} · {STEPS[step]!.label}
           </span>
-          <ThemeToggle />
+          <ThemeToggle className="text-ink-3" />
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -117,7 +115,7 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
         </div>
 
         {/* Footer nav — fixed 3-column grid so the dots never shift */}
-        <footer className="grid h-16 grid-cols-[1fr_auto_1fr] items-center border-t bg-background px-6 sm:px-10">
+        <footer className="grid h-16 grid-cols-[1fr_auto_1fr] items-center border-t border-line bg-canvas px-6 sm:px-10">
           <div className="justify-self-start">
             <Button
               variant="outline"
@@ -135,7 +133,7 @@ export function SetupWizard({ restaurant }: { restaurant: Restaurant }) {
                 key={s.label}
                 className={cn(
                   "h-1.5 rounded-full transition-all",
-                  i === step ? "w-5 bg-primary" : "w-1.5 bg-border"
+                  i === step ? "w-5 bg-brand" : "w-1.5 bg-line-strong"
                 )}
               />
             ))}

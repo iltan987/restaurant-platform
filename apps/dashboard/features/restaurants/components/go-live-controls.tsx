@@ -76,7 +76,7 @@ export function GoLiveControls({
       </div>
 
       {!canGoLive && (
-        <p id="go-live-hint" className="text-xs text-muted-foreground">
+        <p id="go-live-hint" className="text-xs text-ink-3">
           Yayına almadan önce en az bir masa eklemelisiniz.
         </p>
       )}

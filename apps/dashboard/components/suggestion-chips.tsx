@@ -18,7 +18,7 @@ export function SuggestionChips({
           key={name}
           type="button"
           onClick={() => onPick(name)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:border-primary hover:bg-primary/5 hover:text-primary"
+          className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-line-strong px-3 py-1.5 text-sm font-medium text-ink-3 transition hover:border-brand hover:bg-brand-soft hover:text-brand"
         >
           <PlusIcon className="size-3.5 opacity-60" />
           {name}

@@ -40,7 +40,7 @@ export function EditableRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-t px-3 py-2 first:border-t-0",
+        "flex items-center gap-3 border-t border-line-subtle px-3 py-2 first:border-t-0",
         optimistic && "opacity-50"
       )}
     >
@@ -58,7 +58,7 @@ export function EditableRow({
         }}
         aria-label={ariaLabel}
         maxLength={maxLength}
-        className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm font-medium outline-none hover:bg-muted/60 focus:border-ring focus:bg-background focus:ring-3 focus:ring-ring/30"
+        className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm font-medium text-ink outline-none hover:bg-surface-hover focus:border-brand focus:bg-surface focus:ring-3 focus:ring-brand/25"
       />
       {trailing}
       {action}

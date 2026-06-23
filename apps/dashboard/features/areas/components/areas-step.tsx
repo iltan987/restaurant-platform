@@ -60,7 +60,7 @@ function AreaCodeInput({
       placeholder="Kod"
       aria-label="Bölge kodu (masa ön eki)"
       maxLength={5}
-      className="w-14 shrink-0 rounded-md border bg-background px-2 py-1 text-center font-mono text-xs uppercase outline-none placeholder:font-sans placeholder:text-muted-foreground placeholder:normal-case focus:border-ring focus:ring-3 focus:ring-ring/30"
+      className="w-14 shrink-0 rounded-md border border-line-strong bg-surface px-2 py-1 text-center font-mono text-xs text-ink uppercase outline-none placeholder:font-sans placeholder:text-ink-3 placeholder:normal-case focus:border-brand focus:ring-3 focus:ring-brand/25"
     />
   )
 }
@@ -88,7 +88,7 @@ export function AreasStep({
 
   const listFor = (floorId: string) => (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-xl border bg-card">
+      <div className="overflow-hidden rounded-card border border-line bg-surface">
         {areasOf(floorId).map((a) => {
           const areaTables = tables.filter((t) => t.areaId === a.id)
           const nonEmpty = areaTables.length > 0
@@ -97,9 +97,7 @@ export function AreasStep({
               key={a.id}
               value={a.name}
               optimistic={a.id.startsWith("__optimistic__")}
-              leading={
-                <MapPinIcon className="size-4 shrink-0 text-muted-foreground" />
-              }
+              leading={<MapPinIcon className="size-4 shrink-0 text-ink-3" />}
               ariaLabel="Bölge adı"
               onCommit={(name) => update.mutate({ id: a.id, input: { name } })}
               trailing={
@@ -118,7 +116,7 @@ export function AreasStep({
                       variant="ghost"
                       aria-label={`${a.name} bölgesini sil`}
                     >
-                      <Trash2Icon className="size-4 text-destructive" />
+                      <Trash2Icon className="size-4 text-danger" />
                     </Button>
                   }
                   title="Bölgeyi sil"
@@ -162,11 +160,11 @@ export function AreasStep({
       {floors.map((f) => (
         <div key={f.id} className="flex flex-col gap-3">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-7 place-items-center rounded-lg bg-primary/10 text-primary">
+            <span className="grid size-7 place-items-center rounded-lg bg-brand-soft text-brand">
               <LayersIcon className="size-4" />
             </span>
-            <span className="text-[15px] font-semibold">{f.name}</span>
-            <span className="h-px flex-1 bg-border" />
+            <span className="text-[15px] font-semibold text-ink">{f.name}</span>
+            <span className="h-px flex-1 bg-line" />
           </div>
           {listFor(f.id)}
         </div>
@@ -179,7 +177,7 @@ export function AreasStep({
   if (embedded) {
     return (
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold">Bölgeler</h2>
+        <h2 className="text-sm font-semibold text-ink">Bölgeler</h2>
         {body}
       </section>
     )
@@ -197,7 +195,7 @@ export function AreasStep({
         }
       />
       {body}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         İpucu: Bir bölgeye kısa bir kod verirseniz (örn.{" "}
         <span className="font-mono">B</span>), o bölgenin masaları{" "}
         <span className="font-mono">B1, B2…</span> şeklinde numaralanır. Boş

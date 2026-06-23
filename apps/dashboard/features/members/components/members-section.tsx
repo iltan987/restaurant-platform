@@ -11,7 +11,6 @@ import {
   inviteMemberSchema,
   type RestaurantRole,
 } from "@repo/schemas"
-import { Badge } from "@repo/ui/components/ui/badge"
 import { Button } from "@repo/ui/components/ui/button"
 import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
@@ -25,6 +24,7 @@ import {
 import { Spinner } from "@repo/ui/components/ui/spinner"
 
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { ToneBadge } from "@/components/tone-badge"
 
 import { membersQueries } from "../queries"
 import { useChangeRole } from "../use-change-role"
@@ -73,24 +73,24 @@ export function MembersSection({ restaurantId }: { restaurantId: string }) {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h2 className="text-sm font-semibold tracking-tight">Ekip</h2>
-        <p className="text-xs text-muted-foreground">
+        <h2 className="text-sm font-semibold tracking-tight text-ink">Ekip</h2>
+        <p className="text-xs text-ink-3">
           Restoranınızı birlikte yönettiğiniz kişiler ve rolleri.
         </p>
       </div>
 
       {isPending ? (
         <div className="flex justify-center py-6">
-          <Spinner className="size-5 text-muted-foreground" />
+          <Spinner className="size-5 text-ink-3" />
         </div>
       ) : (
-        <ul className="divide-y rounded-lg border">
+        <ul className="divide-y divide-line-subtle rounded-card border border-line bg-surface">
           {members?.map((m) => {
             // Guard the last owner in the UI too (the API enforces it).
             const isLastOwner = m.role === "OWNER" && ownerCount <= 1
             return (
               <li key={m.userId} className="flex items-center gap-3 px-4 py-3">
-                <span className="min-w-0 flex-1 truncate text-sm">
+                <span className="min-w-0 flex-1 truncate text-sm text-ink">
                   {m.email}
                 </span>
                 {canManage ? (
@@ -116,7 +116,7 @@ export function MembersSection({ restaurantId }: { restaurantId: string }) {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Badge variant="outline">{ROLE_LABEL[m.role]}</Badge>
+                  <ToneBadge tone="neutral">{ROLE_LABEL[m.role]}</ToneBadge>
                 )}
                 {canManage ? (
                   <ConfirmDialog
@@ -124,7 +124,7 @@ export function MembersSection({ restaurantId }: { restaurantId: string }) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground"
+                        className="text-ink-3"
                         disabled={isLastOwner}
                         aria-label={`${m.email} adlı üyeyi çıkar`}
                       >
@@ -153,7 +153,7 @@ export function MembersSection({ restaurantId }: { restaurantId: string }) {
       {canManage ? (
         <form
           onSubmit={form.handleSubmit(onInvite)}
-          className="flex flex-col gap-3 rounded-lg border border-dashed p-4 sm:flex-row sm:items-end"
+          className="flex flex-col gap-3 rounded-card border border-dashed border-line-strong p-4 sm:flex-row sm:items-end"
         >
           <div className="flex-1 space-y-1.5">
             <Label htmlFor="member-email">E-posta ile davet et</Label>
@@ -164,7 +164,7 @@ export function MembersSection({ restaurantId }: { restaurantId: string }) {
               {...form.register("email")}
             />
             {form.formState.errors.email ? (
-              <p className="text-xs text-destructive">
+              <p className="text-xs text-danger">
                 {form.formState.errors.email.message}
               </p>
             ) : null}

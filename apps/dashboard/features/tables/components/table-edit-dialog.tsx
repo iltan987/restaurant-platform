@@ -15,12 +15,12 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@repo/ui/components/ui/dialog"
 import { Input } from "@repo/ui/components/ui/input"
-import { Label } from "@repo/ui/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from "@repo/ui/components/ui/select"
 import { cn } from "@repo/ui/lib/utils"
+
+import { Field } from "@/components/field"
 
 import { useUpdateTable } from "../use-update-table"
 
@@ -124,8 +126,12 @@ export function TableEditDialog({
         </DialogHeader>
 
         <div className="grid grid-cols-[1fr_7rem] gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="table-label">Masa adı</Label>
+          <Field
+            label="Masa adı"
+            htmlFor="table-label"
+            required
+            error={labelError ? "Masa adı gerekli." : undefined}
+          >
             <Input
               id="table-label"
               value={label}
@@ -136,9 +142,8 @@ export function TableEditDialog({
               onBlur={() => setTouched(true)}
               onKeyDown={(e) => e.key === "Enter" && save()}
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="table-capacity">Kapasite</Label>
+          </Field>
+          <Field label="Kapasite" htmlFor="table-capacity">
             <Input
               id="table-capacity"
               type="number"
@@ -148,11 +153,10 @@ export function TableEditDialog({
               value={capacity}
               onChange={(e) => setCapacity(e.target.value)}
             />
-          </div>
+          </Field>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <Label>Şekil</Label>
+        <Field label="Şekil">
           <div className="grid grid-cols-3 gap-2">
             {SHAPES.map(({ value, label: l, Icon }) => {
               const selected = shape === value
@@ -165,8 +169,8 @@ export function TableEditDialog({
                   className={cn(
                     "flex flex-col items-center gap-1.5 rounded-lg border py-3 text-xs font-medium transition",
                     selected
-                      ? "border-primary bg-primary/5 text-primary ring-3 ring-ring/20"
-                      : "text-muted-foreground hover:bg-muted"
+                      ? "border-brand bg-brand-soft text-brand ring-3 ring-brand/20"
+                      : "border-line-strong text-ink-3 hover:bg-surface-hover"
                   )}
                 >
                   <Icon className="size-5" />
@@ -175,11 +179,10 @@ export function TableEditDialog({
               )
             })}
           </div>
-        </div>
+        </Field>
 
         {areaOptions.length > 1 && (
-          <div className="flex flex-col gap-1.5">
-            <Label>Bölge</Label>
+          <Field label="Bölge">
             <Select value={areaId} onValueChange={(v) => v && setAreaId(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue>
@@ -196,15 +199,15 @@ export function TableEditDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
         )}
 
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <DialogClose render={<Button variant="ghost" />}>İptal</DialogClose>
           <Button onClick={save} disabled={!label.trim()}>
             Kaydet
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
