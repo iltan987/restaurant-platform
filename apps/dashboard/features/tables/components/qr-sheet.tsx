@@ -11,6 +11,7 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -180,12 +181,12 @@ export function QrSheet({
           style={{ display: "none" }}
         />
 
-        <p className="text-center text-[11px] text-balance text-muted-foreground">
+        <p className="text-center text-[11px] text-balance text-ink-3">
           Bu kart masaya yerleştirilmek üzere tasarlandı. QR kodu bu masaya
           sabittir ve değişmez.
         </p>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+        <DialogFooter>
           <DialogClose
             render={<Button variant="ghost" className="sm:mr-auto" />}
           >
@@ -199,7 +200,7 @@ export function QrSheet({
             <DownloadIcon className="size-4" />
             PNG indir
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

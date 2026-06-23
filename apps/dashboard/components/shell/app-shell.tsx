@@ -34,8 +34,8 @@ export function AppShell({
   const live = restaurant?.status === "ACTIVE"
 
   return (
-    <div className="flex h-svh overflow-hidden bg-canvas text-ink">
-      <aside className="hidden w-[248px] shrink-0 flex-col border-r border-line bg-surface-subtle lg:flex">
+    <div className="flex h-svh overflow-hidden bg-canvas text-ink print:block print:h-auto print:overflow-visible">
+      <aside className="hidden w-[248px] shrink-0 flex-col border-r border-line bg-surface-subtle lg:flex print:hidden">
         <SidebarInner slug={slug} />
       </aside>
 
@@ -47,7 +47,7 @@ export function AppShell({
       </Drawer>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-[60px] shrink-0 items-center gap-3 border-b border-line bg-canvas/80 px-4 backdrop-blur lg:px-7">
+        <header className="flex h-[60px] shrink-0 items-center gap-3 border-b border-line bg-canvas/80 px-4 backdrop-blur lg:px-7 print:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -70,7 +70,9 @@ export function AppShell({
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto print:overflow-visible">
+          {children}
+        </div>
       </div>
     </div>
   )

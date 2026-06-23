@@ -1,13 +1,15 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { ChevronLeftIcon, PrinterIcon } from "lucide-react"
+import { PrinterIcon, QrCodeIcon } from "lucide-react"
 import Link from "next/link"
 import { QRCodeSVG } from "qrcode.react"
 
 import { type Area, type Restaurant, type Table } from "@repo/schemas"
 import { Button } from "@repo/ui/components/ui/button"
 
+import { EmptyState } from "@/components/empty-state"
+import { PageHeader } from "@/components/page-header"
 import { areasQueries } from "@/features/areas/queries"
 import { floorsQueries } from "@/features/floors/queries"
 
@@ -39,74 +41,66 @@ export function QrPrintSheet({ restaurant }: { restaurant: Restaurant }) {
   )
 
   return (
-    <div className="min-h-svh bg-background print:bg-white">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur print:hidden">
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-6 py-3.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground"
-            nativeButton={false}
-            render={
-              <Link href="/">
-                <ChevronLeftIcon className="size-4" />
-                Geri
-              </Link>
-            }
-          />
-          <div className="min-w-0">
-            <h1 className="truncate text-base font-semibold tracking-tight">
-              {restaurant.name} · QR kodları
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {cells.length} masa · yazdırıp masalara yerleştirin
-            </p>
-          </div>
-          <Button
-            className="ml-auto"
-            onClick={() => window.print()}
-            disabled={cells.length === 0}
-          >
-            <PrinterIcon className="size-4" />
-            Tümünü yazdır
-          </Button>
-        </div>
-      </header>
+    <div className="mx-auto w-full max-w-[1080px] px-4 py-7 pb-20 sm:px-7 print:max-w-none print:p-0">
+      <div className="print:hidden">
+        <PageHeader
+          title="QR Kodları"
+          subtitle={
+            cells.length > 0
+              ? `${cells.length} masa · yazdırıp masalara yerleştirin`
+              : "Her masa için yazdırılabilir QR kodu."
+          }
+          actions={
+            <Button
+              onClick={() => window.print()}
+              disabled={cells.length === 0}
+            >
+              <PrinterIcon className="size-4" />
+              Tümünü yazdır
+            </Button>
+          }
+        />
+      </div>
 
-      <main className="mx-auto max-w-4xl px-6 py-8 print:max-w-none print:px-0 print:py-0">
-        {cells.length === 0 ? (
-          <p className="text-sm text-muted-foreground print:hidden">
-            Henüz masa yok. Önce kurulumdan masa ekleyin.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 print:grid-cols-3 print:gap-3">
-            {cells.map(({ table, area }) => (
-              <div
-                key={table.id}
-                className="flex break-inside-avoid flex-col items-center gap-2 rounded-xl border bg-card p-4 text-center print:rounded-none print:border-foreground/20"
-              >
-                <div className="rounded-lg bg-white p-2 ring-1 ring-foreground/10 print:ring-0">
-                  <QRCodeSVG
-                    value={tableQrUrl(slug, table.id)}
-                    size={148}
-                    marginSize={2}
-                    level="M"
-                  />
-                </div>
-                <div className="text-lg font-semibold tracking-tight">
-                  {table.label}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {area.name}
-                  {isMulti && floorName(area.floorId)
-                    ? ` · ${floorName(area.floorId)}`
-                    : ""}
-                </div>
+      {cells.length === 0 ? (
+        <EmptyState
+          className="print:hidden"
+          icon={<QrCodeIcon />}
+          title="Henüz QR kodu yok"
+          description="QR kodları otomatik oluşur. Önce masalarınızı ekleyin."
+        >
+          <Button nativeButton={false} render={<Link href="/" />}>
+            Masaları yönet
+          </Button>
+        </EmptyState>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 print:grid-cols-3 print:gap-3">
+          {cells.map(({ table, area }) => (
+            <div
+              key={table.id}
+              className="flex break-inside-avoid flex-col items-center gap-2 rounded-card border border-line bg-surface p-4 text-center shadow-soft print:rounded-none print:border-foreground/20 print:shadow-none"
+            >
+              <div className="rounded-lg bg-white p-2 ring-1 ring-foreground/10 print:ring-0">
+                <QRCodeSVG
+                  value={tableQrUrl(slug, table.id)}
+                  size={148}
+                  marginSize={2}
+                  level="M"
+                />
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+              <div className="text-lg font-semibold tracking-tight text-ink">
+                {table.label}
+              </div>
+              <div className="text-xs text-ink-3">
+                {area.name}
+                {isMulti && floorName(area.floorId)
+                  ? ` · ${floorName(area.floorId)}`
+                  : ""}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
