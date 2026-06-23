@@ -187,7 +187,7 @@ export function ItemEditorDialog({
   return (
     <Dialog open={open} onOpenChange={change}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-lg">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-lg">
         <DialogHeader className="px-5 pt-5 pb-4">
           <DialogTitle className="text-[17px]">
             {item ? "Ürünü düzenle" : "Yeni ürün"}
