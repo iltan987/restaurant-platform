@@ -15,14 +15,14 @@ catalog:
   react: 19.2.4
   react-dom: 19.2.4
   typescript: ^5.9.3
-  "@types/node": ^20.19.42
+  "@types/node": ^20.19.43
   "@types/react": ^19.2.17
   "@types/react-dom": ^19.2.3
   eslint: ^9.39.4
   "@eslint/js": ^9.39.4
-  tailwindcss: ^4.3.0
-  "@tailwindcss/postcss": ^4.3.0
-  lucide-react: ^1.17.0
+  tailwindcss: ^4.3.1
+  "@tailwindcss/postcss": ^4.3.1
+  lucide-react: ^1.21.0
   next-themes: ^0.4.6
   dotenv: ^17.4.2
   zod: ^4.4.3
@@ -31,16 +31,16 @@ catalog:
   "@tanstack/react-query": ^5.101.0
   "@tanstack/react-query-devtools": ^5.101.0
   "@tanstack/eslint-plugin-query": ^5.101.0
-  react-hook-form: ^7.78.0
+  react-hook-form: ^7.80.0
   "@hookform/resolvers": ^5.4.0
   qrcode.react: ^4.2.0
   "@dnd-kit/core": ^6.3.1
   "@dnd-kit/utilities": ^3.2.2
-  "@aws-sdk/client-s3": ^3.1066.0
-  "@aws-sdk/s3-request-presigner": ^3.1066.0
-  "@better-auth/passkey": ^1.6.18
+  "@aws-sdk/client-s3": ^3.1073.0
+  "@aws-sdk/s3-request-presigner": ^3.1073.0
+  "@better-auth/passkey": ^1.6.20
   "@dnd-kit/sortable": ^10.0.0
-  better-auth: ^1.6.18
+  better-auth: ^1.6.20
   nodemailer: ^8.0.11
   "@types/nodemailer": ^8.0.1
 
