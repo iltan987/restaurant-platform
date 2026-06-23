@@ -28,14 +28,17 @@ describe("Audience isolation (e2e)", () => {
   let app: INestApplication<App>
   const http = () => app.getHttpServer()
 
+  // Minimal sessions — the guards only read session.id and user.{id,email}.
+  // Cast to Better Auth's full getSession return shape (both instances share it).
+  type SessionResult = Awaited<ReturnType<typeof adminAuth.api.getSession>>
   const adminSession = {
     session: { id: "s-admin" },
     user: { id: "admin-1", email: "admin@example.com" },
-  }
+  } as SessionResult
   const dashSession = {
     session: { id: "s-dash" },
     user: { id: "dash-1", email: "owner@example.com" },
-  }
+  } as SessionResult
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
